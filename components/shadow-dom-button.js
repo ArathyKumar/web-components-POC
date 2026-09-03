@@ -1,6 +1,7 @@
 import { LitElement, html } from 'lit';
 
-const PATTERNFLY_CSS = 'node_modules/@patternfly/patternfly/patternfly.css';
+const PATTERNFLY_CSS =
+  'https://cdn.jsdelivr.net/npm/@patternfly/patternfly/patternfly.css';
 const DEFAULT_LABEL = 'Shadow DOM Button';
 
 export class ShadowDomButton extends LitElement {

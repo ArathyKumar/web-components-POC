@@ -1,6 +1,6 @@
 # Web Components POC
 
-A proof of concept for building PatternFly-styled UI with native [Web Components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components). The demo compares plain HTML, a light DOM custom element, and a shadow DOM custom element rendering the same PatternFly primary button.
+A proof of concept for building PatternFly-styled UI with [Lit](https://lit.dev/) web components. The demo compares plain HTML, a light DOM Lit element, and a shadow DOM Lit element rendering the same PatternFly primary button.
 
 ## Overview
 
@@ -10,9 +10,9 @@ This project explores how PatternFly CSS interacts with web components in two en
 |----------|---------|------------|-------------------|
 | Plain HTML | `<button>` | No | Global CSS from `index.html` |
 | Light DOM | `<light-dom-button>` | No | Inherited from global CSS |
-| Shadow DOM | `<shadow-dom-button>` | Yes | Loaded inside the shadow root |
+| Shadow DOM | `<shadow-dom-button>` | Yes | CDN CSS loaded inside the shadow root |
 
-**Light DOM** keeps component markup in the document tree, so global styles apply the same way they do to plain HTML.
+**Light DOM** keeps component markup in the document tree (`createRenderRoot()` returns `this`), so global styles apply the same way they do to plain HTML.
 
 **Shadow DOM** encapsulates markup behind a boundary. Global styles do not cross that boundary, so PatternFly CSS must be loaded inside the shadow root.
 
@@ -23,7 +23,7 @@ This project explores how PatternFly CSS interacts with web components in two en
 ## Getting Started
 
 ```bash
-# Install dependencies
+# Install dependencies (Lit and PatternFly)
 npm install
 
 # Start the dev server (opens browser automatically)
@@ -36,18 +36,18 @@ The dev script uses `http-server` with `-c-1` to disable caching so changes to H
 
 ## Opening `index.html` directly
 
-You can open `index.html` via `file://`, but use classic `<script>` tags (not `type="module"`). Browsers block ES module scripts on `file://` URLs, which prevents custom elements from registering.
+Components are loaded as ES modules (`type="module"`) and depend on Lit via an import map in `index.html`. Browsers block module scripts on `file://` URLs, so custom elements will not register when opening the file directly.
 
-For day-to-day development, prefer `npm run dev` to avoid `file://` limitations around modules and asset loading.
+Use `npm run dev` for local development.
 
 ## Project Structure
 
 ```
 web-components-POC/
 ├── components/
-│   ├── light-dom-button.js    # Custom element without shadow DOM
-│   └── shadow-dom-button.js   # Custom element with shadow DOM
-├── index.html                 # Demo page
+│   ├── light-dom-button.js    # Lit element without shadow DOM
+│   └── shadow-dom-button.js   # Lit element with shadow DOM
+├── index.html                 # Demo page, import map, global PatternFly CSS
 ├── package.json
 ├── package-lock.json
 ├── README.md
@@ -56,9 +56,11 @@ web-components-POC/
 
 ## Components
 
+Both custom elements extend `LitElement` and accept a `label` attribute for the button text.
+
 ### `<light-dom-button>`
 
-Renders a PatternFly primary button in the light DOM (no `attachShadow()`).
+Lit element that renders in the light DOM by overriding `createRenderRoot()` to return `this` instead of a shadow root.
 
 **Attributes**
 
@@ -76,7 +78,7 @@ Global PatternFly CSS linked in `index.html` styles the inner `<button>` because
 
 ### `<shadow-dom-button>`
 
-Renders a PatternFly primary button inside an open shadow root.
+Lit element that uses the default shadow root and loads PatternFly CSS inside it via a `<link>` element.
 
 **Attributes**
 
@@ -90,18 +92,38 @@ Renders a PatternFly primary button inside an open shadow root.
 <shadow-dom-button label="Shadow DOM Button"></shadow-dom-button>
 ```
 
-The component attaches a shadow root and loads `patternfly.css` inside it via a `<link>` element so button styles apply within the shadow boundary.
-
 ## PatternFly CSS
 
-This POC uses the full PatternFly bundle:
+This POC uses the full `patternfly.css` bundle (base styles, tokens, fonts, and component CSS including buttons) from two sources:
 
-- **`index.html`** — `node_modules/@patternfly/patternfly/patternfly.css`
-- **`shadow-dom-button.js`** — same file linked inside the shadow root
+| Location | Source |
+|----------|--------|
+| **`index.html`** | Local: `node_modules/@patternfly/patternfly/patternfly.css` |
+| **`shadow-dom-button.js`** | CDN: `https://cdn.jsdelivr.net/npm/@patternfly/patternfly/patternfly.css` |
 
-`patternfly.css` includes base styles (resets, tokens, fonts) and component styles (including buttons).
+The page and light DOM button use the local npm package. The shadow DOM component loads PatternFly from jsDelivr inside its shadow root, since global styles do not penetrate the shadow boundary.
 
-If you prefer a smaller CSS payload, you can use `patternfly-base.css` plus individual component files (for example `components/Button/button.css`) in both places instead of the full bundle.
+If you prefer a smaller CSS payload, you can use `patternfly-base.css` plus individual component files (for example `components/Button/button.css`) instead of the full bundle.
+
+## Lit and ES modules
+
+Components import Lit from `node_modules` using a browser [import map](https://developer.mozilla.org/en-US/docs/Web/HTML/Reference/Elements/script/type/importmap) in `index.html`:
+
+```html
+<script type="importmap">
+  {
+    "imports": {
+      "lit": "./node_modules/lit/index.js",
+      "lit/": "./node_modules/lit/",
+      ...
+    }
+  }
+</script>
+<script type="module" src="components/light-dom-button.js"></script>
+<script type="module" src="components/shadow-dom-button.js"></script>
+```
+
+No bundler is required; `http-server` serves the modules directly.
 
 ## Customizing button labels
 
@@ -116,6 +138,7 @@ The plain HTML button label is set directly in `index.html` inside the `<span cl
 
 ## Resources
 
+- [Lit](https://lit.dev/)
 - [MDN: Web Components](https://developer.mozilla.org/en-US/docs/Web/API/Web_components)
 - [MDN: Using shadow DOM](https://developer.mozilla.org/en-US/docs/Web/API/Web_components/Using_shadow_DOM)
 - [PatternFly](https://www.patternfly.org/)
