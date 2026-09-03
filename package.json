@@ -1,0 +1,12 @@
+{
+  "name": "web-components-poc",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Proof of concept for web components with PatternFly",
+  "scripts": {
+    "dev": "npx http-server . -o -c-1"
+  },
+  "dependencies": {
+    "@patternfly/patternfly": "^6.6.1"
+  }
+}
