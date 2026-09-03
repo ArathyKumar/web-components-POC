@@ -6,13 +6,64 @@
     <title>Web Components POC</title>
     <link
       rel="stylesheet"
-      href="node_modules/@patternfly/patternfly/patternfly-base.css"
+      href="node_modules/@patternfly/patternfly/patternfly.css"
     />
+    <style>
+      body {
+        margin: 0;
+        padding: var(--pf-t--global--spacer--xl);
+        background-color: var(--pf-t--global--background--color--secondary--default);
+        color: var(--pf-t--global--text--color--regular);
+        font-family: var(--pf-t--global--font--family--body);
+        line-height: var(--pf-t--global--font--line-height--body);
+      }
+
+      main {
+        max-width: 42rem;
+        margin: 0 auto;
+        padding: var(--pf-t--global--spacer--xl);
+        background-color: var(--pf-t--global--background--color--primary--default);
+        border-radius: var(--pf-t--global--border--radius--medium);
+      }
+
+      h1 {
+        margin: 0 0 var(--pf-t--global--spacer--md);
+      }
+
+      p {
+        margin: 0 0 var(--pf-t--global--spacer--xl);
+      }
+
+      .demo-buttons {
+        display: flex;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: var(--pf-t--global--spacer--md);
+        padding-top: var(--pf-t--global--spacer--sm);
+      }
+    </style>
   </head>
   <body>
     <main>
-      <h1>Web Components POC</h1>
-      <p>PatternFly base styles are loaded.</p>
+      <h1 class="pf-v6-c-title pf-m-3xl">Web Components POC</h1>
+      <p>
+        This page compares three ways to render a PatternFly primary button:
+        plain HTML, a light DOM custom element, and a shadow DOM custom element.
+        The HTML button uses global styles from this page. The light DOM component
+        renders markup in the document tree, so it inherits those same styles.
+        The shadow DOM component encapsulates its markup and loads PatternFly CSS
+        inside its shadow root.
+      </p>
+      <div class="demo-buttons">
+        <button class="pf-v6-c-button pf-m-primary" type="submit">
+          <span class="pf-v6-c-button__text">HTML Button</span>
+        </button>
+
+        <light-dom-button label="Light DOM Button"></light-dom-button>
+        <shadow-dom-button label="Shadow DOM Button"></shadow-dom-button>
+      </div>
     </main>
+    <script src="components/light-dom-button.js"></script>
+    <script src="components/shadow-dom-button.js"></script>
   </body>
 </html>
