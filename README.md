@@ -46,7 +46,9 @@ Use `npm run dev` for local development.
 web-components-POC/
 ├── components/
 │   ├── light-dom-button.js    # Lit element without shadow DOM
-│   └── shadow-dom-button.js   # Lit element with shadow DOM
+│   └── shadow-dom-button.js   # Lit element with shadow DOM (treat as external)
+├── styles/
+│   └── theme.css              # Global PatternFly token overrides
 ├── index.html                 # Demo page, import map, global PatternFly CSS
 ├── package.json
 ├── package-lock.json
@@ -104,6 +106,28 @@ This POC uses the full `patternfly.css` bundle (base styles, tokens, fonts, and 
 The page and light DOM button use the local npm package. The shadow DOM component loads PatternFly from jsDelivr inside its shadow root, since global styles do not penetrate the shadow boundary.
 
 If you prefer a smaller CSS payload, you can use `patternfly-base.css` plus individual component files (for example `components/Button/button.css`) instead of the full bundle.
+
+## Global theming (without editing shadow DOM packages)
+
+To change `pf-m-primary` background color globally, edit `styles/theme.css` and load it from `index.html` after PatternFly:
+
+```html
+<link rel="stylesheet" href="styles/theme.css" />
+```
+
+Override PatternFly **brand tokens** on `:root`:
+
+```css
+:root {
+  --pf-t--global--color--brand--default: #008768;
+  --pf-t--global--color--brand--hover: #006d54;
+  --pf-t--global--color--brand--clicked: #004d3d;
+}
+```
+
+This updates the HTML button, light DOM components, and **packaged shadow DOM components** (such as `shadow-dom-button.js`) without modifying their source. CSS custom properties inherit across the shadow boundary; PatternFly primary buttons resolve these tokens via `var(--pf-t--global--color--brand--*)`.
+
+Rules in `theme.css` cannot style selectors inside a shadow root (for example `.pf-v6-c-button`), but token overrides on `:root` do reach shadow DOM when the component uses PatternFly variables.
 
 ## Lit and ES modules
 

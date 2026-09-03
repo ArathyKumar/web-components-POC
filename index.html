@@ -8,12 +8,14 @@
     <!--
       Full PatternFly bundle: base styles (resets, tokens, fonts) plus component CSS.
       Styles here apply globally to plain HTML and light DOM custom elements.
-      Shadow DOM components must load their own copy inside the shadow root.
+      Shadow DOM components must load their own PatternFly copy inside the shadow root.
+      Global theme overrides use :root tokens in styles/theme.css (they inherit into shadow DOM).
     -->
     <link
       rel="stylesheet"
       href="node_modules/@patternfly/patternfly/patternfly.css"
     />
+    <link rel="stylesheet" href="styles/theme.css" />
 
     <!-- Page layout using PatternFly design tokens for spacing, color, and typography -->
     <style>
