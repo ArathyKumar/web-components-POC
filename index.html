@@ -4,10 +4,18 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Web Components POC</title>
+
+    <!--
+      Full PatternFly bundle: base styles (resets, tokens, fonts) plus component CSS.
+      Styles here apply globally to plain HTML and light DOM custom elements.
+      Shadow DOM components must load their own copy inside the shadow root.
+    -->
     <link
       rel="stylesheet"
       href="node_modules/@patternfly/patternfly/patternfly.css"
     />
+
+    <!-- Page layout using PatternFly design tokens for spacing, color, and typography -->
     <style>
       body {
         margin: 0;
@@ -34,6 +42,7 @@
         margin: 0 0 var(--pf-t--global--spacer--xl);
       }
 
+      /* Stack demo buttons vertically with consistent spacing */
       .demo-buttons {
         display: flex;
         flex-direction: column;
@@ -54,15 +63,22 @@
         The shadow DOM component encapsulates its markup and loads PatternFly CSS
         inside its shadow root.
       </p>
+
       <div class="demo-buttons">
+        <!-- Plain HTML button: styled directly by global PatternFly CSS -->
         <button class="pf-v6-c-button pf-m-primary" type="submit">
           <span class="pf-v6-c-button__text">HTML Button</span>
         </button>
 
+        <!-- Light DOM custom element: no shadow root, inherits global styles -->
         <light-dom-button label="Light DOM Button"></light-dom-button>
+
+        <!-- Shadow DOM custom element: styles loaded inside its shadow root -->
         <shadow-dom-button label="Shadow DOM Button"></shadow-dom-button>
       </div>
     </main>
+
+    <!-- Classic scripts -->
     <script src="components/light-dom-button.js"></script>
     <script src="components/shadow-dom-button.js"></script>
   </body>
