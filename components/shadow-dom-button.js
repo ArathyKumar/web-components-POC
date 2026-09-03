@@ -1,23 +1,23 @@
-class ShadowDomButton extends HTMLElement {
-  constructor() {
-    super();
-    const label = this.getAttribute('label') || 'Shadow DOM Button';
-    const shadow = this.attachShadow({ mode: 'open' });
+import { LitElement, html } from 'lit';
 
-    const baseLink = document.createElement('link');
-    baseLink.rel = 'stylesheet';
-    baseLink.href = 'node_modules/@patternfly/patternfly/patternfly.css';
+const PATTERNFLY_CSS = 'node_modules/@patternfly/patternfly/patternfly.css';
+const DEFAULT_LABEL = 'Shadow DOM Button';
 
-    const button = document.createElement('button');
-    button.className = 'pf-v6-c-button pf-m-primary';
-    button.type = 'submit';
+export class ShadowDomButton extends LitElement {
+  static properties = {
+    label: { type: String },
+  };
 
-    const text = document.createElement('span');
-    text.className = 'pf-v6-c-button__text';
-    text.textContent = label;
+  render() {
+    const label = this.label ?? DEFAULT_LABEL;
 
-    button.appendChild(text);
-    shadow.append(baseLink, button);
+    // PatternFly must be loaded inside the shadow root; global CSS does not cross the boundary.
+    return html`
+      <link rel="stylesheet" href="${PATTERNFLY_CSS}" />
+      <button class="pf-v6-c-button pf-m-primary" type="submit">
+        <span class="pf-v6-c-button__text">${label}</span>
+      </button>
+    `;
   }
 }
 

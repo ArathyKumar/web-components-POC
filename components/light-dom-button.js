@@ -1,17 +1,25 @@
-class LightDomButton extends HTMLElement {
-  connectedCallback() {
-    const label = this.getAttribute('label') || 'Light DOM Button';
+import { LitElement, html } from 'lit';
 
-    const button = document.createElement('button');
-    button.className = 'pf-v6-c-button pf-m-primary';
-    button.type = 'submit';
+const DEFAULT_LABEL = 'Light DOM Button';
 
-    const text = document.createElement('span');
-    text.className = 'pf-v6-c-button__text';
-    text.textContent = label;
+export class LightDomButton extends LitElement {
+  static properties = {
+    label: { type: String },
+  };
 
-    button.appendChild(text);
-    this.replaceChildren(button);
+  // Render in the light DOM so global PatternFly CSS applies.
+  createRenderRoot() {
+    return this;
+  }
+
+  render() {
+    const label = this.label ?? DEFAULT_LABEL;
+
+    return html`
+      <button class="pf-v6-c-button pf-m-primary" type="submit">
+        <span class="pf-v6-c-button__text">${label}</span>
+      </button>
+    `;
   }
 }
 
