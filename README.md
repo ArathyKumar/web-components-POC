@@ -10,7 +10,7 @@ This project explores how PatternFly CSS interacts with web components in two en
 |----------|---------|------------|-------------------|
 | Plain HTML | `<button>` | No | Global CSS from `index.html` |
 | Light DOM | `<light-dom-button>` | No | Inherited from global CSS |
-| Shadow DOM | `<shadow-dom-button>` | Yes | CDN CSS loaded inside the shadow root |
+| Shadow DOM | `<shadow-dom-button>` | Yes | Inlined `button.css` in a `<style>` tag inside the shadow root |
 
 **Light DOM** keeps component markup in the document tree (`createRenderRoot()` returns `this`), so global styles apply the same way they do to plain HTML.
 
@@ -46,7 +46,11 @@ Use `npm run dev` for local development.
 web-components-POC/
 ├── components/
 │   ├── light-dom-button.js    # Lit element without shadow DOM
-│   └── shadow-dom-button.js   # Lit element with shadow DOM (treat as external)
+│   ├── shadow-dom-button.js   # Lit element with shadow DOM (treat as external)
+│   ├── pf-button-class-names.js
+│   ├── button-styles.js       # PatternFly button.css exported for shadow DOM
+│   ├── spinner-styles.js      # Spinner CSS for is-loading
+│   └── badge-styles.js        # Badge CSS for count
 ├── styles/
 │   └── theme.css              # Global PatternFly token overrides
 ├── index.html                 # Demo page, import map, global PatternFly CSS
@@ -80,19 +84,43 @@ Global PatternFly CSS linked in `index.html` styles the inner `<button>` because
 
 ### `<shadow-dom-button>`
 
-Lit element that uses the default shadow root and loads PatternFly CSS inside it via a `<link>` element.
+Lit element that mirrors the [PatternFly React Button](https://github.com/patternfly/patternfly-react/tree/main/packages/react-core/src/components/Button) API and [PatternFly button docs](https://www.patternfly.org/components/button). It uses the default shadow root and inlines PatternFly `button.css` (plus spinner and badge CSS for loading/count) in a `<style>` tag.
 
-**Attributes**
+**Common attributes**
 
 | Attribute | Description | Default |
 |-----------|-------------|---------|
 | `label` | Button label text | `Shadow DOM Button` |
+| `variant` | `primary`, `secondary`, `tertiary`, `danger`, `warning`, `link`, `plain`, `control`, `stateful` | `primary` |
+| `size` | `default`, `sm`, `lg` | `default` |
+| `state` | Stateful variant state: `read`, `unread`, `attention` | `unread` |
+| `button-type` | `button`, `submit`, `reset` (button element only) | `button` |
+| `component` | Root element: `button`, `a`, or `span` | `button` |
+| `href` | Link target when `component="a"` | — |
+| `is-block` | Full-width block button | `false` |
+| `is-disabled` | Disabled styling and `disabled` attribute | `false` |
+| `is-aria-disabled` | Disabled styling with `aria-disabled` | `false` |
+| `is-loading` | Progress/spinner styling | `false` |
+| `is-danger` | Danger styling on secondary/link variants | `false` |
+| `is-inline` | Inline link styling | `false` |
+| `is-favorite` / `is-favorited` | Favorite button styling | `false` |
+| `is-settings` / `is-hamburger` | Animated icon button variants | `false` |
+| `hamburger-variant` | `expand` or `collapse` with hamburger | — |
+| `is-circle` | Circle icon button | `false` |
+| `count` | Badge count (with `count-read` for read state) | — |
 
-**Example**
+**Examples**
 
 ```html
-<shadow-dom-button label="Shadow DOM Button"></shadow-dom-button>
+<shadow-dom-button label="Primary" variant="primary"></shadow-dom-button>
+<shadow-dom-button label="Secondary" variant="secondary"></shadow-dom-button>
+<shadow-dom-button label="Danger" variant="danger"></shadow-dom-button>
+<shadow-dom-button label="Small" variant="primary" size="sm"></shadow-dom-button>
+<shadow-dom-button label="Loading" variant="primary" is-loading></shadow-dom-button>
+<shadow-dom-button label="Issues" variant="primary" count="7"></shadow-dom-button>
 ```
+
+Class names are built by `components/pf-button-class-names.js`, matching PatternFly React modifier classes (`pf-m-primary`, `pf-m-small`, `pf-m-progress`, etc.).
 
 ## PatternFly CSS
 
@@ -101,9 +129,7 @@ This POC uses the full `patternfly.css` bundle (base styles, tokens, fonts, and 
 | Location | Source |
 |----------|--------|
 | **`index.html`** | Local: `node_modules/@patternfly/patternfly/patternfly.css` |
-| **`shadow-dom-button.js`** | CDN: `https://cdn.jsdelivr.net/npm/@patternfly/patternfly/patternfly.css` |
-
-The page and light DOM button use the local npm package. The shadow DOM component loads PatternFly from jsDelivr inside its shadow root, since global styles do not penetrate the shadow boundary.
+The shadow DOM component loads the same local `patternfly.css` bundle inside its shadow root via `<link>`, matching `index.html` for identical button styles.
 
 If you prefer a smaller CSS payload, you can use `patternfly-base.css` plus individual component files (for example `components/Button/button.css`) instead of the full bundle.
 

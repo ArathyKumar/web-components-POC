@@ -5,19 +5,13 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Web Components POC</title>
 
-    <!--
-      Full PatternFly bundle: base styles (resets, tokens, fonts) plus component CSS.
-      Styles here apply globally to plain HTML and light DOM custom elements.
-      Shadow DOM components must load their own PatternFly copy inside the shadow root.
-      Global theme overrides use :root tokens in styles/theme.css (they inherit into shadow DOM).
-    -->
+    <!-- Page layout and typography; button styles load inside shadow-dom-button -->
     <link
       rel="stylesheet"
       href="node_modules/@patternfly/patternfly/patternfly.css"
     />
     <link rel="stylesheet" href="styles/theme.css" />
 
-    <!-- Page layout using PatternFly design tokens for spacing, color, and typography -->
     <style>
       body {
         margin: 0;
@@ -29,7 +23,7 @@
       }
 
       main {
-        max-width: 42rem;
+        max-width: 56rem;
         margin: 0 auto;
         padding: var(--pf-t--global--spacer--xl);
         background-color: var(--pf-t--global--background--color--primary--default);
@@ -40,47 +34,336 @@
         margin: 0 0 var(--pf-t--global--spacer--md);
       }
 
-      p {
+      .intro {
         margin: 0 0 var(--pf-t--global--spacer--xl);
       }
 
-      /* Stack demo buttons vertically with consistent spacing */
-      .demo-buttons {
+      .demo-section {
+        margin-bottom: var(--pf-t--global--spacer--2xl);
+      }
+
+      .demo-section h2 {
+        margin: 0 0 var(--pf-t--global--spacer--md);
+        font-size: var(--pf-t--global--font--size--heading--sm);
+        font-weight: var(--pf-t--global--font--weight--heading--default);
+      }
+
+      .demo-row {
         display: flex;
+        flex-wrap: wrap;
+        align-items: center;
+        gap: var(--pf-t--global--spacer--md);
+      }
+
+      .demo-row--stack {
         flex-direction: column;
         align-items: flex-start;
-        gap: var(--pf-t--global--spacer--md);
-        padding-top: var(--pf-t--global--spacer--sm);
+      }
+
+      .demo-row--block {
+        width: 100%;
+      }
+
+      .demo-inline-text {
+        max-width: 36rem;
+        line-height: var(--pf-t--global--font--line-height--body);
+      }
+
+      .demo-subsection {
+        display: flex;
+        flex-direction: column;
+        gap: var(--pf-t--global--spacer--sm);
+      }
+
+      .demo-subsection strong {
+        font-weight: var(--pf-t--global--font--weight--heading--default);
       }
     </style>
   </head>
   <body>
     <main>
       <h1 class="pf-v6-c-title pf-m-3xl">Web Components POC</h1>
-      <p>
-        This page compares three ways to render a PatternFly primary button:
-        plain HTML, a Lit light DOM element, and a Lit shadow DOM element.
-        The HTML button and light DOM component use global PatternFly CSS from
-        this page. The shadow
-        DOM element encapsulates its markup and loads PatternFly CSS from the
-        jsDelivr CDN inside its shadow root.
+      <p class="intro">
+        PatternFly button variants below mirror
+        <a href="https://www.patternfly.org/components/button">patternfly.org/components/button</a>
+        and the
+        <a href="https://github.com/patternfly/patternfly-react/tree/main/packages/react-core/src/components/Button">PatternFly React Button</a>,
+        implemented as <code>&lt;shadow-dom-button&gt;</code> web components.
       </p>
 
-      <div class="demo-buttons">
-        <!-- Plain HTML button: styled directly by global PatternFly CSS -->
-        <button class="pf-v6-c-button pf-m-primary" type="submit">
-          <span class="pf-v6-c-button__text">HTML Button</span>
-        </button>
+      <section class="demo-section">
+        <h2>Variants</h2>
+        <div id='basic-buttons' class="demo-row">
+          <shadow-dom-button label="Primary" variant="primary"></shadow-dom-button>
+          <shadow-dom-button label="Secondary" variant="secondary"></shadow-dom-button>
+          <shadow-dom-button label="Danger" variant="danger"></shadow-dom-button>
+          <shadow-dom-button label="Danger secondary" variant="secondary" is-danger></shadow-dom-button>
+          <shadow-dom-button label="Tertiary" variant="tertiary"></shadow-dom-button>
+          <shadow-dom-button label="Warning" variant="warning"></shadow-dom-button>
+          <shadow-dom-button label="Link" variant="link"></shadow-dom-button>
+          <shadow-dom-button label="Inline link" variant="link" is-inline></shadow-dom-button>
+          <shadow-dom-button label="Danger link" variant="link" is-danger></shadow-dom-button>
+          <shadow-dom-button label="Control" variant="control"></shadow-dom-button>
+        </div>
+      </section>
 
-        <!-- Light DOM custom element: no shadow root, inherits global styles -->
-        <light-dom-button label="Light DOM Button"></light-dom-button>
+      <section class="demo-section">
+        <h2>Stateful</h2>
+        <div class="demo-row">
+          <div class="demo-subsection">
+            <strong>Read</strong>
+            <shadow-dom-button
+              variant="stateful"
+              state="read"
+              icon="notification"
+              label="10"
+              sr-text="items"
+            ></shadow-dom-button>
+          </div>
+          <div class="demo-subsection">
+            <strong>Unread</strong>
+            <shadow-dom-button
+              variant="stateful"
+              state="unread"
+              icon="notification"
+              label="10"
+              sr-text="unread items"
+            ></shadow-dom-button>
+          </div>
+          <div class="demo-subsection">
+            <strong>Attention</strong>
+            <shadow-dom-button
+              variant="stateful"
+              state="attention"
+              icon="notification"
+              label="10"
+              sr-text="unread items, needs attention"
+            ></shadow-dom-button>
+          </div>
+        </div>
+      </section>
 
-        <!-- Shadow DOM custom element: styles loaded inside its shadow root -->
-        <shadow-dom-button label="Shadow DOM Button"></shadow-dom-button>
-      </div>
+      <section class="demo-section">
+        <h2>Small</h2>
+        <div class="demo-row">
+          <shadow-dom-button label="Primary" variant="primary" size="sm"></shadow-dom-button>
+          <shadow-dom-button label="Secondary" variant="secondary" size="sm"></shadow-dom-button>
+          <shadow-dom-button label="Tertiary" variant="tertiary" size="sm"></shadow-dom-button>
+          <shadow-dom-button label="Danger" variant="danger" size="sm"></shadow-dom-button>
+          <shadow-dom-button label="Warning" variant="warning" size="sm"></shadow-dom-button>
+        </div>
+      </section>
+
+      <section class="demo-section">
+        <h2>Call to action (large)</h2>
+        <div class="demo-row">
+          <shadow-dom-button label="Call to action" variant="primary" size="lg"></shadow-dom-button>
+          <shadow-dom-button label="Call to action" variant="secondary" size="lg"></shadow-dom-button>
+          <shadow-dom-button label="Call to action" variant="tertiary" size="lg"></shadow-dom-button>
+          <shadow-dom-button label="Call to action" variant="link" size="lg"></shadow-dom-button>
+        </div>
+      </section>
+
+      <section class="demo-section">
+        <h2>Block and count</h2>
+        <div class="demo-row demo-row--stack demo-row--block">
+          <shadow-dom-button label="Block level button" variant="primary" is-block></shadow-dom-button>
+          <shadow-dom-button label="Issues" variant="primary" count="7"></shadow-dom-button>
+          <shadow-dom-button label="Issues" variant="primary" count="10" count-read></shadow-dom-button>
+        </div>
+      </section>
+
+      <section class="demo-section">
+        <h2>Progress indicators</h2>
+        <div class="demo-row">
+          <shadow-dom-button
+            id="primary-progress-btn"
+            button-id="primary-loading-button"
+            variant="primary"
+            label="Click to stop loading"
+            is-loading
+            spinner-aria-value-text="Loading"
+            spinner-aria-labelledby="primary-loading-button"
+          ></shadow-dom-button>
+          <shadow-dom-button
+            id="secondary-progress-btn"
+            variant="secondary"
+            label="Click to stop loading"
+            is-loading
+            spinner-aria-value-text="Loading"
+            spinner-aria-label="Content being loaded"
+          ></shadow-dom-button>
+        </div>
+        <div class="demo-row">
+          <shadow-dom-button
+            id="plain-upload-progress-btn"
+            variant="plain"
+            icon="upload"
+            aria-label="Upload"
+            spinner-aria-value-text="Loading"
+            spinner-aria-label="Uploading data"
+          ></shadow-dom-button>
+        </div>
+        <div class="demo-row">
+          <shadow-dom-button
+            id="inline-link-progress-btn"
+            variant="link"
+            is-inline
+            label="Pause loading logs"
+            is-loading
+            spinner-aria-value-text="Loading"
+            spinner-aria-label="Content being loaded"
+          ></shadow-dom-button>
+        </div>
+      </section>
+
+      <section class="demo-section">
+        <h2>Disabled and aria-disabled</h2>
+        <div class="demo-row">
+          <shadow-dom-button label="Primary disabled" variant="primary" is-disabled></shadow-dom-button>
+          <shadow-dom-button label="Primary aria-disabled" variant="primary" is-aria-disabled></shadow-dom-button>
+          <shadow-dom-button label="Inline link aria-disabled" variant="link" is-inline is-aria-disabled></shadow-dom-button>
+        </div>
+      </section>
+
+      <section class="demo-section">
+        <h2>Links as buttons</h2>
+        <div class="demo-row">
+          <shadow-dom-button
+            label="Link to PatternFly home"
+            variant="link"
+            component="a"
+            href="https://www.patternfly.org/"
+          ></shadow-dom-button>
+          <shadow-dom-button
+            label="Secondary link"
+            variant="secondary"
+            component="a"
+            href="https://www.patternfly.org/"
+          ></shadow-dom-button>
+        </div>
+      </section>
+
+      <section class="demo-section">
+        <h2>Favorite</h2>
+        <div class="demo-row">
+          <shadow-dom-button
+            id="favorite-btn"
+            variant="plain"
+            is-favorite
+            aria-label="Favorite example not favorited"
+          ></shadow-dom-button>
+        </div>
+      </section>
+
+      <section class="demo-section">
+        <h2>Plain, settings, and hamburger</h2>
+        <div class="demo-row">
+          <shadow-dom-button variant="plain" is-settings aria-label="Settings"></shadow-dom-button>
+          <shadow-dom-button
+            variant="plain"
+            is-hamburger
+            hamburger-variant="expand"
+            aria-label="Expand"
+          ></shadow-dom-button>
+          <shadow-dom-button
+            variant="plain"
+            is-hamburger
+            hamburger-variant="collapse"
+            aria-label="Collapse"
+          ></shadow-dom-button>
+        </div>
+
+        <p class="demo-inline-text">
+          Plain with no padding inline:
+          <shadow-dom-button variant="plain" has-no-padding aria-label="Inline plain" is-favorite></shadow-dom-button>
+          with surrounding text.
+        </p>
+      </section>
+
+      <section class="demo-section">
+        <h2>Circle buttons</h2>
+        <div class="demo-row">
+          <shadow-dom-button
+            is-circle
+            icon="add-circle"
+            aria-label="Add primary circle variant example"
+          ></shadow-dom-button>
+          <shadow-dom-button
+            variant="secondary"
+            is-circle
+            icon="add-circle"
+            aria-label="Add secondary circle variant example"
+          ></shadow-dom-button>
+          <shadow-dom-button
+            variant="tertiary"
+            is-circle
+            icon="add-circle"
+            aria-label="Add tertiary circle variant example"
+          ></shadow-dom-button>
+          <shadow-dom-button
+            variant="danger"
+            is-circle
+            icon="add-circle"
+            aria-label="Add danger circle variant example"
+          ></shadow-dom-button>
+          <shadow-dom-button
+            variant="warning"
+            is-circle
+            icon="add-circle"
+            aria-label="Add warning circle variant example"
+          ></shadow-dom-button>
+          <shadow-dom-button
+            variant="link"
+            is-circle
+            icon="add-circle"
+            aria-label="Add link circle variant example"
+          ></shadow-dom-button>
+          <shadow-dom-button
+            variant="control"
+            is-circle
+            icon="copy"
+            aria-label="Copy control circle variant example"
+          ></shadow-dom-button>
+          <shadow-dom-button
+            variant="plain"
+            is-circle
+            icon="close"
+            aria-label="Remove plain circle variant example"
+          ></shadow-dom-button>
+          <shadow-dom-button
+            variant="stateful"
+            is-circle
+            icon="notification"
+            aria-label="Stateful unread circle variant example"
+          ></shadow-dom-button>
+          <shadow-dom-button
+            variant="stateful"
+            state="read"
+            is-circle
+            icon="notification"
+            aria-label="Stateful read circle variant example"
+          ></shadow-dom-button>
+          <shadow-dom-button
+            variant="stateful"
+            state="attention"
+            is-circle
+            icon="notification"
+            aria-label="Stateful attention circle variant example"
+          ></shadow-dom-button>
+          <shadow-dom-button
+            id="upload-circle-btn"
+            variant="plain"
+            is-circle
+            icon="upload"
+            aria-label="Upload circle variant example"
+            spinner-aria-label="Uploading circle variant example data"
+            spinner-aria-value-text="Loading circle variant example"
+          ></shadow-dom-button>
+        </div>
+      </section>
     </main>
 
-    <!-- Resolve Lit and its dependencies for native ES modules in the browser -->
     <script type="importmap">
       {
         "imports": {
@@ -96,8 +379,62 @@
       }
     </script>
 
-    <!-- ES module scripts (Lit); use npm run dev -->
-    <script type="module" src="components/light-dom-button.js"></script>
     <script type="module" src="components/shadow-dom-button.js"></script>
+    <script type="module">
+      const favoriteButton = document.getElementById('favorite-btn');
+
+      favoriteButton.addEventListener('favorite-change', (event) => {
+        favoriteButton.ariaLabel = event.detail.isFavorited
+          ? 'Favorite example favorited'
+          : 'Favorite example not favorited';
+      });
+
+      const toggleLoadingButton = (button, loadingLabel, idleLabel) => {
+        button.addEventListener('click', () => {
+          button.isLoading = !button.isLoading;
+          button.label = button.isLoading ? loadingLabel : idleLabel;
+        });
+      };
+
+      toggleLoadingButton(
+        document.getElementById('primary-progress-btn'),
+        'Click to stop loading',
+        'Click to start loading'
+      );
+      toggleLoadingButton(
+        document.getElementById('secondary-progress-btn'),
+        'Click to stop loading',
+        'Click to start loading'
+      );
+      toggleLoadingButton(
+        document.getElementById('inline-link-progress-btn'),
+        'Pause loading logs',
+        'Resume loading logs'
+      );
+
+      const plainUploadProgressBtn = document.getElementById('plain-upload-progress-btn');
+
+      plainUploadProgressBtn.addEventListener('click', () => {
+        plainUploadProgressBtn.isLoading = !plainUploadProgressBtn.isLoading;
+
+        if (plainUploadProgressBtn.isLoading) {
+          plainUploadProgressBtn.removeAttribute('aria-label');
+        } else {
+          plainUploadProgressBtn.ariaLabel = 'Upload';
+        }
+      });
+
+      const uploadButton = document.getElementById('upload-circle-btn');
+
+      uploadButton.addEventListener('click', () => {
+        uploadButton.isLoading = !uploadButton.isLoading;
+
+        if (uploadButton.isLoading) {
+          uploadButton.removeAttribute('aria-label');
+        } else {
+          uploadButton.setAttribute('aria-label', 'Upload circle variant example');
+        }
+      });
+    </script>
   </body>
 </html>
