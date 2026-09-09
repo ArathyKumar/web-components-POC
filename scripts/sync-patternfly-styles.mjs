@@ -24,6 +24,6 @@ for (const { source, output } of styleFiles) {
 export default ${JSON.stringify(css)};
 `;
 
-  writeFileSync(join(root, 'components', output), contents);
-  console.log(`Wrote components/${output}`);
+  writeFileSync(join(root, 'styles', output), contents);
+  console.log(`Wrote styles/${output}`);
 }

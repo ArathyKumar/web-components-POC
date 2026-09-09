@@ -1,5 +1,5 @@
-import { PfButtonCore } from './pf-button-core.js';
-import { adoptPatternFlyShadowStyles } from './pf-adopted-styles-shadow.js';
+import { PfButtonCore } from './pf-button/pf-button-core.js';
+import { adoptPatternFlyShadowStyles } from '../styles/pf-adopted-styles-shadow.js';
 
 /** Custom element tag name for the shadow DOM button. */
 export const ELEMENT_TAG = 'pf-button-shadow';

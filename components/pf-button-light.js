@@ -1,5 +1,5 @@
-import { PfButtonCore } from './pf-button-core.js';
-import { adoptPatternFlyLightHostStyles } from './pf-adopted-styles-light.js';
+import { PfButtonCore } from './pf-button/pf-button-core.js';
+import { adoptPatternFlyLightHostStyles } from '../styles/pf-adopted-styles-light.js';
 
 /** Custom element tag name for the light DOM button. */
 export const ELEMENT_TAG = 'pf-button-light';

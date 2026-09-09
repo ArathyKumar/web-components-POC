@@ -9,7 +9,7 @@ Production-ready PatternFly buttons as [Lit](https://lit.dev/) web components.
 | Light DOM | `<pf-button-light>` | No | Global `patternfly.css` + scoped host overrides |
 | Shadow DOM | `<pf-button-shadow>` | Yes | Encapsulated adopted stylesheet (synced from `@patternfly/patternfly`) |
 
-**`<pf-button-shadow>`** and **`<pf-button-light>`** share behavior via `pf-button-core.js` (internal — not registered as a custom element). Load `patternfly.css` globally for design tokens.
+**`<pf-button-shadow>`** and **`<pf-button-light>`** share behavior via `components/pf-button/pf-button-core.js` (internal — not registered as a custom element). Load `patternfly.css` globally for design tokens.
 
 ## Prerequisites
 
@@ -145,8 +145,8 @@ Exported parts: `control`, `icon`, `icon-favorite`, `icon-favorited`, `text`, `s
 
 | Concern | Shadow DOM | Light DOM |
 |---------|------------|-----------|
-| Component CSS | `pf-adopted-styles-shadow.js` (synced from package) | Global `patternfly.css` |
-| Host overrides | Inside shadow root | `pf-adopted-styles-light.js` (scoped to `pf-button-light`) |
+| Component CSS | `styles/pf-adopted-styles-shadow.js` (synced from package) | Global `patternfly.css` |
+| Host overrides | Inside shadow root | `styles/pf-adopted-styles-light.js` (scoped to `pf-button-light`) |
 | Tokens / theme | Global `patternfly.css` on `:root` | Global `patternfly.css` on `:root` |
 
 Sync vendored CSS after upgrading PatternFly:
@@ -196,20 +196,21 @@ See `index.html` for full PatternFly doc examples.
 
 ```
 components/
-├── pf-button-core.js            # Shared logic (not registered)
-├── pf-button-shadow.js          # Shadow DOM implementation
-├── pf-button-light.js           # Light DOM implementation
+├── pf-button-shadow.js     # Shadow DOM implementation
+├── pf-button-light.js      # Light DOM implementation
+└── pf-button/              # Shared button implementation
+    ├── pf-button-core.js       # Shared logic (not registered)
+    ├── pf-button-class-names.js
+    └── pf-button-icons.js
+styles/
+├── theme.css               # Brand token overrides
 ├── pf-adopted-styles-shadow.js  # Encapsulated component + host styles
 ├── pf-adopted-styles-light.js   # Scoped host overrides
-├── pf-button-class-names.js
-├── pf-button-icons.js
-├── button-styles.js             # Auto-generated from @patternfly/patternfly
+├── button-styles.js        # Auto-generated from @patternfly/patternfly
 ├── spinner-styles.js
 └── badge-styles.js
 scripts/
 └── sync-patternfly-styles.mjs
-styles/
-└── theme.css
 ```
 
 ## License
