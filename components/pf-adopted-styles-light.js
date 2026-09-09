@@ -59,6 +59,10 @@ pf-button-light[circle] {
 let lightSheet = null;
 let lightHostStylesAdopted = false;
 
+/**
+ * Lazily creates and caches the constructable stylesheet for light DOM host overrides.
+ * @returns {CSSStyleSheet}
+ */
 function getLightHostSheet() {
   if (!lightSheet) {
     lightSheet = new CSSStyleSheet();

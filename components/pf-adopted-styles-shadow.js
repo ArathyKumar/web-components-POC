@@ -62,6 +62,10 @@ const SHADOW_CSS = [SHADOW_HOST_STYLES, COMPONENT_STYLES].join('\n');
 
 let shadowSheet = null;
 
+/**
+ * Lazily creates and caches the shared constructable stylesheet for shadow roots.
+ * @returns {CSSStyleSheet}
+ */
 function getShadowSheet() {
   if (!shadowSheet) {
     shadowSheet = new CSSStyleSheet();
@@ -70,6 +74,10 @@ function getShadowSheet() {
   return shadowSheet;
 }
 
+/**
+ * Adopts the shared stylesheet on a shadow root, with a <style> fallback for older browsers.
+ * @param {ShadowRoot} shadowRoot
+ */
 function adoptSheetOnShadowRoot(shadowRoot) {
   if (typeof CSSStyleSheet !== 'undefined' && 'adoptedStyleSheets' in shadowRoot) {
     const sheet = getShadowSheet();
@@ -92,6 +100,7 @@ function adoptSheetOnShadowRoot(shadowRoot) {
 /**
  * Adopts encapsulated PatternFly button/spinner/badge styles into a shadow root.
  * Design tokens must be available on the document (load patternfly.css globally).
+ * @param {ShadowRoot} shadowRoot
  */
 export function adoptPatternFlyShadowStyles(shadowRoot) {
   if (!shadowRoot) {

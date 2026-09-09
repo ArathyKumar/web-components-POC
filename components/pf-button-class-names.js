@@ -1,6 +1,28 @@
 /**
  * Maps button options to PatternFly core (pf-v6-c-button) class names.
  * @see https://www.patternfly.org/components/button
+ * @param {object} options
+ * @param {string} [options.variant='primary']
+ * @param {string} [options.size='default']
+ * @param {string} [options.state='unread']
+ * @param {string} [options.className='']
+ * @param {boolean} [options.block=false]
+ * @param {boolean} [options.disabled=false]
+ * @param {boolean} [options.ariaDisabled=false]
+ * @param {boolean} [options.loading=false]
+ * @param {boolean} [options.clicked=false]
+ * @param {boolean} [options.inline=false]
+ * @param {boolean} [options.danger=false]
+ * @param {boolean} [options.favorite=false]
+ * @param {boolean} [options.favorited=false]
+ * @param {boolean} [options.noPadding=false]
+ * @param {boolean} [options.settings=false]
+ * @param {boolean} [options.hamburger=false]
+ * @param {string} [options.hamburgerVariant]
+ * @param {boolean} [options.circle=false]
+ * @param {boolean} [options.docked=false]
+ * @param {boolean} [options.textExpanded=false]
+ * @returns {string} Space-separated PatternFly BEM class list.
  */
 export function getPatternFlyButtonClassNames({
   variant = 'primary',

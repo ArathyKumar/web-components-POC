@@ -1,3 +1,7 @@
+/**
+ * Copies PatternFly component CSS from node_modules into JS modules
+ * for use with adoptedStyleSheets in shadow DOM buttons.
+ */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';

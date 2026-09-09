@@ -5,6 +5,12 @@ import { html } from 'lit';
  * @see https://github.com/patternfly/patternfly-react/tree/main/packages/react-core/src/components/Button
  */
 
+/**
+ * Creates a Lit SVG template for a PatternFly icon.
+ * @param {string} pathData SVG path d attribute.
+ * @param {string} [viewBox='0 0 32 32'] SVG viewBox.
+ * @returns {import('lit').TemplateResult}
+ */
 function pfIconSvg(pathData, viewBox = '0 0 32 32') {
   return html`
     <svg
@@ -80,6 +86,11 @@ const buttonIconMap = {
   upload: uploadIcon,
 };
 
+/**
+ * Returns a built-in icon template by name.
+ * @param {string} name Icon key (e.g. 'notification', 'upload').
+ * @returns {import('lit').TemplateResult | null}
+ */
 export function getButtonIcon(name) {
   return buttonIconMap[name] ?? null;
 }

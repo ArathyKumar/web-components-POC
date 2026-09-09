@@ -55,29 +55,35 @@ export class PfButtonCore extends LitElement {
     controlId: { type: String, attribute: 'control-id' },
   };
 
+  /** Attaches ElementInternals for form-associated custom element behavior. */
   constructor() {
     super();
     this.internals = this.attachInternals();
   }
 
+  /** Syncs initial form disabled state and form value on connect. */
   connectedCallback() {
     super.connectedCallback();
     this._syncFormDisabledState();
     this._syncFormValue();
   }
 
+  /** Delegates focus to the inner activator element (button, link, or span). */
   focus(options) {
     this._getControlElement()?.focus(options);
   }
 
+  /** Delegates blur to the inner activator element. */
   blur() {
     this._getControlElement()?.blur();
   }
 
+  /** FACE callback: mirrors the form's disabled state onto the host. */
   formDisabledCallback(disabled) {
     this.disabled = disabled;
   }
 
+  /** FACE callback: resets transient UI state when the associated form resets. */
   formResetCallback() {
     this.loading = false;
     this.favorited = false;
@@ -85,6 +91,10 @@ export class PfButtonCore extends LitElement {
     this.expanded = false;
   }
 
+  /**
+   * Reacts to property changes: favorite animation, form disabled sync, form value sync.
+   * @param {Map<string, unknown>} changedProperties
+   */
   updated(changedProperties) {
     if (changedProperties.has('favorited') && this.favorite && this.favorited) {
       this._replayFavoriteAnimation();
@@ -99,11 +109,13 @@ export class PfButtonCore extends LitElement {
     }
   }
 
+  /** Mirrors disabled / aria-disabled state to ElementInternals for form participation. */
   _syncFormDisabledState() {
     const disabled = this.disabled || this.ariaDisabled;
     this.internals.ariaDisabled = disabled;
   }
 
+  /** Sets or clears the form submission value via ElementInternals. */
   _syncFormValue() {
     if (this.name) {
       this.internals.setFormValue(this.value ?? '');
@@ -113,14 +125,29 @@ export class PfButtonCore extends LitElement {
     this.internals.setFormValue(null);
   }
 
+  /**
+   * Whether to use native shadow DOM slots for label/icon projection.
+   * Shadow buttons return true; light DOM overrides to false.
+   * @returns {boolean}
+   */
   _usesNativeSlots() {
     return true;
   }
 
+  /**
+   * Returns host child nodes eligible for default-slot projection.
+   * Overridden in light DOM to exclude the rendered control element.
+   * @returns {NodeListOf<ChildNode> | ChildNode[]}
+   */
   _getProjectableChildNodes() {
     return this.childNodes;
   }
 
+  /**
+   * Returns true when a node belongs in the default (label) slot.
+   * @param {Node} node
+   * @returns {boolean}
+   */
   _isDefaultSlotNode(node) {
     if (node.nodeType === Node.TEXT_NODE) {
       return Boolean(node.textContent?.trim());
@@ -132,6 +159,10 @@ export class PfButtonCore extends LitElement {
     return false;
   }
 
+  /**
+   * Collects default-slot nodes from the host or from the rendered text part (light DOM re-renders).
+   * @returns {ChildNode[]}
+   */
   _getDefaultSlotNodes() {
     const fromHost = [...this._getProjectableChildNodes()].filter((node) =>
       this._isDefaultSlotNode(node)
@@ -152,6 +183,10 @@ export class PfButtonCore extends LitElement {
     });
   }
 
+  /**
+   * Finds the icon slot element on the host or inside the rendered icon wrapper.
+   * @returns {Element | null}
+   */
   _getIconSlotNode() {
     return (
       this.querySelector('[slot="icon"]') ||
@@ -159,10 +194,15 @@ export class PfButtonCore extends LitElement {
     );
   }
 
+  /**
+   * Returns the inner activator element (button, anchor, or span with part="control").
+   * @returns {HTMLElement | null}
+   */
   _getControlElement() {
     return this.renderRoot?.querySelector('[part="control"]');
   }
 
+  /** Re-triggers the PatternFly favorited keyframe animation on the control element. */
   _replayFavoriteAnimation() {
     requestAnimationFrame(() => {
       const control = this._getControlElement();
@@ -176,6 +216,10 @@ export class PfButtonCore extends LitElement {
     });
   }
 
+  /**
+   * Resolves the associated form via ElementInternals or the form attribute ID.
+   * @returns {HTMLFormElement | null}
+   */
   _getAssociatedForm() {
     if (this.internals.form) {
       return this.internals.form;
@@ -188,6 +232,7 @@ export class PfButtonCore extends LitElement {
     return null;
   }
 
+  /** Dispatches a submit event on the associated form with this element as submitter. */
   _submitForm() {
     const form = this._getAssociatedForm();
     if (!form) {
@@ -212,11 +257,17 @@ export class PfButtonCore extends LitElement {
     }
   }
 
+  /** Calls reset() on the associated form. */
   _resetForm() {
     const form = this._getAssociatedForm();
     form?.reset();
   }
 
+  /**
+   * Dispatches a bubbling, composed custom event from the host.
+   * @param {string} name
+   * @param {Record<string, unknown>} detail
+   */
   _dispatchComponentEvent(name, detail) {
     this.dispatchEvent(
       new CustomEvent(name, {
@@ -227,6 +278,10 @@ export class PfButtonCore extends LitElement {
     );
   }
 
+  /**
+   * Returns true when the button can toggle loading state (loading flag or spinner ARIA attrs).
+   * @returns {boolean}
+   */
   _isProgressCapable() {
     return (
       this.loading ||
@@ -236,6 +291,7 @@ export class PfButtonCore extends LitElement {
     );
   }
 
+  /** Dispatches pf-activate and optional pf-favorite-change / pf-loading-change events. */
   _dispatchActivateEvents() {
     this._dispatchComponentEvent('pf-activate', {
       variant: this.variant || 'primary',
@@ -255,6 +311,10 @@ export class PfButtonCore extends LitElement {
     }
   }
 
+  /**
+   * Builds the PatternFly BEM class string for the activator element.
+   * @returns {string}
+   */
   _getClassNames() {
     return getPatternFlyButtonClassNames({
       variant: this.variant || 'primary',
@@ -280,19 +340,36 @@ export class PfButtonCore extends LitElement {
     });
   }
 
+  /**
+   * Returns the activator tag name from the `as` attribute.
+   * @returns {'button' | 'a' | 'span' | string}
+   */
   _getTagName() {
     return this.as || 'button';
   }
 
+  /**
+   * Returns the host button type for form behavior (button, submit, reset).
+   * @returns {string}
+   */
   _getButtonType() {
     return this.type || 'button';
   }
 
+  /**
+   * Returns true when aria-disabled should be rendered on the activator.
+   * Non-button activators also receive aria-disabled when natively disabled.
+   * @returns {boolean}
+   */
   _shouldRenderAriaDisabled() {
     const tag = this._getTagName();
     return this.ariaDisabled || (tag !== 'button' && this.disabled);
   }
 
+  /**
+   * Computes tabindex for the activator based on disabled state and inline span mode.
+   * @returns {number | null | undefined}
+   */
   _getTabIndex() {
     const tag = this._getTagName();
     if (this.disabled) {
@@ -307,10 +384,18 @@ export class PfButtonCore extends LitElement {
     return null;
   }
 
+  /**
+   * Returns true when the icon should appear after the label.
+   * @returns {boolean}
+   */
   _iconPositionAtEnd() {
     return this.iconPosition === 'end' || this.iconPosition === 'right';
   }
 
+  /**
+   * Returns true when default-slot label content is present.
+   * @returns {boolean}
+   */
   _hasDefaultSlotContent() {
     if (!this._usesNativeSlots()) {
       return this._getDefaultSlotNodes().length > 0;
@@ -319,10 +404,18 @@ export class PfButtonCore extends LitElement {
     return [...this._getProjectableChildNodes()].some((node) => this._isDefaultSlotNode(node));
   }
 
+  /**
+   * Returns true when a custom icon slot element is present.
+   * @returns {boolean}
+   */
   _hasIconSlotContent() {
     return Boolean(this._getIconSlotNode());
   }
 
+  /**
+   * Renders default-slot content via native slot (shadow) or moved DOM nodes (light).
+   * @returns {import('lit').TemplateResult | ChildNode[] | typeof nothing}
+   */
   _renderDefaultSlotContent() {
     if (this._usesNativeSlots()) {
       return html`<slot></slot>`;
@@ -332,6 +425,10 @@ export class PfButtonCore extends LitElement {
     return nodes.length ? nodes : nothing;
   }
 
+  /**
+   * Renders icon-slot content via native slot (shadow) or moved DOM node (light).
+   * @returns {import('lit').TemplateResult | Element | typeof nothing}
+   */
   _renderIconSlotContent() {
     if (this._usesNativeSlots()) {
       return html`<slot name="icon"></slot>`;
@@ -341,6 +438,10 @@ export class PfButtonCore extends LitElement {
     return iconNode ?? nothing;
   }
 
+  /**
+   * Returns true when any icon source is configured.
+   * @returns {boolean}
+   */
   _shouldRenderIcon() {
     return (
       this.favorite ||
@@ -352,6 +453,10 @@ export class PfButtonCore extends LitElement {
     );
   }
 
+  /**
+   * Renders the loading spinner markup inside the button progress region.
+   * @returns {import('lit').TemplateResult}
+   */
   _renderProgress() {
     const valueText = this.spinnerAriaValueText || 'Loading...';
     const hasLabelledBy = Boolean(this.spinnerAriaLabelledBy);
@@ -377,6 +482,10 @@ export class PfButtonCore extends LitElement {
     `;
   }
 
+  /**
+   * Returns the PatternFly icon position modifier class, or empty string for icon-only buttons.
+   * @returns {string}
+   */
   _getIconPositionClass() {
     const hasLabel = this._hasDefaultSlotContent();
     const isIconOnly =
@@ -394,6 +503,10 @@ export class PfButtonCore extends LitElement {
     return this._iconPositionAtEnd() ? 'pf-m-end' : 'pf-m-start';
   }
 
+  /**
+   * Renders the icon wrapper and its content (built-in, slotted, or variant-specific).
+   * @returns {import('lit').TemplateResult | null}
+   */
   _renderIcon() {
     if (!this._shouldRenderIcon()) {
       return null;
@@ -426,6 +539,10 @@ export class PfButtonCore extends LitElement {
     `;
   }
 
+  /**
+   * Renders the optional count badge beside the label/icon.
+   * @returns {import('lit').TemplateResult | null}
+   */
   _renderCount() {
     if (this.count == null) {
       return null;
@@ -440,6 +557,10 @@ export class PfButtonCore extends LitElement {
     `;
   }
 
+  /**
+   * Renders the label text region with default slot and optional screen-reader text.
+   * @returns {import('lit').TemplateResult | null}
+   */
   _renderLabel() {
     if (this.circle) {
       return null;
@@ -456,6 +577,10 @@ export class PfButtonCore extends LitElement {
     return html`<span class="pf-v6-c-button__text" part="text">${this._renderDefaultSlotContent()}${srText}</span>`;
   }
 
+  /**
+   * Assembles progress, icon, label, and count in the correct order.
+   * @returns {import('lit').TemplateResult}
+   */
   _renderButtonContent() {
     const progress = this.loading ? this._renderProgress() : null;
     const icon = this._renderIcon();
@@ -469,6 +594,10 @@ export class PfButtonCore extends LitElement {
     return html`${progress}${icon}${label}${count}`;
   }
 
+  /**
+   * Handles Enter and Space keyboard activation for span-based inline buttons.
+   * @param {KeyboardEvent} event
+   */
   _handleSpanKeydown(event) {
     if (this._getTagName() !== 'span') {
       return;
@@ -480,6 +609,10 @@ export class PfButtonCore extends LitElement {
     }
   }
 
+  /**
+   * Handles click on the activator: guards disabled state, submit/reset, and custom events.
+   * @param {MouseEvent} event
+   */
   _handleActivatorClick(event) {
     if (this.disabled || this.ariaDisabled) {
       event.preventDefault();
@@ -503,6 +636,11 @@ export class PfButtonCore extends LitElement {
     this._dispatchActivateEvents();
   }
 
+  /**
+   * Renders the outer activator element (button, anchor, or span) with all content.
+   * @param {string} [exportParts] Comma-separated exportparts list for shadow DOM theming.
+   * @returns {import('lit').TemplateResult}
+   */
   _renderControl(exportParts) {
     const classes = this._getClassNames();
     const content = this._renderButtonContent();
