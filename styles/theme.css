@@ -5,7 +5,7 @@
  * via var(--pf-t--global--color--brand--*) inside PatternFly CSS.
  *
  * CSS custom properties inherit into shadow DOM, so packaged shadow components
- * (for example shadow-dom-button.js) pick up these values without any changes
+ * (for example pf-button-shadow.js) pick up these values without any changes
  * to their source — as long as they use PatternFly tokens, not hard-coded colors.
  */
 /* #basic-buttons {

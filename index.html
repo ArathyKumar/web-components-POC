@@ -5,7 +5,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Web Components POC</title>
 
-    <!-- Page layout and typography; button styles load inside shadow-dom-button -->
+    <!-- Global PatternFly tokens and page layout; component styles load once via adoptedStyleSheets -->
     <link
       rel="stylesheet"
       href="node_modules/@patternfly/patternfly/patternfly.css"
@@ -88,22 +88,24 @@
         <a href="https://www.patternfly.org/components/button">patternfly.org/components/button</a>
         and the
         <a href="https://github.com/patternfly/patternfly-react/tree/main/packages/react-core/src/components/Button">PatternFly React Button</a>,
-        implemented as <code>&lt;shadow-dom-button&gt;</code> web components.
+        implemented as <code>&lt;pf-button-shadow&gt;</code> web components with form association,
+        <code>exportparts</code> theming, and custom events.
       </p>
 
       <section class="demo-section">
         <h2>Variants</h2>
         <div id='basic-buttons' class="demo-row">
-          <shadow-dom-button label="Primary" variant="primary"></shadow-dom-button>
-          <shadow-dom-button label="Secondary" variant="secondary"></shadow-dom-button>
-          <shadow-dom-button label="Danger" variant="danger"></shadow-dom-button>
-          <shadow-dom-button label="Danger secondary" variant="secondary" is-danger></shadow-dom-button>
-          <shadow-dom-button label="Tertiary" variant="tertiary"></shadow-dom-button>
-          <shadow-dom-button label="Warning" variant="warning"></shadow-dom-button>
-          <shadow-dom-button label="Link" variant="link"></shadow-dom-button>
-          <shadow-dom-button label="Inline link" variant="link" is-inline></shadow-dom-button>
-          <shadow-dom-button label="Danger link" variant="link" is-danger></shadow-dom-button>
-          <shadow-dom-button label="Control" variant="control"></shadow-dom-button>
+          <pf-button-shadow label="Primary" variant="primary"></pf-button-shadow>
+          <pf-button-shadow label="Secondary" variant="secondary"></pf-button-shadow>
+          <pf-button-shadow label="Danger" variant="danger"></pf-button-shadow>
+          <pf-button-shadow label="Danger secondary" variant="secondary" is-danger></pf-button-shadow>
+          <pf-button-shadow label="Tertiary" variant="tertiary"></pf-button-shadow>
+          <pf-button-shadow label="Warning" variant="warning"></pf-button-shadow>
+          <pf-button-shadow label="Link" variant="link"></pf-button-shadow>
+          <pf-button-shadow label="Inline link" variant="link" is-inline></pf-button-shadow>
+          <pf-button-shadow label="Danger link" variant="link" is-danger></pf-button-shadow>
+          <pf-button-shadow label="Control" variant="control"></pf-button-shadow>
+          <pf-button-shadow variant="primary">Slotted label</pf-button-shadow>
         </div>
       </section>
 
@@ -112,33 +114,33 @@
         <div class="demo-row">
           <div class="demo-subsection">
             <strong>Read</strong>
-            <shadow-dom-button
+            <pf-button-shadow
               variant="stateful"
               state="read"
               icon="notification"
               label="10"
               sr-text="items"
-            ></shadow-dom-button>
+            ></pf-button-shadow>
           </div>
           <div class="demo-subsection">
             <strong>Unread</strong>
-            <shadow-dom-button
+            <pf-button-shadow
               variant="stateful"
               state="unread"
               icon="notification"
               label="10"
               sr-text="unread items"
-            ></shadow-dom-button>
+            ></pf-button-shadow>
           </div>
           <div class="demo-subsection">
             <strong>Attention</strong>
-            <shadow-dom-button
+            <pf-button-shadow
               variant="stateful"
               state="attention"
               icon="notification"
               label="10"
               sr-text="unread items, needs attention"
-            ></shadow-dom-button>
+            ></pf-button-shadow>
           </div>
         </div>
       </section>
@@ -146,37 +148,37 @@
       <section class="demo-section">
         <h2>Small</h2>
         <div class="demo-row">
-          <shadow-dom-button label="Primary" variant="primary" size="sm"></shadow-dom-button>
-          <shadow-dom-button label="Secondary" variant="secondary" size="sm"></shadow-dom-button>
-          <shadow-dom-button label="Tertiary" variant="tertiary" size="sm"></shadow-dom-button>
-          <shadow-dom-button label="Danger" variant="danger" size="sm"></shadow-dom-button>
-          <shadow-dom-button label="Warning" variant="warning" size="sm"></shadow-dom-button>
+          <pf-button-shadow label="Primary" variant="primary" size="sm"></pf-button-shadow>
+          <pf-button-shadow label="Secondary" variant="secondary" size="sm"></pf-button-shadow>
+          <pf-button-shadow label="Tertiary" variant="tertiary" size="sm"></pf-button-shadow>
+          <pf-button-shadow label="Danger" variant="danger" size="sm"></pf-button-shadow>
+          <pf-button-shadow label="Warning" variant="warning" size="sm"></pf-button-shadow>
         </div>
       </section>
 
       <section class="demo-section">
         <h2>Call to action (large)</h2>
         <div class="demo-row">
-          <shadow-dom-button label="Call to action" variant="primary" size="lg"></shadow-dom-button>
-          <shadow-dom-button label="Call to action" variant="secondary" size="lg"></shadow-dom-button>
-          <shadow-dom-button label="Call to action" variant="tertiary" size="lg"></shadow-dom-button>
-          <shadow-dom-button label="Call to action" variant="link" size="lg"></shadow-dom-button>
+          <pf-button-shadow label="Call to action" variant="primary" size="lg"></pf-button-shadow>
+          <pf-button-shadow label="Call to action" variant="secondary" size="lg"></pf-button-shadow>
+          <pf-button-shadow label="Call to action" variant="tertiary" size="lg"></pf-button-shadow>
+          <pf-button-shadow label="Call to action" variant="link" size="lg"></pf-button-shadow>
         </div>
       </section>
 
       <section class="demo-section">
         <h2>Block and count</h2>
         <div class="demo-row demo-row--stack demo-row--block">
-          <shadow-dom-button label="Block level button" variant="primary" is-block></shadow-dom-button>
-          <shadow-dom-button label="Issues" variant="primary" count="7"></shadow-dom-button>
-          <shadow-dom-button label="Issues" variant="primary" count="10" count-read></shadow-dom-button>
+          <pf-button-shadow label="Block level button" variant="primary" is-block></pf-button-shadow>
+          <pf-button-shadow label="Issues" variant="primary" count="7"></pf-button-shadow>
+          <pf-button-shadow label="Issues" variant="primary" count="10" count-read></pf-button-shadow>
         </div>
       </section>
 
       <section class="demo-section">
         <h2>Progress indicators</h2>
         <div class="demo-row">
-          <shadow-dom-button
+          <pf-button-shadow
             id="primary-progress-btn"
             button-id="primary-loading-button"
             variant="primary"
@@ -184,28 +186,28 @@
             is-loading
             spinner-aria-value-text="Loading"
             spinner-aria-labelledby="primary-loading-button"
-          ></shadow-dom-button>
-          <shadow-dom-button
+          ></pf-button-shadow>
+          <pf-button-shadow
             id="secondary-progress-btn"
             variant="secondary"
             label="Click to stop loading"
             is-loading
             spinner-aria-value-text="Loading"
             spinner-aria-label="Content being loaded"
-          ></shadow-dom-button>
+          ></pf-button-shadow>
         </div>
         <div class="demo-row">
-          <shadow-dom-button
+          <pf-button-shadow
             id="plain-upload-progress-btn"
             variant="plain"
             icon="upload"
             aria-label="Upload"
             spinner-aria-value-text="Loading"
             spinner-aria-label="Uploading data"
-          ></shadow-dom-button>
+          ></pf-button-shadow>
         </div>
         <div class="demo-row">
-          <shadow-dom-button
+          <pf-button-shadow
             id="inline-link-progress-btn"
             variant="link"
             is-inline
@@ -213,70 +215,81 @@
             is-loading
             spinner-aria-value-text="Loading"
             spinner-aria-label="Content being loaded"
-          ></shadow-dom-button>
+          ></pf-button-shadow>
         </div>
+      </section>
+
+      <section class="demo-section">
+        <h2>Form association</h2>
+        <form id="demo-form" class="demo-row demo-row--stack">
+          <pf-button-shadow type="submit" name="action" value="save" variant="primary">
+            Submit form
+          </pf-button-shadow>
+          <pf-button-shadow type="reset" variant="secondary">Reset form</pf-button-shadow>
+          <output id="demo-form-output" for="demo-form" aria-live="polite"></output>
+        </form>
       </section>
 
       <section class="demo-section">
         <h2>Disabled and aria-disabled</h2>
         <div class="demo-row">
-          <shadow-dom-button label="Primary disabled" variant="primary" is-disabled></shadow-dom-button>
-          <shadow-dom-button label="Primary aria-disabled" variant="primary" is-aria-disabled></shadow-dom-button>
-          <shadow-dom-button label="Inline link aria-disabled" variant="link" is-inline is-aria-disabled></shadow-dom-button>
+          <pf-button-shadow label="Primary disabled" variant="primary" is-disabled></pf-button-shadow>
+          <pf-button-shadow label="Primary aria-disabled" variant="primary" is-aria-disabled></pf-button-shadow>
+          <pf-button-shadow label="Inline link aria-disabled" variant="link" is-inline is-aria-disabled></pf-button-shadow>
         </div>
       </section>
 
       <section class="demo-section">
         <h2>Links as buttons</h2>
         <div class="demo-row">
-          <shadow-dom-button
+          <pf-button-shadow
             label="Link to PatternFly home"
             variant="link"
             component="a"
             href="https://www.patternfly.org/"
-          ></shadow-dom-button>
-          <shadow-dom-button
+          ></pf-button-shadow>
+          <pf-button-shadow
             label="Secondary link"
             variant="secondary"
             component="a"
             href="https://www.patternfly.org/"
-          ></shadow-dom-button>
+          ></pf-button-shadow>
         </div>
       </section>
 
       <section class="demo-section">
         <h2>Favorite</h2>
         <div class="demo-row">
-          <shadow-dom-button
+          <pf-button-shadow
             id="favorite-btn"
             variant="plain"
             is-favorite
             aria-label="Favorite example not favorited"
-          ></shadow-dom-button>
+          ></pf-button-shadow>
         </div>
       </section>
 
       <section class="demo-section">
         <h2>Plain, settings, and hamburger</h2>
         <div class="demo-row">
-          <shadow-dom-button variant="plain" is-settings aria-label="Settings"></shadow-dom-button>
-          <shadow-dom-button
+          <pf-button-shadow variant="plain" is-settings aria-label="Settings"></pf-button-shadow>
+          <pf-button-shadow
             variant="plain"
             is-hamburger
             hamburger-variant="expand"
             aria-label="Expand"
-          ></shadow-dom-button>
-          <shadow-dom-button
+          ></pf-button-shadow>
+          <pf-button-shadow
             variant="plain"
             is-hamburger
             hamburger-variant="collapse"
             aria-label="Collapse"
-          ></shadow-dom-button>
+          ></pf-button-shadow>
         </div>
 
         <p class="demo-inline-text">
           Plain with no padding inline:
-          <shadow-dom-button variant="plain" has-no-padding aria-label="Inline plain" is-favorite></shadow-dom-button>
+          <pf-button-shadow variant="plain" has-no-padding aria-label="Inline plain" is-favorite></pf-button-shadow>
           with surrounding text.
         </p>
       </section>
@@ -284,74 +297,74 @@
       <section class="demo-section">
         <h2>Circle buttons</h2>
         <div class="demo-row">
-          <shadow-dom-button
+          <pf-button-shadow
             is-circle
             icon="add-circle"
             aria-label="Add primary circle variant example"
-          ></shadow-dom-button>
-          <shadow-dom-button
+          ></pf-button-shadow>
+          <pf-button-shadow
             variant="secondary"
             is-circle
             icon="add-circle"
             aria-label="Add secondary circle variant example"
-          ></shadow-dom-button>
-          <shadow-dom-button
+          ></pf-button-shadow>
+          <pf-button-shadow
             variant="tertiary"
             is-circle
             icon="add-circle"
             aria-label="Add tertiary circle variant example"
-          ></shadow-dom-button>
-          <shadow-dom-button
+          ></pf-button-shadow>
+          <pf-button-shadow
             variant="danger"
             is-circle
             icon="add-circle"
             aria-label="Add danger circle variant example"
-          ></shadow-dom-button>
-          <shadow-dom-button
+          ></pf-button-shadow>
+          <pf-button-shadow
             variant="warning"
             is-circle
             icon="add-circle"
             aria-label="Add warning circle variant example"
-          ></shadow-dom-button>
-          <shadow-dom-button
+          ></pf-button-shadow>
+          <pf-button-shadow
             variant="link"
             is-circle
             icon="add-circle"
             aria-label="Add link circle variant example"
-          ></shadow-dom-button>
-          <shadow-dom-button
+          ></pf-button-shadow>
+          <pf-button-shadow
             variant="control"
             is-circle
             icon="copy"
             aria-label="Copy control circle variant example"
-          ></shadow-dom-button>
-          <shadow-dom-button
+          ></pf-button-shadow>
+          <pf-button-shadow
             variant="plain"
             is-circle
             icon="close"
             aria-label="Remove plain circle variant example"
-          ></shadow-dom-button>
-          <shadow-dom-button
+          ></pf-button-shadow>
+          <pf-button-shadow
             variant="stateful"
             is-circle
             icon="notification"
             aria-label="Stateful unread circle variant example"
-          ></shadow-dom-button>
-          <shadow-dom-button
+          ></pf-button-shadow>
+          <pf-button-shadow
             variant="stateful"
             state="read"
             is-circle
             icon="notification"
             aria-label="Stateful read circle variant example"
-          ></shadow-dom-button>
-          <shadow-dom-button
+          ></pf-button-shadow>
+          <pf-button-shadow
             variant="stateful"
             state="attention"
             is-circle
             icon="notification"
             aria-label="Stateful attention circle variant example"
-          ></shadow-dom-button>
-          <shadow-dom-button
+          ></pf-button-shadow>
+          <pf-button-shadow
             id="upload-circle-btn"
             variant="plain"
             is-circle
@@ -359,7 +372,7 @@
             aria-label="Upload circle variant example"
             spinner-aria-label="Uploading circle variant example data"
             spinner-aria-value-text="Loading circle variant example"
-          ></shadow-dom-button>
+          ></pf-button-shadow>
         </div>
       </section>
     </main>
@@ -379,20 +392,23 @@
       }
     </script>
 
-    <script type="module" src="components/shadow-dom-button.js"></script>
+    <script type="module" src="components/pf-button-shadow.js"></script>
     <script type="module">
       const favoriteButton = document.getElementById('favorite-btn');
 
-      favoriteButton.addEventListener('favorite-change', (event) => {
-        favoriteButton.ariaLabel = event.detail.isFavorited
+      favoriteButton.addEventListener('pf-favorite-change', (event) => {
+        const { isFavorited } = event.detail;
+        favoriteButton.isFavorited = isFavorited;
+        favoriteButton.ariaLabel = isFavorited
           ? 'Favorite example favorited'
           : 'Favorite example not favorited';
       });
 
       const toggleLoadingButton = (button, loadingLabel, idleLabel) => {
-        button.addEventListener('click', () => {
-          button.isLoading = !button.isLoading;
-          button.label = button.isLoading ? loadingLabel : idleLabel;
+        button.addEventListener('pf-loading-change', (event) => {
+          const { isLoading } = event.detail;
+          button.isLoading = isLoading;
+          button.label = isLoading ? loadingLabel : idleLabel;
         });
       };
 
@@ -414,10 +430,11 @@
 
       const plainUploadProgressBtn = document.getElementById('plain-upload-progress-btn');
 
-      plainUploadProgressBtn.addEventListener('click', () => {
-        plainUploadProgressBtn.isLoading = !plainUploadProgressBtn.isLoading;
+      plainUploadProgressBtn.addEventListener('pf-loading-change', (event) => {
+        const { isLoading } = event.detail;
+        plainUploadProgressBtn.isLoading = isLoading;
 
-        if (plainUploadProgressBtn.isLoading) {
+        if (isLoading) {
           plainUploadProgressBtn.removeAttribute('aria-label');
         } else {
           plainUploadProgressBtn.ariaLabel = 'Upload';
@@ -426,14 +443,29 @@
 
       const uploadButton = document.getElementById('upload-circle-btn');
 
-      uploadButton.addEventListener('click', () => {
-        uploadButton.isLoading = !uploadButton.isLoading;
+      uploadButton.addEventListener('pf-loading-change', (event) => {
+        const { isLoading } = event.detail;
+        uploadButton.isLoading = isLoading;
 
-        if (uploadButton.isLoading) {
+        if (isLoading) {
           uploadButton.removeAttribute('aria-label');
         } else {
           uploadButton.setAttribute('aria-label', 'Upload circle variant example');
         }
+      });
+
+      const demoForm = document.getElementById('demo-form');
+      const demoFormOutput = document.getElementById('demo-form-output');
+
+      demoForm.addEventListener('submit', (event) => {
+        event.preventDefault();
+        const data = new FormData(demoForm);
+        const entries = [...data.entries()].map(([key, value]) => `${key}=${value}`).join(', ');
+        demoFormOutput.textContent = entries ? `Submitted: ${entries}` : 'Submitted (no fields)';
+      });
+
+      demoForm.addEventListener('reset', () => {
+        demoFormOutput.textContent = 'Form reset';
       });
     </script>
   </body>

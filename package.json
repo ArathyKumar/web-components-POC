@@ -1,8 +1,14 @@
 {
   "name": "web-components-poc",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Proof of concept for web components with PatternFly",
+  "description": "Production-ready PatternFly button web components with Lit",
+  "type": "module",
+  "exports": {
+    ".": "./components/pf-button-shadow.js",
+    "./pf-button-shadow": "./components/pf-button-shadow.js",
+    "./light-dom-button": "./components/light-dom-button.js"
+  },
   "scripts": {
     "dev": "npx http-server . -o -c-1"
   },

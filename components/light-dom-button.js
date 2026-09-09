@@ -16,7 +16,7 @@ export class LightDomButton extends LitElement {
     const label = this.label ?? DEFAULT_LABEL;
 
     return html`
-      <button class="pf-v6-c-button pf-m-primary" type="submit">
+      <button class="pf-v6-c-button pf-m-primary" type="button">
         <span class="pf-v6-c-button__text">${label}</span>
       </button>
     `;
