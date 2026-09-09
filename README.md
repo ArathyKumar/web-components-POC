@@ -1,22 +1,20 @@
 # Web Components POC
 
-Production-ready PatternFly buttons as [Lit](https://lit.dev/) web components with shadow DOM encapsulation.
+Production-ready PatternFly buttons as [Lit](https://lit.dev/) web components.
 
 ## Overview
 
 | Approach | Element | Shadow DOM | PatternFly styles |
 |----------|---------|------------|-------------------|
-| Light DOM | `<light-dom-button>` | No | Global CSS from the page |
-| Shadow DOM | `<pf-button-shadow>` | Yes | Shared adopted stylesheet (button, spinner, badge) |
+| Light DOM | `<pf-button-light>` | No | Global `patternfly.css` + scoped host overrides |
+| Shadow DOM | `<pf-button-shadow>` | Yes | Encapsulated adopted stylesheet (synced from `@patternfly/patternfly`) |
 
-**`<pf-button-shadow>`** mirrors the [PatternFly React Button](https://github.com/patternfly/patternfly-react/tree/main/packages/react-core/src/components/Button) API and is suitable for use in applications when PatternFly design tokens are loaded globally.
-
-The legacy tag `<pf-button>` is registered automatically when importing `pf-button-shadow.js`.
+**`<pf-button-shadow>`** and **`<pf-button-light>`** share behavior via `pf-button-core.js` (internal — not registered as a custom element). Load `patternfly.css` globally for design tokens.
 
 ## Prerequisites
 
 - [Node.js](https://nodejs.org/) (npm included)
-- A browser with support for shadow DOM and constructable stylesheets (fallback `<style>` tag is used when unavailable)
+- A browser with shadow DOM and constructable stylesheets (fallback `<style>` tag when unavailable)
 
 ## Getting Started
 
@@ -29,44 +27,44 @@ Open [http://127.0.0.1:8080](http://127.0.0.1:8080). Use the dev server — ES m
 
 ## Production usage
 
-### 1. Load PatternFly tokens globally (required once per page)
+### 1. Load PatternFly globally (required once per page)
 
-Design tokens (`--pf-t--*`) must be on the document so they inherit into shadow DOM:
+Design tokens (`--pf-t--*`) must be on the document so they inherit into shadow DOM. Light DOM also needs component CSS from this file:
 
 ```html
 <link rel="stylesheet" href="node_modules/@patternfly/patternfly/patternfly.css" />
-<!-- or, for a smaller payload: patternfly-base.css + fonts -->
 <link rel="stylesheet" href="styles/theme.css" />
 ```
 
 ### 2. Register the component
 
+**Shadow DOM (self-contained component styles):**
+
 ```html
 <script type="module" src="components/pf-button-shadow.js"></script>
+```
+
+**Light DOM (global PatternFly CSS required):**
+
+```html
+<link rel="stylesheet" href="node_modules/@patternfly/patternfly/patternfly.css" />
+<script type="module" src="components/pf-button-light.js"></script>
 ```
 
 With a bundler:
 
 ```javascript
 import 'components/pf-button-shadow.js';
+// or
+import 'components/pf-button-light.js';
 ```
 
 ### 3. Use in HTML
 
-**Attribute label (simple):**
+**Default slot (label content):**
 
 ```html
-<pf-button-shadow variant="primary">Primary</pf-button-shadow>
-<!-- or -->
-<pf-button-shadow label="Primary" variant="primary"></pf-button-shadow>
-```
-
-**Default slot (preferred for rich content):**
-
-```html
-<pf-button-shadow variant="primary">
-  Save changes
-</pf-button-shadow>
+<pf-button-shadow variant="primary">Save changes</pf-button-shadow>
 ```
 
 **Custom icon slot:**
@@ -87,28 +85,28 @@ The component does **not** toggle favorite or loading state internally. Listen f
 const btn = document.querySelector('#favorite-btn');
 
 btn.addEventListener('pf-favorite-change', (event) => {
-  const { isFavorited } = event.detail;
-  btn.isFavorited = isFavorited;
-  btn.ariaLabel = isFavorited ? 'Unfavorite' : 'Favorite';
+  const { favorited } = event.detail;
+  btn.favorited = favorited;
+  btn.ariaLabel = favorited ? 'Unfavorite' : 'Favorite';
 });
 
 btn.addEventListener('pf-loading-change', (event) => {
-  const { isLoading } = event.detail;
-  btn.isLoading = isLoading;
+  const { loading } = event.detail;
+  btn.loading = loading;
 });
 ```
 
 | Event | Detail | When |
 |-------|--------|------|
 | `pf-activate` | `{ variant, type }` | Every activation |
-| `pf-favorite-change` | `{ isFavorited }` | Favorite button activated |
-| `pf-loading-change` | `{ isLoading }` | Progress-capable button activated |
+| `pf-favorite-change` | `{ favorited }` | Favorite button activated |
+| `pf-loading-change` | `{ loading }` | Progress-capable button activated |
 
 All events bubble and are composed (`composed: true`).
 
 ## Forms
 
-`<pf-button-shadow>` is a [form-associated custom element](https://developer.mozilla.org/en-US/docs/Web/API/Element/attachInternals). Use `type`, `name`, `value`, and `form` like a native button. Submit and reset are handled on the host element via `form.requestSubmit(this)` so `name`/`value` participate correctly in submission.
+Both elements are [form-associated custom elements](https://developer.mozilla.org/en-US/docs/Web/API/Element/attachInternals). Use `type`, `name`, `value`, and `form` like a native button. Submit uses `SubmitEvent` with the host as `submitter`.
 
 ```html
 <form id="demo-form">
@@ -119,15 +117,7 @@ All events bubble and are composed (`composed: true`).
 </form>
 ```
 
-Link to an external form with the `form` attribute:
-
-```html
-<pf-button-shadow type="submit" form="demo-form" name="action" value="save">Submit</pf-button-shadow>
-```
-
-## Theming with `::part()`
-
-Shadow parts are exported for external styling without piercing encapsulation:
+## Theming with `::part()` (shadow only)
 
 ```css
 pf-button-shadow::part(control) {
@@ -139,24 +129,31 @@ pf-button-shadow::part(icon) {
 }
 ```
 
+For light DOM, style with attribute selectors: `pf-button-light [part="control"]`.
+
 Exported parts: `control`, `icon`, `icon-favorite`, `icon-favorited`, `text`, `sr-text`, `progress`, `spinner`, `count`, `badge`.
 
 ## Accessibility
 
 - Set `aria-label` on icon-only buttons.
 - Use `sr-text` for visually hidden supplementary label text (stateful counts).
-- `component="span"` inline buttons support **Enter** and **Space** activation.
+- `as="span"` inline buttons support **Enter** and **Space** activation.
+- Call `focus()` on the host to focus the inner control.
 - Progress spinners expose `spinner-aria-label`, `spinner-aria-labelledby`, and `spinner-aria-value-text`.
 
 ## Styling architecture
 
-| Concern | Implementation |
-|---------|----------------|
-| Component CSS | Single shared `CSSStyleSheet` via `adoptedStyleSheets` (`pf-adopted-styles.js`) |
-| Tokens / theme | Global `patternfly.css` or `patternfly-base.css` on `:root` |
-| Per-instance cost | One stylesheet adoption per shadow root (not one network fetch per button) |
+| Concern | Shadow DOM | Light DOM |
+|---------|------------|-----------|
+| Component CSS | `pf-adopted-styles-shadow.js` (synced from package) | Global `patternfly.css` |
+| Host overrides | Inside shadow root | `pf-adopted-styles-light.js` (scoped to `pf-button-light`) |
+| Tokens / theme | Global `patternfly.css` on `:root` | Global `patternfly.css` on `:root` |
 
-Override brand colors in `styles/theme.css` without editing the component — tokens inherit into shadow DOM.
+Sync vendored CSS after upgrading PatternFly:
+
+```bash
+npm run sync-styles
+```
 
 ## API reference
 
@@ -164,8 +161,7 @@ Override brand colors in `styles/theme.css` without editing the component — to
 
 | Attribute / slot | Description |
 |------------------|-------------|
-| Default slot | Button label (preferred) |
-| `label` | Label text (alternative to slot) |
+| Default slot | Button label (required for visible text) |
 | `slot="icon"` | Custom icon markup |
 | `icon` | Built-in icon name |
 | `sr-text` | Screen-reader-only text appended to label |
@@ -177,37 +173,43 @@ Override brand colors in `styles/theme.css` without editing the component — to
 | `variant` | `primary`, `secondary`, `tertiary`, `danger`, `warning`, `link`, `plain`, `control`, `stateful` | `primary` |
 | `size` | `default`, `sm`, `lg` | `default` |
 | `state` | `read`, `unread`, `attention` (stateful) | `unread` |
-| `is-block`, `is-danger`, `is-inline`, `is-circle`, … | Boolean flags | `false` |
+| `block`, `danger`, `inline`, `circle`, `favorite`, `loading`, … | Boolean flags | `false` |
 
 ### Form & behavior
 
 | Attribute | Description |
 |-----------|-------------|
 | `type` | `button`, `submit`, `reset` |
-| `button-type` | Legacy alias for `type` |
 | `name` | Form field name |
 | `value` | Form submission value |
 | `form` | ID of associated `<form>` |
-| `component` | `button`, `a`, or `span` |
-| `href` | Link URL when `component="a"` |
-| `is-disabled` | Native disabled state |
-| `is-aria-disabled` | `aria-disabled` styling |
-| `is-loading` | Progress spinner |
+| `as` | `button`, `a`, or `span` |
+| `href` | Link URL when `as="a"` |
+| `disabled` | Native disabled state |
+| `aria-disabled` | `aria-disabled` styling |
+| `loading` | Progress spinner |
+| `control-id` | `id` on the inner activator element |
 
-See `index.html` for full PatternFly doc examples (variants, stateful, progress, favorite, circle, etc.).
+See `index.html` for full PatternFly doc examples.
 
 ## Project structure
 
 ```
 components/
-├── pf-button-shadow.js     # Form-associated Lit button component (shadow DOM)
-├── pf-adopted-styles.js    # Shared adopted stylesheet loader
+├── pf-button-core.js            # Shared logic (not registered)
+├── pf-button-shadow.js          # Shadow DOM implementation
+├── pf-button-light.js           # Light DOM implementation
+├── pf-adopted-styles-shadow.js  # Encapsulated component + host styles
+├── pf-adopted-styles-light.js   # Scoped host overrides
 ├── pf-button-class-names.js
 ├── pf-button-icons.js
-├── button-styles.js        # PatternFly button.css
+├── button-styles.js             # Auto-generated from @patternfly/patternfly
 ├── spinner-styles.js
-├── badge-styles.js
-└── light-dom-button.js     # Light DOM comparison
+└── badge-styles.js
+scripts/
+└── sync-patternfly-styles.mjs
+styles/
+└── theme.css
 ```
 
 ## License

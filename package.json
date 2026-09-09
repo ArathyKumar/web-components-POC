@@ -7,10 +7,12 @@
   "exports": {
     ".": "./components/pf-button-shadow.js",
     "./pf-button-shadow": "./components/pf-button-shadow.js",
-    "./light-dom-button": "./components/light-dom-button.js"
+    "./pf-button-light": "./components/pf-button-light.js"
   },
   "scripts": {
-    "dev": "npx http-server . -o -c-1"
+    "dev": "npx http-server . -o -c-1",
+    "sync-styles": "node scripts/sync-patternfly-styles.mjs",
+    "postinstall": "npm run sync-styles"
   },
   "dependencies": {
     "@patternfly/patternfly": "^6.6.1",
