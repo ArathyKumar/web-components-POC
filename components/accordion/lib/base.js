@@ -1,6 +1,6 @@
 import { LitElement } from 'lit';
-import { getAccordionClassNames } from './pf-accordion-class-names.js';
-import { ACCORDION_TOGGLE_EVENT } from './pf-accordion-events.js';
+import { getAccordionClassNames } from './class-names.js';
+import { ACCORDION_TOGGLE_EVENT } from './events.js';
 
 /**
  * Shared accordion container behavior.

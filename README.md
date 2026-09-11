@@ -29,7 +29,7 @@ Open [http://127.0.0.1:8080](http://127.0.0.1:8080). ES modules and Lit imports 
 
 ```html
 <link rel="stylesheet" href="node_modules/@patternfly/patternfly/patternfly.css" />
-<link rel="stylesheet" href="styles/theme.css" />
+<link rel="stylesheet" href="styles/global/theme.css" />
 
 <script type="importmap">
   {
@@ -46,17 +46,17 @@ Open [http://127.0.0.1:8080](http://127.0.0.1:8080). ES modules and Lit imports 
   }
 </script>
 
-<script type="module" src="components/pf-button-shadow.js"></script>
+<script type="module" src="components/button/pf-button-shadow.js"></script>
 <!-- and/or -->
-<script type="module" src="components/pf-button-light.js"></script>
+<script type="module" src="components/button/pf-button-light.js"></script>
 ```
 
 With a bundler:
 
 ```javascript
-import 'components/pf-button-shadow.js';
+import 'web-components-poc/pf-button-shadow';
 // or
-import 'components/pf-button-light.js';
+import 'web-components-poc/pf-button-light';
 ```
 
 ## Shadow vs light DOM
@@ -64,7 +64,7 @@ import 'components/pf-button-light.js';
 ### `<pf-button-shadow>`
 
 - **Encapsulation:** Lit renders into an open shadow root. `this.shadowRoot` exists.
-- **Styles:** Full button/spinner/badge CSS is adopted into the shadow root via `styles/pf-adopted-styles-shadow.js`. Global `patternfly.css` is still required for design tokens (`--pf-t--*`) to resolve inside shadow.
+- **Styles:** Full button/spinner/badge CSS is adopted into the shadow root via `components/button/styles/adopted-shadow.js`. Global `patternfly.css` is still required for design tokens (`--pf-t--*`) to resolve inside shadow.
 - **Slots:** Native `<slot>` and `<slot name="icon">` project host children into the shadow tree.
 - **Theming:** `exportparts` on the activator enables `pf-button-shadow::part(control)` styling.
 - **Queries:** Activator is found via `this.renderRoot`; slotted children are queried on the host (`this`).
@@ -72,7 +72,7 @@ import 'components/pf-button-light.js';
 ### `<pf-button-light>`
 
 - **Encapsulation:** Lit renders directly onto the host (`createRenderRoot()` returns `this`). No shadow root.
-- **Styles:** Component CSS (`.pf-v6-c-button`, spinner, badge) must come from global `patternfly.css`. `styles/pf-adopted-styles-light.js` adds only scoped host overrides.
+- **Styles:** Component CSS (`.pf-v6-c-button`, spinner, badge) must come from global `patternfly.css`. `styles/adopted-light.js` adds only scoped host overrides.
 - **Slots:** Native `<slot>` does not work without a shadow root. Label and icon content are projected by passing host child nodes into the Lit template.
 - **Theming:** `part` attributes are plain markup hooks — use `pf-button-light [part="control"]`, not `::part()`.
 - **Queries:** Activator is found via `this.querySelector` on the host.
@@ -189,16 +189,16 @@ pf-button-light [part="control"] {
 }
 ```
 
-**Brand tokens** — override in `styles/theme.css` on `:root` or a container. Tokens inherit into shadow DOM automatically.
+**Brand tokens** — override in `styles/global/theme.css` on `:root` or a container. Tokens inherit into shadow DOM automatically.
 
 ## Styling architecture
 
 | Concern | Shadow DOM | Light DOM |
 |---------|------------|-----------|
-| Component CSS | `styles/pf-adopted-styles-shadow.js` / `pf-adopted-styles-shadow-accordion.js` | Global `patternfly.css` |
-| Host overrides | Inside shadow root (`:host` rules) | `styles/pf-adopted-styles-light.js` (scoped to component hosts) |
+| Component CSS | `components/*/styles/adopted-shadow.js` | Global `patternfly.css` |
+| Host overrides | Inside each component shadow root | `styles/adopted-light.js` (document-level) |
 | Design tokens | Global `patternfly.css` on `:root` | Global `patternfly.css` on `:root` |
-| Brand overrides | `styles/theme.css` | `styles/theme.css` |
+| Brand overrides | `styles/global/theme.css` | `styles/global/theme.css` |
 
 Sync vendored CSS after upgrading PatternFly:
 
@@ -258,87 +258,102 @@ See `index.html` for full PatternFly button doc examples (variants, sizes, progr
 
 ```
 web-components-POC/
-├── index.html                          # Demo page (shadow + light button variants)
-├── package.json                        # Dependencies, scripts, module exports
-├── package-lock.json
-├── README.md
+├── index.html
+├── package.json
+├── demos/                              # Per-component demo pages
+│   ├── button.html
+│   └── accordion.html
 │
 ├── components/
-│   ├── pf-button-shadow.js             # Shadow DOM button — full self-contained implementation
-│   ├── pf-button-light.js              # Light DOM button — full self-contained implementation
-│   └── pf-button/
-│       ├── pf-button-class-names.js    # Maps props → PatternFly BEM classes (shared)
-│       ├── pf-button-icons.js          # SVG icon templates (shared)
-│       └── pf-button-state.js          # Favorite/loading state sync (shared)
+│   ├── catalog.js                      # Front-page component registry
+│   ├── button/
+│   │   ├── pf-button-shadow.js         # Shadow DOM entry
+│   │   ├── pf-button-light.js          # Light DOM entry
+│   │   ├── index.js                    # Package re-exports
+│   │   ├── lib/                        # Shared logic (class names, icons, state)
+│   │   └── styles/                     # Synced PF CSS + adopted shadow/light fragments
+│   └── accordion/
+│       ├── pf-accordion-shadow.js
+│       ├── pf-accordion-light.js
+│       ├── index.js
+│       ├── lib/                        # Shared logic (base, item, context, …)
+│       └── styles/
 │
 ├── styles/
-│   ├── theme.css                       # Brand/component token overrides
-│   ├── pf-adopted-styles-shadow.js     # Shadow: bundles host + button/spinner/badge CSS for adoption
-│   ├── pf-adopted-styles-shadow-accordion.js # Shadow accordion adopted styles
-│   ├── pf-adopted-styles-light.js      # Light: scoped host overrides (buttons, accordions)
-│   ├── accordion-styles.js             # Auto-generated from @patternfly/patternfly (do not edit)
-│   ├── button-styles.js                # Auto-generated from @patternfly/patternfly (do not edit)
-│   ├── spinner-styles.js               # Auto-generated from @patternfly/patternfly (do not edit)
-│   └── badge-styles.js                 # Auto-generated from @patternfly/patternfly (do not edit)
+│   ├── adopted-light.js                # Document-level light DOM host overrides
+│   └── global/                         # Site-wide CSS (theme, layout, demo)
+│       ├── theme.css
+│       ├── site.css
+│       └── demo.css
 │
 └── scripts/
-    └── sync-patternfly-styles.mjs      # Copies PF CSS from node_modules into styles/*.js
+    ├── sync-patternfly-styles.mjs      # Syncs PF CSS into component style modules
+    └── render-catalog.js
 ```
+
+Each component folder is self-contained: entry files, shared `lib/`, and `styles/` (synced PatternFly CSS plus adopted shadow/light rules).
 
 ## File reference
 
-### Root
+### `components/button/`
 
-| File | Purpose |
+| Path | Purpose |
 |------|---------|
-| `index.html` | Interactive demo mirroring [PatternFly Button docs](https://www.patternfly.org/components/button). Side-by-side shadow and light DOM sections with variants, sizes, progress, favorites, forms, and icons. Includes Lit import map and form demo scripts. |
-| `package.json` | Project metadata. Exports `./pf-button-shadow` and `./pf-button-light`. Scripts: `dev`, `sync-styles`, `postinstall`. |
-| `package-lock.json` | Locked dependency versions. |
+| `pf-button-shadow.js` | Registers `<pf-button-shadow>` with shadow encapsulation and `exportparts`. |
+| `pf-button-light.js` | Registers `<pf-button-light>` in the light DOM. |
+| `lib/class-names.js` | Maps props → PatternFly BEM classes. |
+| `lib/icons.js` | SVG icon templates. |
+| `lib/state.js` | Favorite/loading state helpers. |
+| `styles/adopted-shadow.js` | Shadow adopted stylesheet (host + button/spinner/badge CSS). |
+| `styles/adopted-light.js` | Light host override CSS fragment for buttons. |
+| `styles/*-styles.js` | Auto-generated from PatternFly (do not edit). |
 
-### `components/`
+### `components/accordion/`
 
-| File | Purpose |
+| Path | Purpose |
 |------|---------|
-| `pf-button-shadow.js` | Registers `<pf-button-shadow>`. Creates a shadow root, adopts encapsulated PatternFly CSS, uses native `<slot>` for label/icon projection, and exposes `exportparts` for `::part()` theming. Form-associated (FACE). |
-| `pf-button-light.js` | Registers `<pf-button-light>`. Renders into the light DOM (no shadow root), relies on global `patternfly.css` for component styles, manually projects host children as label/icon content, and adopts scoped host overrides once per document. Form-associated (FACE). |
-| `pf-button/pf-button-class-names.js` | Shared utility: maps component properties to PatternFly `pf-v6-c-button` BEM modifier classes. Used by both shadow and light implementations. |
-| `pf-button/pf-button-icons.js` | Shared SVG icon templates (star, settings, hamburger, built-in icon map). Used by both implementations. |
-| `pf-button/pf-button-state.js` | Shared favorite/loading state: aria-label sync, progress presentation, auto-toggle properties, activation handlers. Used by both implementations. |
+| `pf-accordion-shadow.js` | Registers `<pf-accordion-shadow>` and `<pf-accordion-item-shadow>`. |
+| `pf-accordion-light.js` | Registers `<pf-accordion-light>` and `<pf-accordion-item-light>`. |
+| `lib/` | Shared accordion behavior, context, class names, and icons. |
+| `styles/adopted-shadow.js` | Shadow adopted stylesheet and plain/glass compat rules. |
+| `styles/adopted-light.js` | Light host override CSS fragment for accordions. |
+| `styles/accordion-styles.js` | Auto-generated from PatternFly (do not edit). |
 
 ### `styles/`
 
-| File | Purpose |
+| Path | Purpose |
 |------|---------|
-| `theme.css` | Optional brand/component token overrides on `:root` or component hosts. Linked globally in demos and `index.html`. |
-| `pf-adopted-styles-shadow.js` | Builds a constructable stylesheet from host overrides + synced button/spinner/badge CSS. Adopted into each `<pf-button-shadow>` shadow root via `adoptPatternFlyShadowStyles()`. |
-| `pf-adopted-styles-shadow-accordion.js` | Accordion shadow adopted styles and plain/glass compat rules. |
-| `pf-adopted-styles-light.js` | Scoped host overrides for light DOM component hosts (buttons, accordions). Adopted once onto `document.adoptedStyleSheets`. Does not include component CSS. |
-| `accordion-styles.js` | Auto-generated PatternFly `accordion.css`. Used inside accordion shadow roots. |
-| `button-styles.js` | Auto-generated PatternFly `button.css` as a JS string export. Source: `node_modules/@patternfly/patternfly/components/Button/button.css`. |
-| `spinner-styles.js` | Auto-generated PatternFly `spinner.css`. Used inside shadow root for loading state. |
-| `badge-styles.js` | Auto-generated PatternFly `badge.css`. Used inside shadow root for count badges. |
+| `adopted-light.js` | Combines component light host fragments; adopted once per document. |
+| `global/theme.css` | Brand/component token overrides. |
+| `global/site.css` | Site layout and catalog styles. |
+| `global/demo.css` | Demo page compare layout. |
 
 ### `scripts/`
 
-| File | Purpose |
+| Path | Purpose |
 |------|---------|
-| `sync-patternfly-styles.mjs` | Reads button, spinner, and badge CSS from `@patternfly/patternfly` in `node_modules` and writes `styles/button-styles.js`, `styles/spinner-styles.js`, and `styles/badge-styles.js`. Run via `npm run sync-styles` or automatically on `npm install`. |
+| `sync-patternfly-styles.mjs` | Writes synced CSS into `components/*/styles/*-styles.js`. |
+| `render-catalog.js` | Renders the component catalog on `index.html`. |
 
 ## npm scripts
 
 | Script | Command | Description |
 |--------|---------|-------------|
 | `dev` | `npx http-server . -o -c-1` | Start local dev server and open browser |
-| `sync-styles` | `node scripts/sync-patternfly-styles.mjs` | Regenerate `styles/*-styles.js` from PatternFly package |
+| `sync-styles` | `node scripts/sync-patternfly-styles.mjs` | Regenerate `components/*/styles/*-styles.js` from PatternFly |
 | `postinstall` | `npm run sync-styles` | Runs automatically after `npm install` |
 
 ## Module exports
 
 ```json
 {
-  ".": "./components/pf-button-shadow.js",
-  "./pf-button-shadow": "./components/pf-button-shadow.js",
-  "./pf-button-light": "./components/pf-button-light.js"
+  ".": "./components/button/pf-button-shadow.js",
+  "./pf-button-shadow": "./components/button/pf-button-shadow.js",
+  "./pf-button-light": "./components/button/pf-button-light.js",
+  "./button": "./components/button/index.js",
+  "./pf-accordion-shadow": "./components/accordion/pf-accordion-shadow.js",
+  "./pf-accordion-light": "./components/accordion/pf-accordion-light.js",
+  "./accordion": "./components/accordion/index.js"
 }
 ```
 

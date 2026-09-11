@@ -6,11 +6,11 @@ import {
   getAccordionToggleIconClassNames,
   getAccordionContentClassNames,
   getAccordionContentBodyClassNames,
-} from './pf-accordion-class-names.js';
-import { accordionCaretDownIcon } from './pf-accordion-icons.js';
-import { createAccordionId } from './pf-accordion-id.js';
-import { ACCORDION_TOGGLE_EVENT } from './pf-accordion-events.js';
-import { getAccordionContext } from './pf-accordion-context.js';
+} from './class-names.js';
+import { accordionCaretDownIcon } from './icons.js';
+import { createAccordionId } from './id.js';
+import { ACCORDION_TOGGLE_EVENT } from './events.js';
+import { getAccordionContext } from './context.js';
 
 /**
  * Lit cannot reliably render table/list section elements via dynamic tag names.

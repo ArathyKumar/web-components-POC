@@ -29,9 +29,9 @@
  * Default slot text → toggle label; <div slot="content"> → panel body.
  */
 import { LitElement, html, nothing } from 'lit';
-import { AccordionMixin } from './pf-accordion/pf-accordion-base.js';
-import { AccordionItemMixin } from './pf-accordion/pf-accordion-item-base.js';
-import { adoptPatternFlyLightHostStyles } from '../styles/pf-adopted-styles-light.js';
+import { AccordionMixin } from './lib/base.js';
+import { AccordionItemMixin } from './lib/item-base.js';
+import { adoptPatternFlyLightHostStyles } from '../../styles/adopted-light.js';
 
 export const ACCORDION_TAG = 'pf-accordion-light';
 export const ACCORDION_ITEM_TAG = 'pf-accordion-item-light';

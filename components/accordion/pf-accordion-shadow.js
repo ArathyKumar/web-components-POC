@@ -5,12 +5,12 @@
  * each shadow root via adoptPatternFlyAccordionShadowStyles().
  */
 import { LitElement, html, nothing } from 'lit';
-import { AccordionMixin } from './pf-accordion/pf-accordion-base.js';
-import { AccordionItemMixin } from './pf-accordion/pf-accordion-item-base.js';
+import { AccordionMixin } from './lib/base.js';
+import { AccordionItemMixin } from './lib/item-base.js';
 import {
   adoptPatternFlyAccordionShadowStyles,
   adoptPatternFlyAccordionItemShadowStyles,
-} from '../styles/pf-adopted-styles-shadow-accordion.js';
+} from './styles/adopted-shadow.js';
 
 export const ACCORDION_TAG = 'pf-accordion-shadow';
 export const ACCORDION_ITEM_TAG = 'pf-accordion-item-shadow';

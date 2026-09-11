@@ -31,7 +31,7 @@
  * projection when icons or other slotted markup are present.
  */
 import { LitElement, html, nothing } from 'lit';
-import { getPatternFlyButtonClassNames } from './pf-button/pf-button-class-names.js';
+import { getPatternFlyButtonClassNames } from './lib/class-names.js';
 import {
   rhUiStarIcon,
   rhUiStarFillIcon,
@@ -39,8 +39,8 @@ import {
   rhUiAddCircleFillIcon,
   hamburgerIcon,
   getButtonIcon,
-} from './pf-button/pf-button-icons.js';
-import { adoptPatternFlyLightHostStyles } from '../styles/pf-adopted-styles-light.js';
+} from './lib/icons.js';
+import { adoptPatternFlyLightHostStyles } from '../../styles/adopted-light.js';
 import {
   autoToggleConverter,
   getProgressLabelText,
@@ -50,7 +50,7 @@ import {
   syncLoadingPresentation,
   applyFavoriteActivation,
   applyLoadingActivation,
-} from './pf-button/pf-button-state.js';
+} from './lib/state.js';
 
 /** Custom element tag name for the light DOM button. */
 export const ELEMENT_TAG = 'pf-button-light';

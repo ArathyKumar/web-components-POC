@@ -1,6 +1,5 @@
 /**
- * Copies PatternFly component CSS from node_modules into JS modules
- * for use with adoptedStyleSheets in shadow DOM buttons.
+ * Copies PatternFly component CSS from node_modules into component style modules.
  */
 import { readFileSync, writeFileSync } from 'node:fs';
 import { dirname, join } from 'node:path';
@@ -13,10 +12,22 @@ const pfVersion = JSON.parse(
 ).version;
 
 const styleFiles = [
-  { source: 'components/Button/button.css', output: 'button-styles.js' },
-  { source: 'components/Spinner/spinner.css', output: 'spinner-styles.js' },
-  { source: 'components/Badge/badge.css', output: 'badge-styles.js' },
-  { source: 'components/Accordion/accordion.css', output: 'accordion-styles.js' },
+  {
+    source: 'components/Button/button.css',
+    output: 'components/button/styles/button-styles.js',
+  },
+  {
+    source: 'components/Spinner/spinner.css',
+    output: 'components/button/styles/spinner-styles.js',
+  },
+  {
+    source: 'components/Badge/badge.css',
+    output: 'components/button/styles/badge-styles.js',
+  },
+  {
+    source: 'components/Accordion/accordion.css',
+    output: 'components/accordion/styles/accordion-styles.js',
+  },
 ];
 
 for (const { source, output } of styleFiles) {
@@ -25,6 +36,6 @@ for (const { source, output } of styleFiles) {
 export default ${JSON.stringify(css)};
 `;
 
-  writeFileSync(join(root, 'styles', output), contents);
-  console.log(`Wrote styles/${output}`);
+  writeFileSync(join(root, output), contents);
+  console.log(`Wrote ${output}`);
 }

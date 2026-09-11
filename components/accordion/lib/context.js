@@ -1,4 +1,4 @@
-import { getAccordionClassNames } from './pf-accordion-class-names.js';
+import { getAccordionClassNames } from './class-names.js';
 
 const ACCORDION_TAGS = ['PF-ACCORDION-SHADOW', 'PF-ACCORDION-LIGHT'];
 
