@@ -1,12 +1,21 @@
 {
   "name": "web-components-poc",
-  "version": "0.1.0",
+  "version": "0.2.0",
   "private": true,
-  "description": "Proof of concept for web components with PatternFly",
+  "description": "Production-ready PatternFly button web components with Lit",
+  "type": "module",
+  "exports": {
+    ".": "./components/pf-button-shadow.js",
+    "./pf-button-shadow": "./components/pf-button-shadow.js",
+    "./pf-button-light": "./components/pf-button-light.js"
+  },
   "scripts": {
-    "dev": "npx http-server . -o -c-1"
+    "dev": "npx http-server . -o -c-1",
+    "sync-styles": "node scripts/sync-patternfly-styles.mjs",
+    "postinstall": "npm run sync-styles"
   },
   "dependencies": {
-    "@patternfly/patternfly": "^6.6.1"
+    "@patternfly/patternfly": "^6.6.1",
+    "lit": "^3.2.1"
   }
 }

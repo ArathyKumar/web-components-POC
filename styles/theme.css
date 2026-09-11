@@ -1,0 +1,19 @@
+/*
+ * Global primary button theme (pf-m-primary).
+ *
+ * Override PatternFly brand tokens on :root. Primary buttons resolve these
+ * via var(--pf-t--global--color--brand--*) inside PatternFly CSS.
+ *
+ * CSS custom properties inherit into shadow DOM, so packaged shadow components
+ * (for example pf-button-shadow.js) pick up these values without any changes
+ * to their source — as long as they use PatternFly tokens, not hard-coded colors.
+ */
+/* #basic-buttons {
+  --pf-t--global--color--brand--default: #008768;
+  --pf-t--global--color--brand--hover: #006d54;
+  --pf-t--global--color--brand--clicked: #004d3d;
+} */
+
+body {
+  height: auto;
+}
