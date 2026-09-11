@@ -63,20 +63,62 @@ const SHADOW_HOST_STYLES = `
   display: inline-block;
   line-height: 0;
 }
+
+/* Base SVG sizing from patternfly.css (not included in button.css). */
+.pf-v6-svg {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+}
 `;
 
-const SHADOW_CSS = [SHADOW_HOST_STYLES, COMPONENT_STYLES].join('\n');
+/**
+ * Shadow-only interaction fixes for icon animations driven by :hover/:focus.
+ * PatternFly sets rotate/scale via custom properties on the button; in shadow
+ * roots, also target the icon directly from :host() so pointer and keyboard
+ * focus reliably trigger the transition.
+ */
+const SHADOW_INTERACTION_FIXES = `
+:host(:hover:not([disabled]):not([aria-disabled])) .pf-v6-c-button.pf-m-settings .pf-v6-c-button__icon,
+:host(:focus-within:not([disabled]):not([aria-disabled])) .pf-v6-c-button.pf-m-settings .pf-v6-c-button__icon,
+.pf-v6-c-button.pf-m-settings:hover .pf-v6-c-button__icon,
+.pf-v6-c-button.pf-m-settings:focus .pf-v6-c-button__icon,
+.pf-v6-c-button.pf-m-settings.pf-m-shadow-hover .pf-v6-c-button__icon {
+  rotate: var(--pf-v6-c-button--m-settings--hover__icon--Rotate, 60deg);
+  transition-property: rotate;
+  transition-duration: var(--pf-v6-c-button--m-settings--hover__icon--TransitionDuration);
+  transition-timing-function: var(--pf-v6-c-button--m-settings--hover__icon--TransitionTimingFunction);
+}
+
+:host(:hover:not([disabled]):not([aria-disabled])) .pf-v6-c-button.pf-m-hamburger .pf-v6-c-button__icon,
+:host(:focus-within:not([disabled]):not([aria-disabled])) .pf-v6-c-button.pf-m-hamburger .pf-v6-c-button__icon,
+.pf-v6-c-button.pf-m-hamburger:hover .pf-v6-c-button__icon,
+.pf-v6-c-button.pf-m-hamburger:focus .pf-v6-c-button__icon,
+.pf-v6-c-button.pf-m-hamburger.pf-m-shadow-hover .pf-v6-c-button__icon {
+  scale: var(--pf-v6-c-button--hover__icon--ScaleX, 1) var(--pf-v6-c-button--hover__icon--ScaleY, 1);
+  transition-property: scale;
+  transition-duration: var(--pf-v6-c-button--hover__icon--TransitionDuration);
+  transition-timing-function: var(--pf-v6-c-button--hover__icon--TransitionTimingFunction);
+}
+`;
+
+const SHADOW_CSS = [SHADOW_HOST_STYLES, COMPONENT_STYLES, SHADOW_INTERACTION_FIXES].join('\n');
+
+/** Bump when SHADOW_CSS changes so dev reloads pick up adopted stylesheet updates. */
+const SHADOW_STYLES_REVISION = 'settings-icon-hover-1';
 
 let shadowSheet = null;
+let shadowSheetRevision = null;
 
 /**
  * Lazily creates and caches the shared constructable stylesheet for shadow roots.
  * @returns {CSSStyleSheet}
  */
 function getShadowSheet() {
-  if (!shadowSheet) {
+  if (!shadowSheet || shadowSheetRevision !== SHADOW_STYLES_REVISION) {
     shadowSheet = new CSSStyleSheet();
     shadowSheet.replaceSync(SHADOW_CSS);
+    shadowSheetRevision = SHADOW_STYLES_REVISION;
   }
   return shadowSheet;
 }
@@ -87,10 +129,7 @@ function getShadowSheet() {
  */
 function adoptSheetOnShadowRoot(shadowRoot) {
   if (typeof CSSStyleSheet !== 'undefined' && 'adoptedStyleSheets' in shadowRoot) {
-    const sheet = getShadowSheet();
-    if (!shadowRoot.adoptedStyleSheets.includes(sheet)) {
-      shadowRoot.adoptedStyleSheets = [...shadowRoot.adoptedStyleSheets, sheet];
-    }
+    shadowRoot.adoptedStyleSheets = [getShadowSheet()];
     return;
   }
 

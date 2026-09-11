@@ -151,10 +151,14 @@ export class PFButtonShadow extends LitElement {
     this.expanded = false;
   }
 
-  /** Sets initial favorite aria-label once all attributes are hydrated. */
+  /** Sets initial favorite aria-label and binds settings/hamburger hover handlers. */
   firstUpdated() {
     if (this.favorite) {
       syncFavoriteAriaLabel(this, this.favorited);
+    }
+
+    if (this.settings || this.hamburger) {
+      this._bindIconHoverHandlers();
     }
   }
 
@@ -245,6 +249,26 @@ export class PFButtonShadow extends LitElement {
    */
   _getControlElement() {
     return this.renderRoot?.querySelector('[part="control"]');
+  }
+
+  /**
+   * Toggles pf-m-shadow-hover on the activator for settings/hamburger icon
+   * animations when :hover/:focus inside adopted shadow styles is unreliable.
+   */
+  _bindIconHoverHandlers() {
+    const control = this._getControlElement();
+    if (!control || control.dataset.pfIconHoverBound === 'true') {
+      return;
+    }
+
+    const activate = () => control.classList.add('pf-m-shadow-hover');
+    const deactivate = () => control.classList.remove('pf-m-shadow-hover');
+
+    control.addEventListener('pointerenter', activate);
+    control.addEventListener('pointerleave', deactivate);
+    control.addEventListener('focus', activate);
+    control.addEventListener('blur', deactivate);
+    control.dataset.pfIconHoverBound = 'true';
   }
 
   /** Re-triggers the pf-m-favorited CSS animation by toggling the class in one frame. */
