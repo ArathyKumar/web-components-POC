@@ -100,10 +100,8 @@
     <main>
       <h1 class="pf-v6-c-title pf-m-3xl">Web Components POC</h1>
       <p class="intro">
-        PatternFly button variants below mirror
-        <a href="https://www.patternfly.org/components/button">patternfly.org/components/button</a>
-        and the
-        <a href="https://github.com/patternfly/patternfly-react/tree/main/packages/react-core/src/components/Button">PatternFly React Button</a>,
+        PatternFly button variants below mirror the
+        <a href="https://www.patternfly.org/components/button">PatternFly React Button</a>,
         implemented as <code>&lt;pf-button-shadow&gt;</code> and <code>&lt;pf-button-light&gt;</code>
         web components with form association, <code>exportparts</code> theming (shadow), and custom events.
       </p>
@@ -200,16 +198,20 @@
               control-id="primary-loading-button"
               variant="primary"
               loading
+              idle-label="Click to start loading"
+              loading-label="Click to stop loading"
               spinner-aria-value-text="Loading"
               spinner-aria-labelledby="primary-loading-button"
-            >Click to stop loading</pf-button-shadow>
+            ></pf-button-shadow>
             <pf-button-shadow
               id="secondary-progress-btn"
               variant="secondary"
               loading
+              idle-label="Click to start loading"
+              loading-label="Click to stop loading"
               spinner-aria-value-text="Loading"
               spinner-aria-label="Content being loaded"
-            >Click to stop loading</pf-button-shadow>
+            ></pf-button-shadow>
           </div>
           <div class="demo-row">
             <pf-button-shadow
@@ -227,9 +229,11 @@
               variant="link"
               inline
               loading
+              idle-label="Resume loading logs"
+              loading-label="Pause loading logs"
               spinner-aria-value-text="Loading"
               spinner-aria-label="Content being loaded"
-            >Pause loading logs</pf-button-shadow>
+            ></pf-button-shadow>
           </div>
         </section>
   
@@ -276,7 +280,8 @@
               id="favorite-btn"
               variant="plain"
               favorite
-              aria-label="Favorite example not favorited"
+              aria-label-unfavorited="Favorite example not favorited"
+              aria-label-favorited="Favorite example favorited"
             ></pf-button-shadow>
           </div>
         </section>
@@ -481,16 +486,20 @@
               control-id="light-primary-loading-button"
               variant="primary"
               loading
+              idle-label="Click to start loading"
+              loading-label="Click to stop loading"
               spinner-aria-value-text="Loading"
               spinner-aria-labelledby="light-primary-loading-button"
-            >Click to stop loading</pf-button-light>
+            ></pf-button-light>
             <pf-button-light
               id="light-secondary-progress-btn"
               variant="secondary"
               loading
+              idle-label="Click to start loading"
+              loading-label="Click to stop loading"
               spinner-aria-value-text="Loading"
               spinner-aria-label="Content being loaded"
-            >Click to stop loading</pf-button-light>
+            ></pf-button-light>
           </div>
           <div class="demo-row">
             <pf-button-light
@@ -508,9 +517,11 @@
               variant="link"
               inline
               loading
+              idle-label="Resume loading logs"
+              loading-label="Pause loading logs"
               spinner-aria-value-text="Loading"
               spinner-aria-label="Content being loaded"
-            >Pause loading logs</pf-button-light>
+            ></pf-button-light>
           </div>
         </section>
   
@@ -557,7 +568,8 @@
               id="light-favorite-btn"
               variant="plain"
               favorite
-              aria-label="Favorite example not favorited"
+              aria-label-unfavorited="Favorite example not favorited"
+              aria-label-favorited="Favorite example favorited"
             ></pf-button-light>
           </div>
         </section>
@@ -691,56 +703,6 @@
     <script type="module" src="components/pf-button-shadow.js"></script>
     <script type="module" src="components/pf-button-light.js"></script>
     <script type="module">
-      const setupFavoriteButton = (id) => {
-        const favoriteButton = document.getElementById(id);
-
-        favoriteButton.addEventListener('pf-favorite-change', (event) => {
-          const { favorited } = event.detail;
-          favoriteButton.favorited = favorited;
-          favoriteButton.ariaLabel = favorited
-            ? 'Favorite example favorited'
-            : 'Favorite example not favorited';
-        });
-      };
-
-      const toggleLoadingButton = (button, loadingLabel, idleLabel) => {
-        button.addEventListener('pf-loading-change', (event) => {
-          const { loading } = event.detail;
-          button.loading = loading;
-          button.textContent = loading ? loadingLabel : idleLabel;
-        });
-      };
-
-      const setupPlainUploadButton = (id, idleAriaLabel = 'Upload') => {
-        const button = document.getElementById(id);
-
-        button.addEventListener('pf-loading-change', (event) => {
-          const { loading } = event.detail;
-          button.loading = loading;
-
-          if (loading) {
-            button.removeAttribute('aria-label');
-          } else {
-            button.ariaLabel = idleAriaLabel;
-          }
-        });
-      };
-
-      const setupUploadCircleButton = (id, idleAriaLabel) => {
-        const button = document.getElementById(id);
-
-        button.addEventListener('pf-loading-change', (event) => {
-          const { loading } = event.detail;
-          button.loading = loading;
-
-          if (loading) {
-            button.removeAttribute('aria-label');
-          } else {
-            button.setAttribute('aria-label', idleAriaLabel);
-          }
-        });
-      };
-
       const setupDemoForm = (formId, outputId) => {
         const demoForm = document.getElementById(formId);
         const demoFormOutput = document.getElementById(outputId);
@@ -756,28 +718,6 @@
           demoFormOutput.textContent = 'Form reset';
         });
       };
-
-      const progressButtons = [
-        ['primary-progress-btn', 'Click to stop loading', 'Click to start loading'],
-        ['secondary-progress-btn', 'Click to stop loading', 'Click to start loading'],
-        ['inline-link-progress-btn', 'Pause loading logs', 'Resume loading logs'],
-        ['light-primary-progress-btn', 'Click to stop loading', 'Click to start loading'],
-        ['light-secondary-progress-btn', 'Click to stop loading', 'Click to start loading'],
-        ['light-inline-link-progress-btn', 'Pause loading logs', 'Resume loading logs'],
-      ];
-
-      setupFavoriteButton('favorite-btn');
-      setupFavoriteButton('light-favorite-btn');
-
-      progressButtons.forEach(([id, loadingLabel, idleLabel]) => {
-        toggleLoadingButton(document.getElementById(id), loadingLabel, idleLabel);
-      });
-
-      setupPlainUploadButton('plain-upload-progress-btn');
-      setupPlainUploadButton('light-plain-upload-progress-btn');
-
-      setupUploadCircleButton('upload-circle-btn', 'Upload circle variant example');
-      setupUploadCircleButton('light-upload-circle-btn', 'Upload circle variant example');
 
       setupDemoForm('demo-form', 'demo-form-output');
       setupDemoForm('light-demo-form', 'light-demo-form-output');

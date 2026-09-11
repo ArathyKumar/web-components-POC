@@ -98,22 +98,51 @@ import 'components/pf-button-light.js';
 
 Built-in icons use the `icon` attribute: `notification`, `add-circle`, `copy`, `close`, `upload`.
 
-### Controlled state via custom events
+### Favorite and loading state
 
-The component does not toggle favorite or loading state internally. Listen for events and update properties from your app:
+By default, favorite and progress-capable buttons are **uncontrolled**: they toggle `favorited` and `loading` internally on activation and keep aria/labels in sync. Listen for events to observe changes, or set properties programmatically — presentation syncs on external updates and form reset.
+
+For **controlled** mode, disable internal toggling and apply state from event handlers:
+
+```html
+<pf-button-shadow
+  favorite
+  auto-toggle-favorite="false"
+  aria-label-unfavorited="Favorite example not favorited"
+  aria-label-favorited="Favorite example favorited"
+></pf-button-shadow>
+```
 
 ```javascript
-const btn = document.querySelector('#favorite-btn');
-
 btn.addEventListener('pf-favorite-change', (event) => {
   btn.favorited = event.detail.favorited;
-  btn.ariaLabel = event.detail.favorited ? 'Unfavorite' : 'Favorite';
-});
-
-btn.addEventListener('pf-loading-change', (event) => {
-  btn.loading = event.detail.loading;
 });
 ```
+
+Configure labels with attributes:
+
+```html
+<pf-button-shadow
+  favorite
+  aria-label-unfavorited="Favorite example not favorited"
+  aria-label-favorited="Favorite example favorited"
+></pf-button-shadow>
+
+<pf-button-shadow
+  loading
+  idle-label="Click to start loading"
+  loading-label="Click to stop loading"
+  spinner-aria-label="Content being loaded"
+></pf-button-shadow>
+```
+
+**Progress label attributes bypass the default slot.** When `idle-label` or `loading-label` is set, the component renders that text instead of projecting host children. Do not leave label text in the slot when using these attributes.
+
+**Favorite aria-label fallback:** If `aria-label-favorited` is omitted, the favorited state uses `"Unfavorite"`. If `aria-label-unfavorited` is omitted, the unfavorited state falls back to `aria-label` (or `"Favorite"` if neither is set).
+
+**Progress toggle opt-out:** Buttons with spinner attributes are progress-capable and toggle `loading` on every click by default. For display-only spinners, set `auto-toggle-loading="false"` — the button still emits `pf-loading-change` with the proposed next state, but does not update `loading` internally.
+
+Icon-only progress buttons (plain upload, circle upload) clear `aria-label` while loading so the spinner's `spinner-aria-label` takes over, then restore the saved label when idle.
 
 | Event | Detail | When |
 |-------|--------|------|
@@ -210,6 +239,9 @@ npm run sync-styles
 | `disabled` | Native disabled state |
 | `aria-disabled` | `aria-disabled` styling |
 | `loading` | Progress spinner |
+| `idle-label` / `loading-label` | Progress button label text (bypasses default slot) |
+| `aria-label-favorited` / `aria-label-unfavorited` | Favorite button aria labels per state |
+| `auto-toggle-favorite` / `auto-toggle-loading` | Lit properties; set to `false` for controlled mode (default: toggle on activate). Also settable as `btn.autoToggleFavorite = false`. |
 | `control-id` | `id` on the inner activator element |
 
 See `index.html` for full PatternFly button doc examples (variants, sizes, progress, favorites, forms, icons).
@@ -236,7 +268,8 @@ web-components-POC/
 │   ├── pf-button-light.js              # Light DOM button — full self-contained implementation
 │   └── pf-button/
 │       ├── pf-button-class-names.js    # Maps props → PatternFly BEM classes (shared)
-│       └── pf-button-icons.js          # SVG icon templates (shared)
+│       ├── pf-button-icons.js          # SVG icon templates (shared)
+│       └── pf-button-state.js          # Favorite/loading state sync (shared)
 │
 ├── styles/
 │   ├── theme.css                       # Brand token overrides (e.g. primary button color)
@@ -256,7 +289,7 @@ web-components-POC/
 
 | File | Purpose |
 |------|---------|
-| `index.html` | Interactive demo mirroring [PatternFly Button docs](https://www.patternfly.org/components/button). Side-by-side shadow and light DOM sections with variants, sizes, progress, favorites, forms, and icons. Includes Lit import map and demo scripts for controlled state. |
+| `index.html` | Interactive demo mirroring [PatternFly Button docs](https://www.patternfly.org/components/button). Side-by-side shadow and light DOM sections with variants, sizes, progress, favorites, forms, and icons. Includes Lit import map and form demo scripts. |
 | `package.json` | Project metadata. Exports `./pf-button-shadow` and `./pf-button-light`. Scripts: `dev`, `sync-styles`, `postinstall`. |
 | `package-lock.json` | Locked dependency versions. |
 
@@ -268,6 +301,7 @@ web-components-POC/
 | `pf-button-light.js` | Registers `<pf-button-light>`. Renders into the light DOM (no shadow root), relies on global `patternfly.css` for component styles, manually projects host children as label/icon content, and adopts scoped host overrides once per document. Form-associated (FACE). |
 | `pf-button/pf-button-class-names.js` | Shared utility: maps component properties to PatternFly `pf-v6-c-button` BEM modifier classes. Used by both shadow and light implementations. |
 | `pf-button/pf-button-icons.js` | Shared SVG icon templates (star, settings, hamburger, built-in icon map). Used by both implementations. |
+| `pf-button/pf-button-state.js` | Shared favorite/loading state: aria-label sync, progress presentation, auto-toggle properties, activation handlers. Used by both implementations. |
 
 ### `styles/`
 
