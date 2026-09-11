@@ -111,11 +111,6 @@ pf-button-light .pf-v6-c-button.pf-m-primary {
   --pf-v6-c-button--m-primary--m-clicked__icon--Color: var(--pf-button-theme-primary-clicked-icon-color);
 }
 
-/*
- * Resolve theme overrides from accordion hosts onto inner accordion markup.
- * Only read the PF token on accordion hosts — items sit under .pf-v6-c-accordion
- * where PatternFly already sets this token to transparent.
- */
 pf-accordion-light,
 pf-accordion-shadow {
   --pf-accordion-theme-expanded-toggle-bg: var(
@@ -124,21 +119,15 @@ pf-accordion-shadow {
   );
 }
 
-pf-accordion-light .pf-v6-c-accordion {
+pf-accordion-item-light .pf-v6-c-accordion__item.pf-m-expanded {
   --pf-v6-c-accordion__item--m-expanded__toggle--BackgroundColor: var(
-    --pf-accordion-theme-expanded-toggle-bg
-  );
-}
-
-pf-accordion-item-light .pf-v6-c-accordion__item.pf-m-expanded .pf-v6-c-accordion__toggle {
-  --pf-v6-c-accordion__toggle--BackgroundColor: var(
     --pf-accordion-theme-expanded-toggle-bg
   );
 }
 `;
 
 /** Bump when LIGHT_HOST_STYLES changes so dev reloads pick up adopted stylesheet updates. */
-const LIGHT_HOST_STYLES_REVISION = 'light-theme-bridge-5';
+const LIGHT_HOST_STYLES_REVISION = 'light-host-7';
 
 let lightSheet = null;
 let lightSheetRevision = null;
@@ -158,7 +147,7 @@ function getLightHostSheet() {
 }
 
 /**
- * Adopts scoped host overrides for light DOM buttons (once per document).
+ * Adopts scoped host overrides for light DOM components (once per document).
  * Load patternfly.css globally for component styles and design tokens.
  */
 export function adoptPatternFlyLightHostStyles() {

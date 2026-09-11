@@ -22,7 +22,6 @@ const ACCORDION_HOST_STYLES = `
 
 /**
  * PatternFly plain/glass rules use :root selectors that do not match inside shadow trees.
- * Mirror those modifier variable overrides here for shadow/light parity.
  */
 const ACCORDION_SHADOW_COMPAT_STYLES = `
 .pf-v6-c-accordion.pf-m-plain {
@@ -41,23 +40,12 @@ const ACCORDION_SHADOW_COMPAT_STYLES = `
 }
 `;
 
-/**
- * Map host-level accordion theme tokens onto expanded item toggles inside shadow roots.
- */
 const ACCORDION_THEME_BRIDGE_STYLES = `
-.pf-v6-c-accordion,
 .pf-v6-c-accordion.pf-m-item-host {
   --pf-v6-c-accordion__item--m-expanded__toggle--BackgroundColor: var(
     --pf-accordion-theme-expanded-toggle-bg
   );
 }
-
-.pf-v6-c-accordion__item.pf-m-expanded .pf-v6-c-accordion__toggle {
-  --pf-v6-c-accordion__toggle--BackgroundColor: var(
-    --pf-accordion-theme-expanded-toggle-bg
-  );
-}
-
 `;
 
 const ACCORDION_ITEM_HOST_STYLES = `
@@ -75,7 +63,6 @@ const ACCORDION_ITEM_HOST_STYLES = `
   vertical-align: -0.125em;
 }
 
-/* Reset heading wrappers used in fluid (non-definition-list) markup */
 .pf-v6-c-accordion__item h1,
 .pf-v6-c-accordion__item h2,
 .pf-v6-c-accordion__item h3,
@@ -99,26 +86,27 @@ const ACCORDION_ITEM_SHADOW_CSS = [
   ACCORDION_THEME_BRIDGE_STYLES,
 ].join('\n');
 
-const ACCORDION_STYLES_REVISION = 'accordion-shadow-theme-bridge-4';
+const ACCORDION_STYLES_REVISION = 'accordion-shadow-6';
 
 let accordionSheet = null;
 let accordionItemSheet = null;
-let sheetRevision = null;
+let accordionSheetRevision = null;
+let accordionItemSheetRevision = null;
 
 function getAccordionSheet() {
-  if (!accordionSheet || sheetRevision !== ACCORDION_STYLES_REVISION) {
+  if (!accordionSheet || accordionSheetRevision !== ACCORDION_STYLES_REVISION) {
     accordionSheet = new CSSStyleSheet();
     accordionSheet.replaceSync(ACCORDION_SHADOW_CSS);
-    sheetRevision = ACCORDION_STYLES_REVISION;
+    accordionSheetRevision = ACCORDION_STYLES_REVISION;
   }
   return accordionSheet;
 }
 
 function getAccordionItemSheet() {
-  if (!accordionItemSheet || sheetRevision !== ACCORDION_STYLES_REVISION) {
+  if (!accordionItemSheet || accordionItemSheetRevision !== ACCORDION_STYLES_REVISION) {
     accordionItemSheet = new CSSStyleSheet();
     accordionItemSheet.replaceSync(ACCORDION_ITEM_SHADOW_CSS);
-    sheetRevision = ACCORDION_STYLES_REVISION;
+    accordionItemSheetRevision = ACCORDION_STYLES_REVISION;
   }
   return accordionItemSheet;
 }
@@ -126,6 +114,7 @@ function getAccordionItemSheet() {
 /**
  * @param {ShadowRoot} shadowRoot
  * @param {CSSStyleSheet} sheet
+ * @param {string} cssText
  */
 function adoptSheet(shadowRoot, sheet, cssText) {
   if (typeof CSSStyleSheet !== 'undefined' && 'adoptedStyleSheets' in shadowRoot) {

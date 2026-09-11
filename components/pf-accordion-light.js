@@ -93,7 +93,6 @@ class PFAccordionItemLight extends AccordionItemMixin(LitElement) {
 
   connectedCallback() {
     this._captureHostProjection();
-    adoptPatternFlyLightHostStyles();
     super.connectedCallback();
   }
 

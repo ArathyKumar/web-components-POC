@@ -14,11 +14,6 @@ pf-button-light {
   --pf-v6-c-button--m-primary--BackgroundColor: #008768;
 }
 
-/* Expanded item toggle background (host-level; bridged via adopted styles) */
-pf-accordion-light,
-pf-accordion-shadow {
-  /* --pf-v6-c-accordion__item--m-expanded__toggle--BackgroundColor: red; */
-}
 
 body {
   height: auto;

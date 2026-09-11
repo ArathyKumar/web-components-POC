@@ -195,8 +195,8 @@ pf-button-light [part="control"] {
 
 | Concern | Shadow DOM | Light DOM |
 |---------|------------|-----------|
-| Component CSS | `styles/pf-adopted-styles-shadow.js` (bundles synced CSS) | Global `patternfly.css` |
-| Host overrides | Inside shadow root (`:host` rules) | `styles/pf-adopted-styles-light.js` (scoped to `pf-button-light`) |
+| Component CSS | `styles/pf-adopted-styles-shadow.js` / `pf-adopted-styles-shadow-accordion.js` | Global `patternfly.css` |
+| Host overrides | Inside shadow root (`:host` rules) | `styles/pf-adopted-styles-light.js` (scoped to component hosts) |
 | Design tokens | Global `patternfly.css` on `:root` | Global `patternfly.css` on `:root` |
 | Brand overrides | `styles/theme.css` | `styles/theme.css` |
 
@@ -272,9 +272,11 @@ web-components-POC/
 │       └── pf-button-state.js          # Favorite/loading state sync (shared)
 │
 ├── styles/
-│   ├── theme.css                       # Brand token overrides (e.g. primary button color)
+│   ├── theme.css                       # Brand/component token overrides
 │   ├── pf-adopted-styles-shadow.js     # Shadow: bundles host + button/spinner/badge CSS for adoption
-│   ├── pf-adopted-styles-light.js      # Light: scoped pf-button-light host overrides only
+│   ├── pf-adopted-styles-shadow-accordion.js # Shadow accordion adopted styles
+│   ├── pf-adopted-styles-light.js      # Light: scoped host overrides (buttons, accordions)
+│   ├── accordion-styles.js             # Auto-generated from @patternfly/patternfly (do not edit)
 │   ├── button-styles.js                # Auto-generated from @patternfly/patternfly (do not edit)
 │   ├── spinner-styles.js               # Auto-generated from @patternfly/patternfly (do not edit)
 │   └── badge-styles.js                 # Auto-generated from @patternfly/patternfly (do not edit)
@@ -307,9 +309,11 @@ web-components-POC/
 
 | File | Purpose |
 |------|---------|
-| `theme.css` | Optional brand token overrides on `:root` or containers. Tokens inherit into shadow DOM. Linked globally in `index.html`. |
+| `theme.css` | Optional brand/component token overrides on `:root` or component hosts. Linked globally in demos and `index.html`. |
 | `pf-adopted-styles-shadow.js` | Builds a constructable stylesheet from host overrides + synced button/spinner/badge CSS. Adopted into each `<pf-button-shadow>` shadow root via `adoptPatternFlyShadowStyles()`. |
-| `pf-adopted-styles-light.js` | Scoped host overrides for `<pf-button-light>` only (`display`, `block`, circle button fixes, screen-reader utility). Adopted once onto `document.adoptedStyleSheets`. Does not include component CSS. |
+| `pf-adopted-styles-shadow-accordion.js` | Accordion shadow adopted styles and plain/glass compat rules. |
+| `pf-adopted-styles-light.js` | Scoped host overrides for light DOM component hosts (buttons, accordions). Adopted once onto `document.adoptedStyleSheets`. Does not include component CSS. |
+| `accordion-styles.js` | Auto-generated PatternFly `accordion.css`. Used inside accordion shadow roots. |
 | `button-styles.js` | Auto-generated PatternFly `button.css` as a JS string export. Source: `node_modules/@patternfly/patternfly/components/Button/button.css`. |
 | `spinner-styles.js` | Auto-generated PatternFly `spinner.css`. Used inside shadow root for loading state. |
 | `badge-styles.js` | Auto-generated PatternFly `badge.css`. Used inside shadow root for count badges. |
