@@ -8,11 +8,11 @@
  * (for example pf-button-shadow.js) pick up these values without any changes
  * to their source — as long as they use PatternFly tokens, not hard-coded colors.
  */
-#basic-buttons {
+/* #basic-buttons {
   --pf-t--global--color--brand--default: #008768;
   --pf-t--global--color--brand--hover: #006d54;
   --pf-t--global--color--brand--clicked: #004d3d;
-}
+} */
 
 body {
   height: auto;

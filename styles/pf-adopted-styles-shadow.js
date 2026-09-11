@@ -1,3 +1,10 @@
+/**
+ * Encapsulated styles for <pf-button-shadow> shadow roots.
+ *
+ * Includes full PatternFly button/spinner/badge CSS plus :host overrides.
+ * Adopted into each component's shadow root — global patternfly.css is still
+ * required on the page for design tokens (--pf-t--*) to resolve.
+ */
 import buttonStyles from './button-styles.js';
 import spinnerStyles from './spinner-styles.js';
 import badgeStyles from './badge-styles.js';

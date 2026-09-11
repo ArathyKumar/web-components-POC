@@ -1,6 +1,8 @@
 /**
- * Scoped host overrides for <pf-button-light>.
- * Component CSS (.pf-v6-c-button, spinner, badge) must come from global patternfly.css.
+ * Scoped host overrides for <pf-button-light> only.
+ *
+ * Does NOT include component CSS — that must come from global patternfly.css.
+ * Adopted once per document; targets pf-button-light, not :host (no shadow root).
  */
 
 const LIGHT_HOST_STYLES = `
