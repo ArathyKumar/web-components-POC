@@ -1,0 +1,313 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Accordion — Web Components POC</title>
+    <link
+      rel="stylesheet"
+      href="../node_modules/@patternfly/patternfly/patternfly.css"
+    />
+    <link rel="stylesheet" href="../styles/theme.css" />
+    <link rel="stylesheet" href="../styles/site.css" />
+    <link rel="stylesheet" href="../styles/demo.css" />
+  </head>
+  <body>
+    <main class="site-main site-main--wide">
+      <header class="site-header">
+        <a class="site-header__back" href="../index.html">← All components</a>
+        <h1 class="site-header__title pf-v6-c-title pf-m-3xl">Accordion</h1>
+        <p class="site-header__subtitle">
+          PatternFly accordion examples mirror the
+          <a href="https://www.patternfly.org/components/accordion">PatternFly Accordion</a>,
+          implemented as <code>&lt;pf-accordion-shadow&gt;</code> /
+          <code>&lt;pf-accordion-item-shadow&gt;</code> and light DOM equivalents with
+          <code>pf-v6-c-accordion</code> classes and matching behavior.
+        </p>
+      </header>
+
+      <div class="demo demo--compare">
+        <div class="demo-compare demo-compare--header">
+          <div class="demo-compare__col">
+            <p class="demo-compare__label">Shadow DOM (<code>pf-accordion-shadow</code>)</p>
+          </div>
+          <div class="demo-compare__col">
+            <p class="demo-compare__label">Light DOM (<code>pf-accordion-light</code>)</p>
+          </div>
+        </div>
+
+        <section class="demo-section">
+          <h2>Definition list</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-accordion-shadow definition-list single-expand aria-label="Definition list accordion">
+                <pf-accordion-item-shadow toggle-id="shadow-def-1">
+                  Item one
+                  <div slot="content">
+                    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+                    incididunt ut labore et dolore magna aliqua.
+                  </div>
+                </pf-accordion-item-shadow>
+                <pf-accordion-item-shadow toggle-id="shadow-def-2" expanded>
+                  Item two
+                  <div slot="content">
+                    Vivamus et tortor sed arcu congue vehicula eget et diam. Praesent nec dictum lorem.
+                  </div>
+                </pf-accordion-item-shadow>
+                <pf-accordion-item-shadow toggle-id="shadow-def-3">
+                  Item three
+                  <div slot="content">Morbi vitae urna quis nunc convallis hendrerit.</div>
+                </pf-accordion-item-shadow>
+              </pf-accordion-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-accordion-light definition-list single-expand aria-label="Light definition list accordion">
+                <pf-accordion-item-light toggle-id="light-def-1">
+                  Item one
+                  <div slot="content">
+                    Lorem ipsum dolor sit amet, consectetur adipisicing elit, sed do eiusmod tempor
+                    incididunt ut labore et dolore magna aliqua.
+                  </div>
+                </pf-accordion-item-light>
+                <pf-accordion-item-light toggle-id="light-def-2" expanded>
+                  Item two
+                  <div slot="content">
+                    Vivamus et tortor sed arcu congue vehicula eget et diam. Praesent nec dictum lorem.
+                  </div>
+                </pf-accordion-item-light>
+                <pf-accordion-item-light toggle-id="light-def-3">
+                  Item three
+                  <div slot="content">Morbi vitae urna quis nunc convallis hendrerit.</div>
+                </pf-accordion-item-light>
+              </pf-accordion-light>
+            </div>
+          </div>
+        </section>
+
+        <section class="demo-section">
+          <h2>Fluid (heading markup)</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-accordion-shadow definition-list="false" aria-label="Fluid accordion">
+                <pf-accordion-item-shadow expanded>
+                  Item one
+                  <div slot="content">This panel is expanded by default.</div>
+                </pf-accordion-item-shadow>
+                <pf-accordion-item-shadow>
+                  Item two
+                  <div slot="content">This text is hidden until expanded.</div>
+                </pf-accordion-item-shadow>
+                <pf-accordion-item-shadow>
+                  Item three
+                  <div slot="content">Another collapsible section.</div>
+                </pf-accordion-item-shadow>
+              </pf-accordion-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-accordion-light definition-list="false" aria-label="Light fluid accordion">
+                <pf-accordion-item-light expanded>
+                  Item one
+                  <div slot="content">This panel is expanded by default.</div>
+                </pf-accordion-item-light>
+                <pf-accordion-item-light>
+                  Item two
+                  <div slot="content">This text is hidden until expanded.</div>
+                </pf-accordion-item-light>
+                <pf-accordion-item-light>
+                  Item three
+                  <div slot="content">Another collapsible section.</div>
+                </pf-accordion-item-light>
+              </pf-accordion-light>
+            </div>
+          </div>
+        </section>
+
+        <section class="demo-section">
+          <h2>Fixed height</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-accordion-shadow definition-list="false">
+                <pf-accordion-item-shadow expanded fixed>
+                  Scrollable content
+                  <div slot="content">
+                    <p>
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis molestie lorem lacinia
+                      dolor aliquet faucibus. Suspendisse gravida imperdiet accumsan.
+                    </p>
+                    <p>
+                      Aenean auctor lorem justo, vitae tincidunt enim blandit vel. Aenean quis tempus dolor.
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    </p>
+                    <p>
+                      Donec vel posuere orci. Phasellus quis tortor a ex hendrerit efficitur. Aliquam lacinia
+                      ligula pharetra, sagittis ex ut, pellentesque diam.
+                    </p>
+                  </div>
+                </pf-accordion-item-shadow>
+              </pf-accordion-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-accordion-light definition-list="false">
+                <pf-accordion-item-light expanded fixed>
+                  Scrollable content
+                  <div slot="content">
+                    <p>
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit. Duis molestie lorem lacinia
+                      dolor aliquet faucibus. Suspendisse gravida imperdiet accumsan.
+                    </p>
+                    <p>
+                      Aenean auctor lorem justo, vitae tincidunt enim blandit vel. Aenean quis tempus dolor.
+                      Lorem ipsum dolor sit amet, consectetur adipiscing elit.
+                    </p>
+                    <p>
+                      Donec vel posuere orci. Phasellus quis tortor a ex hendrerit efficitur. Aliquam lacinia
+                      ligula pharetra, sagittis ex ut, pellentesque diam.
+                    </p>
+                  </div>
+                </pf-accordion-item-light>
+              </pf-accordion-light>
+            </div>
+          </div>
+        </section>
+
+        <section class="demo-section">
+          <h2>Bordered</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-accordion-shadow bordered definition-list="false">
+                <pf-accordion-item-shadow expanded>
+                  Item one
+                  <div slot="content">Bordered accordion with dividers between items.</div>
+                </pf-accordion-item-shadow>
+                <pf-accordion-item-shadow>
+                  Item two
+                  <div slot="content">Second bordered panel.</div>
+                </pf-accordion-item-shadow>
+              </pf-accordion-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-accordion-light bordered definition-list="false">
+                <pf-accordion-item-light expanded>
+                  Item one
+                  <div slot="content">Bordered accordion with dividers between items.</div>
+                </pf-accordion-item-light>
+                <pf-accordion-item-light>
+                  Item two
+                  <div slot="content">Second bordered panel.</div>
+                </pf-accordion-item-light>
+              </pf-accordion-light>
+            </div>
+          </div>
+        </section>
+
+        <section class="demo-section">
+          <h2>Toggle icon at start</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-accordion-shadow toggle-start definition-list="false">
+                <pf-accordion-item-shadow expanded>
+                  Item one
+                  <div slot="content">Caret icon appears before the label.</div>
+                </pf-accordion-item-shadow>
+                <pf-accordion-item-shadow>
+                  Item two
+                  <div slot="content">Toggle start variant.</div>
+                </pf-accordion-item-shadow>
+              </pf-accordion-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-accordion-light toggle-start definition-list="false">
+                <pf-accordion-item-light expanded>
+                  Item one
+                  <div slot="content">Caret icon appears before the label.</div>
+                </pf-accordion-item-light>
+                <pf-accordion-item-light>
+                  Item two
+                  <div slot="content">Toggle start variant.</div>
+                </pf-accordion-item-light>
+              </pf-accordion-light>
+            </div>
+          </div>
+        </section>
+
+        <section class="demo-section">
+          <h2>Display size large</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-accordion-shadow display-lg definition-list="false">
+                <pf-accordion-item-shadow expanded>
+                  Large display heading
+                  <div slot="content">Larger heading typography for accordion toggles.</div>
+                </pf-accordion-item-shadow>
+                <pf-accordion-item-shadow>
+                  Item two
+                  <div slot="content">Display lg content body text.</div>
+                </pf-accordion-item-shadow>
+              </pf-accordion-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-accordion-light display-lg definition-list="false">
+                <pf-accordion-item-light expanded>
+                  Large display heading
+                  <div slot="content">Larger heading typography for accordion toggles.</div>
+                </pf-accordion-item-light>
+                <pf-accordion-item-light>
+                  Item two
+                  <div slot="content">Display lg content body text.</div>
+                </pf-accordion-item-light>
+              </pf-accordion-light>
+            </div>
+          </div>
+        </section>
+
+        <section class="demo-section">
+          <h2>Plain</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-accordion-shadow plain definition-list="false">
+                <pf-accordion-item-shadow expanded>
+                  Plain item
+                  <div slot="content">Transparent background plain styling.</div>
+                </pf-accordion-item-shadow>
+                <pf-accordion-item-shadow>
+                  Item two
+                  <div slot="content">Plain accordion panel.</div>
+                </pf-accordion-item-shadow>
+              </pf-accordion-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-accordion-light plain definition-list="false">
+                <pf-accordion-item-light expanded>
+                  Plain item
+                  <div slot="content">Transparent background plain styling.</div>
+                </pf-accordion-item-light>
+                <pf-accordion-item-light>
+                  Item two
+                  <div slot="content">Plain accordion panel.</div>
+                </pf-accordion-item-light>
+              </pf-accordion-light>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "lit": "../node_modules/lit/index.js",
+          "lit/": "../node_modules/lit/",
+          "@lit/reactive-element": "../node_modules/@lit/reactive-element/reactive-element.js",
+          "@lit/reactive-element/": "../node_modules/@lit/reactive-element/",
+          "lit-element": "../node_modules/lit-element/index.js",
+          "lit-element/": "../node_modules/lit-element/",
+          "lit-html": "../node_modules/lit-html/lit-html.js",
+          "lit-html/": "../node_modules/lit-html/"
+        }
+      }
+    </script>
+
+    <script type="module" src="../components/pf-accordion-shadow.js"></script>
+    <script type="module" src="../components/pf-accordion-light.js"></script>
+  </body>
+</html>

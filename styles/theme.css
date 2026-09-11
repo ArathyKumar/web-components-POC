@@ -1,18 +1,24 @@
 /*
- * Global primary button theme (pf-m-primary).
+ * Theme overrides for PatternFly web components.
  *
- * Override PatternFly brand tokens on :root. Primary buttons resolve these
- * via var(--pf-t--global--color--brand--*) inside PatternFly CSS.
+ * Set component tokens on :root and/or the component host. Shadow and light variants
+ * re-resolve these on inner PatternFly markup via adopted host styles.
  *
- * CSS custom properties inherit into shadow DOM, so packaged shadow components
- * (for example pf-button-shadow.js) pick up these values without any changes
- * to their source — as long as they use PatternFly tokens, not hard-coded colors.
+ * Alternatively, override brand tokens on :root — both variants pick those up via
+ * var(--pf-t--global--color--brand--*).
  */
-/* #basic-buttons {
-  --pf-t--global--color--brand--default: #008768;
-  --pf-t--global--color--brand--hover: #006d54;
-  --pf-t--global--color--brand--clicked: #004d3d;
-} */
+
+
+pf-button-shadow,
+pf-button-light {
+  --pf-v6-c-button--m-primary--BackgroundColor: #008768;
+}
+
+/* Expanded item toggle background (host-level; bridged via adopted styles) */
+pf-accordion-light,
+pf-accordion-shadow {
+  /* --pf-v6-c-accordion__item--m-expanded__toggle--BackgroundColor: red; */
+}
 
 body {
   height: auto;

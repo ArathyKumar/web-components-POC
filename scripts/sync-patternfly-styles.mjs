@@ -16,6 +16,7 @@ const styleFiles = [
   { source: 'components/Button/button.css', output: 'button-styles.js' },
   { source: 'components/Spinner/spinner.css', output: 'spinner-styles.js' },
   { source: 'components/Badge/badge.css', output: 'badge-styles.js' },
+  { source: 'components/Accordion/accordion.css', output: 'accordion-styles.js' },
 ];
 
 for (const { source, output } of styleFiles) {

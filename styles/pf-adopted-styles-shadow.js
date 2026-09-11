@@ -102,10 +102,46 @@ const SHADOW_INTERACTION_FIXES = `
 }
 `;
 
-const SHADOW_CSS = [SHADOW_HOST_STYLES, COMPONENT_STYLES, SHADOW_INTERACTION_FIXES].join('\n');
+/**
+ * Resolve theme overrides from :root / pf-button-shadow on :host, then map them onto
+ * the inner control. Adopted component CSS sets modifier tokens on .pf-v6-c-button,
+ * which blocks inherited --pf-v6-c-* values from the host.
+ */
+const SHADOW_THEME_BRIDGE = `
+:host {
+  --pf-button-theme-primary-color: var(--pf-v6-c-button--m-primary--Color, var(--pf-t--global--text--color--on-brand--default));
+  --pf-button-theme-primary-bg: var(--pf-v6-c-button--m-primary--BackgroundColor, var(--pf-t--global--color--brand--default));
+  --pf-button-theme-primary-icon-color: var(--pf-v6-c-button--m-primary__icon--Color, var(--pf-t--global--icon--color--on-brand--default));
+  --pf-button-theme-primary-hover-color: var(--pf-v6-c-button--m-primary--hover--Color, var(--pf-t--global--text--color--on-brand--hover));
+  --pf-button-theme-primary-hover-bg: var(--pf-v6-c-button--m-primary--hover--BackgroundColor, var(--pf-t--global--color--brand--hover));
+  --pf-button-theme-primary-hover-icon-color: var(--pf-v6-c-button--m-primary--hover__icon--Color, var(--pf-t--global--icon--color--on-brand--hover));
+  --pf-button-theme-primary-clicked-color: var(--pf-v6-c-button--m-primary--m-clicked--Color, var(--pf-t--global--text--color--on-brand--clicked));
+  --pf-button-theme-primary-clicked-bg: var(--pf-v6-c-button--m-primary--m-clicked--BackgroundColor, var(--pf-t--global--color--brand--clicked));
+  --pf-button-theme-primary-clicked-icon-color: var(--pf-v6-c-button--m-primary--m-clicked__icon--Color, var(--pf-t--global--icon--color--on-brand--clicked));
+}
+
+.pf-v6-c-button.pf-m-primary {
+  --pf-v6-c-button--m-primary--Color: var(--pf-button-theme-primary-color);
+  --pf-v6-c-button--m-primary--BackgroundColor: var(--pf-button-theme-primary-bg);
+  --pf-v6-c-button--m-primary__icon--Color: var(--pf-button-theme-primary-icon-color);
+  --pf-v6-c-button--m-primary--hover--Color: var(--pf-button-theme-primary-hover-color);
+  --pf-v6-c-button--m-primary--hover--BackgroundColor: var(--pf-button-theme-primary-hover-bg);
+  --pf-v6-c-button--m-primary--hover__icon--Color: var(--pf-button-theme-primary-hover-icon-color);
+  --pf-v6-c-button--m-primary--m-clicked--Color: var(--pf-button-theme-primary-clicked-color);
+  --pf-v6-c-button--m-primary--m-clicked--BackgroundColor: var(--pf-button-theme-primary-clicked-bg);
+  --pf-v6-c-button--m-primary--m-clicked__icon--Color: var(--pf-button-theme-primary-clicked-icon-color);
+}
+`;
+
+const SHADOW_CSS = [
+  SHADOW_HOST_STYLES,
+  COMPONENT_STYLES,
+  SHADOW_INTERACTION_FIXES,
+  SHADOW_THEME_BRIDGE,
+].join('\n');
 
 /** Bump when SHADOW_CSS changes so dev reloads pick up adopted stylesheet updates. */
-const SHADOW_STYLES_REVISION = 'settings-icon-hover-1';
+const SHADOW_STYLES_REVISION = 'shadow-theme-bridge-2';
 
 let shadowSheet = null;
 let shadowSheetRevision = null;

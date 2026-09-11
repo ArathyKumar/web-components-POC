@@ -7,7 +7,9 @@
   "exports": {
     ".": "./components/pf-button-shadow.js",
     "./pf-button-shadow": "./components/pf-button-shadow.js",
-    "./pf-button-light": "./components/pf-button-light.js"
+    "./pf-button-light": "./components/pf-button-light.js",
+    "./pf-accordion-shadow": "./components/pf-accordion-shadow.js",
+    "./pf-accordion-light": "./components/pf-accordion-light.js"
   },
   "scripts": {
     "dev": "npx http-server . -o -c-1",
