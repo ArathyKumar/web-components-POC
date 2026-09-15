@@ -1,15 +1,29 @@
+/**
+ * render-catalog.js — Builds the component index page from components/catalog.js.
+ *
+ * SECURITY — Uses createElement + textContent for all dynamic strings (names, tags,
+ * descriptions). Never innerHTML with catalog data; element tag names are rendered
+ * via <code> nodes in appendElementTags().
+ *
+ * @module render-catalog
+ */
 import { componentCatalog } from '../components/catalog.js';
 
 /**
- * @param {string} value
- * @returns {string}
+ * Appends comma-separated `<tag>` snippets as <code> elements (safe text nodes).
+ *
+ * @param {HTMLElement} container
+ * @param {string[]} elementTags
  */
-function escapeHtml(value) {
-  return value
-    .replaceAll('&', '&amp;')
-    .replaceAll('<', '&lt;')
-    .replaceAll('>', '&gt;')
-    .replaceAll('"', '&quot;');
+function appendElementTags(container, elementTags) {
+  elementTags.forEach((tag, index) => {
+    if (index > 0) {
+      container.append(', ');
+    }
+    const code = document.createElement('code');
+    code.textContent = `<${tag}>`;
+    container.append(code);
+  });
 }
 
 /**
@@ -50,9 +64,7 @@ function createCatalogListItem(entry) {
     if (entry.elements?.length) {
       const elements = document.createElement('p');
       elements.className = 'catalog-card__elements';
-      elements.innerHTML = entry.elements
-        .map((tag) => `<code>&lt;${escapeHtml(tag)}&gt;</code>`)
-        .join(', ');
+      appendElementTags(elements, entry.elements);
       article.appendChild(elements);
     }
 
@@ -94,9 +106,7 @@ function createCatalogListItem(entry) {
   if (entry.elements?.length) {
     const elements = document.createElement('p');
     elements.className = 'catalog-card__elements';
-    elements.innerHTML = entry.elements
-      .map((tag) => `<code>&lt;${escapeHtml(tag)}&gt;</code>`)
-      .join(', ');
+    appendElementTags(elements, entry.elements);
     link.appendChild(elements);
   }
 

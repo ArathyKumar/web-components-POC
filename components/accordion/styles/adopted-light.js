@@ -1,4 +1,9 @@
-/** Light DOM host overrides for pf-accordion-light. */
+/**
+ * Light DOM host overrides for pf-accordion-light / pf-accordion-item-light.
+ *
+ * display: contents on items keeps the accordion BEM structure flat (items are not
+ * extra layout boxes). Heading reset prevents user-agent margins inside toggles.
+ */
 export const ACCORDION_LIGHT_HOST_STYLES = `
 pf-accordion-light {
   display: block;

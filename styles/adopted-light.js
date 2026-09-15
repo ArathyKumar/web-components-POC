@@ -1,5 +1,13 @@
 /**
  * Document-level adopted host overrides for all light DOM PatternFly components.
+ *
+ * Aggregates BUTTON_LIGHT_HOST_STYLES + ACCORDION_LIGHT_HOST_STYLES into one sheet
+ * adopted on document.adoptedStyleSheets (Constructable Stylesheets) with a
+ * <style> fallback for older browsers.
+ *
+ * REVISION — Bump LIGHT_HOST_STYLES_REVISION when host CSS changes so cached
+ * adopted sheets are replaced without a full page reload during dev.
+ *
  * Component CSS must still come from global patternfly.css.
  */
 import { BUTTON_LIGHT_HOST_STYLES } from '../components/button/styles/adopted-light.js';
@@ -7,7 +15,7 @@ import { ACCORDION_LIGHT_HOST_STYLES } from '../components/accordion/styles/adop
 
 const LIGHT_HOST_STYLES = [BUTTON_LIGHT_HOST_STYLES, ACCORDION_LIGHT_HOST_STYLES].join('\n');
 
-const LIGHT_HOST_STYLES_REVISION = 'light-host-11';
+const LIGHT_HOST_STYLES_REVISION = 'light-host-12';
 
 let lightSheet = null;
 let lightSheetRevision = null;

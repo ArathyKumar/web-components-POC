@@ -1,5 +1,9 @@
 /**
  * Encapsulated styles for <pf-accordion-shadow> and <pf-accordion-item-shadow>.
+ *
+ * Items use display: contents on :host so multiple items participate in one accordion
+ * layout. Parent modifiers (plain, glass) are re-applied per item via pf-m-item-host
+ * in pf-accordion-shadow.js because PF :root selectors do not pierce shadow boundaries.
  */
 import accordionStyles from './accordion-styles.js';
 

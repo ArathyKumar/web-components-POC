@@ -108,9 +108,15 @@ const SHADOW_INTERACTION_FIXES = `
 `;
 
 /**
- * Resolve theme overrides from :root / pf-button-shadow on :host, then map them onto
- * the inner control. Adopted component CSS sets modifier tokens on .pf-v6-c-button,
- * which blocks inherited --pf-v6-c-* values from the host.
+ * Theme bridge — maps host-level PatternFly custom properties onto the inner control.
+ *
+ * WHY NEEDED: Adopted PF CSS sets modifier tokens directly on .pf-v6-c-button.pf-m-*,
+ * which prevents --pf-v6-c-* set on :host (or via ::part(control) from a parent) from
+ * inheriting into the button. The bridge reads host vars into --pf-button-theme-* aliases,
+ * then reassigns them on .pf-m-primary / .pf-m-secondary.
+ *
+ * Secondary also sets base --pf-v6-c-button--Color / --BorderColor because PF draws
+ * borders on .pf-v6-c-button::after via --pf-v6-c-button--BorderColor.
  */
 const SHADOW_THEME_BRIDGE = `
 :host {
@@ -135,6 +141,37 @@ const SHADOW_THEME_BRIDGE = `
   --pf-v6-c-button--m-primary--m-clicked--Color: var(--pf-button-theme-primary-clicked-color);
   --pf-v6-c-button--m-primary--m-clicked--BackgroundColor: var(--pf-button-theme-primary-clicked-bg);
   --pf-v6-c-button--m-primary--m-clicked__icon--Color: var(--pf-button-theme-primary-clicked-icon-color);
+}
+
+:host {
+  --pf-button-theme-secondary-color: var(--pf-v6-c-button--m-secondary--Color, var(--pf-t--global--text--color--brand--default));
+  --pf-button-theme-secondary-border-color: var(--pf-v6-c-button--m-secondary--BorderColor, var(--pf-t--global--border--color--brand--default));
+  --pf-button-theme-secondary-icon-color: var(--pf-v6-c-button--m-secondary__icon--Color, var(--pf-t--global--icon--color--brand--default));
+  --pf-button-theme-secondary-hover-color: var(--pf-v6-c-button--m-secondary--hover--Color, var(--pf-t--global--text--color--brand--hover));
+  --pf-button-theme-secondary-hover-border-color: var(--pf-v6-c-button--m-secondary--hover--BorderColor, var(--pf-t--global--border--color--brand--hover));
+  --pf-button-theme-secondary-hover-icon-color: var(--pf-v6-c-button--m-secondary--hover__icon--Color, var(--pf-t--global--icon--color--brand--hover));
+  --pf-button-theme-secondary-clicked-color: var(--pf-v6-c-button--m-secondary--m-clicked--Color, var(--pf-t--global--text--color--brand--clicked));
+  --pf-button-theme-secondary-clicked-border-color: var(--pf-v6-c-button--m-secondary--m-clicked--BorderColor, var(--pf-t--global--border--color--brand--clicked));
+  --pf-button-theme-secondary-clicked-icon-color: var(--pf-v6-c-button--m-secondary--m-clicked__icon--Color, var(--pf-t--global--icon--color--brand--clicked));
+}
+
+.pf-v6-c-button.pf-m-secondary {
+  --pf-v6-c-button--m-secondary--Color: var(--pf-button-theme-secondary-color);
+  --pf-v6-c-button--m-secondary--BorderColor: var(--pf-button-theme-secondary-border-color);
+  --pf-v6-c-button--m-secondary__icon--Color: var(--pf-button-theme-secondary-icon-color);
+  --pf-v6-c-button--Color: var(--pf-button-theme-secondary-color);
+  --pf-v6-c-button--BorderColor: var(--pf-button-theme-secondary-border-color);
+  --pf-v6-c-button__icon--Color: var(--pf-button-theme-secondary-icon-color);
+  --pf-v6-c-button--m-secondary--hover--Color: var(--pf-button-theme-secondary-hover-color);
+  --pf-v6-c-button--m-secondary--hover--BorderColor: var(--pf-button-theme-secondary-hover-border-color);
+  --pf-v6-c-button--hover--Color: var(--pf-button-theme-secondary-hover-color);
+  --pf-v6-c-button--hover--BorderColor: var(--pf-button-theme-secondary-hover-border-color);
+  --pf-v6-c-button--hover__icon--Color: var(--pf-button-theme-secondary-hover-icon-color);
+  --pf-v6-c-button--m-secondary--m-clicked--Color: var(--pf-button-theme-secondary-clicked-color);
+  --pf-v6-c-button--m-secondary--m-clicked--BorderColor: var(--pf-button-theme-secondary-clicked-border-color);
+  --pf-v6-c-button--m-clicked--Color: var(--pf-button-theme-secondary-clicked-color);
+  --pf-v6-c-button--m-clicked--BorderColor: var(--pf-button-theme-secondary-clicked-border-color);
+  --pf-v6-c-button--m-clicked__icon--Color: var(--pf-button-theme-secondary-clicked-icon-color);
 }
 `;
 

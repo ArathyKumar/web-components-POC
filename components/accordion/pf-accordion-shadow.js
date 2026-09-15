@@ -1,14 +1,32 @@
 /**
- * pf-accordion-shadow / pf-accordion-item-shadow — PatternFly accordion with Shadow DOM.
+ * pf-accordion-shadow / pf-accordion-item-shadow — PatternFly accordion (Shadow DOM).
  *
- * Requires global patternfly.css for design tokens. Component CSS is adopted into
- * each shadow root via adoptPatternFlyAccordionShadowStyles().
+ * ARCHITECTURE
+ * ------------
+ * - <pf-accordion-shadow> — container with modifier attributes; slots item children.
+ * - <pf-accordion-item-shadow> — one panel; owns a shadow root with toggle + content slots.
+ *
+ * STYLES — global patternfly.css for tokens; full accordion CSS adopted per shadow root.
+ *
+ * THEMING — shadow parts on items: item, toggle, toggle-icon, content. Parent pages
+ * style via `pf-accordion-item-shadow::part(toggle)` etc. (see theme.css).
+ *
+ * EVENTS — items dispatch `pf-accordion-toggle` (bubbles, composed). Parent handles
+ * `single-expand` by collapsing siblings when one item opens.
+ *
+ * A11Y — keyboard nav via accordion-a11y.js; collapsed panels use hidden + inert.
+ *
+ * @see https://www.patternfly.org/components/accordion
  */
 import { LitElement, html, nothing } from 'lit';
 import {
   adoptPatternFlyAccordionShadowStyles,
   adoptPatternFlyAccordionItemShadowStyles,
 } from './styles/adopted-shadow.js';
+import {
+  getAccordionToggleButtons,
+  handleAccordionToggleKeydown,
+} from './accordion-a11y.js';
 
 export const ACCORDION_TAG = 'pf-accordion-shadow';
 export const ACCORDION_ITEM_TAG = 'pf-accordion-item-shadow';
@@ -199,6 +217,11 @@ class PFAccordionShadow extends LitElement {
     super();
     this.definitionList = true;
     this.headingLevel = 'h3';
+    /** Bound once so add/removeEventListener uses the same reference. */
+    this._handleToggleKeydown = (event) => {
+      const toggles = getAccordionToggleButtons(this, ACCORDION_ITEM_TAG, true);
+      handleAccordionToggleKeydown(event, toggles);
+    };
   }
 
   createRenderRoot() {
@@ -210,12 +233,14 @@ class PFAccordionShadow extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this.addEventListener(ACCORDION_TOGGLE_EVENT, this._handleItemToggle);
+    this.addEventListener('keydown', this._handleToggleKeydown);
     queueMicrotask(() => this._syncItemUpdates());
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener(ACCORDION_TOGGLE_EVENT, this._handleItemToggle);
+    this.removeEventListener('keydown', this._handleToggleKeydown);
   }
 
   updated(changedProperties) {
@@ -380,6 +405,10 @@ class PFAccordionItemShadow extends LitElement {
     return html`<div class="${ACCORDION_BLOCK}__expandable-content-body">${content}</div>`;
   }
 
+  /**
+   * Renders the expandable panel. Collapsed panels use hidden + inert so focus cannot
+   * enter slotted content (links, buttons) while the section is closed.
+   */
   _renderContent(content, asDefinitionList) {
     const contentClass = getAccordionContentClassNames(this.fixed, this.contentExtraClass);
     const contentBody = this._renderContentBody(content);
@@ -392,6 +421,7 @@ class PFAccordionItemShadow extends LitElement {
           part="content"
           id=${this.contentId}
           ?hidden=${!this.expanded}
+          ?inert=${!this.expanded}
           role=${fixedExpanded ? 'region' : nothing}
           tabindex=${fixedExpanded ? '0' : nothing}
           aria-labelledby=${fixedExpanded ? this.toggleId : nothing}
@@ -408,6 +438,7 @@ class PFAccordionItemShadow extends LitElement {
         part="content"
         id=${this.contentId}
         ?hidden=${!this.expanded}
+        ?inert=${!this.expanded}
         role=${fixedExpanded ? 'region' : nothing}
         tabindex=${fixedExpanded ? '0' : nothing}
         aria-labelledby=${fixedExpanded ? this.toggleId : nothing}
@@ -439,6 +470,7 @@ class PFAccordionItemShadow extends LitElement {
           </div>
         `;
 
+    /* Parent modifiers are re-applied per item so plain/glass tokens resolve in shadow. */
     return html`
       <div class="${accordionClassNames} pf-m-item-host" style="display: contents">
         ${itemMarkup}

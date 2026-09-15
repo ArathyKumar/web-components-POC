@@ -7,7 +7,7 @@ Production-ready [PatternFly](https://www.patternfly.org/components/button) butt
 | Approach | Element | Shadow root | PatternFly styles | Content projection | Theming |
 |----------|---------|-------------|-------------------|--------------------|---------|
 | Shadow DOM | `<pf-button-shadow>` | Yes | Encapsulated adopted stylesheet | Native `<slot>` | `::part()` via `exportparts` |
-| Light DOM | `<pf-button-light>` | No | Global `patternfly.css` + scoped host overrides | Manual DOM-node projection | `pf-button-light [part="…"]` selectors |
+| Light DOM | `<pf-button-light>` | No | Global `patternfly.css` + scoped host overrides | Manual DOM-node projection | Host CSS vars / BEM class selectors |
 
 Both elements share the same public API and form behavior. Implementation details differ — see [Shadow vs light DOM](#shadow-vs-light-dom).
 
@@ -74,7 +74,7 @@ import 'web-components-poc/pf-button-light';
 - **Encapsulation:** Lit renders directly onto the host (`createRenderRoot()` returns `this`). No shadow root.
 - **Styles:** Component CSS (`.pf-v6-c-button`, spinner, badge) must come from global `patternfly.css`. `styles/adopted-light.js` adds only scoped host overrides.
 - **Slots:** Native `<slot>` does not work without a shadow root. Label and icon content are projected by passing host child nodes into the Lit template.
-- **Theming:** `part` attributes are plain markup hooks — use `pf-button-light [part="control"]`, not `::part()`.
+- **Theming:** Set CSS custom properties on the host or target PatternFly BEM classes — no `::part()` (shadow-only).
 - **Queries:** Activator is found via `this.querySelector` on the host.
 
 > **Note:** Avoid setting `textContent` on `<pf-button-light>` to change labels — it removes all host children and breaks icon/label projection. Update slotted content or use attributes/events instead.
@@ -181,10 +181,10 @@ pf-button-shadow::part(icon) {
 
 Exported parts: `control`, `icon`, `icon-favorite`, `icon-favorited`, `text`, `sr-text`, `progress`, `spinner`, `count`, `badge`.
 
-**Light DOM** — attribute selectors:
+**Light DOM** — host vars or BEM selectors:
 
 ```css
-pf-button-light [part="control"] {
+pf-button-light .pf-v6-c-button {
   border-radius: 999px;
 }
 ```

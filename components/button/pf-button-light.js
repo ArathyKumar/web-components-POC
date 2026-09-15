@@ -10,12 +10,16 @@
  *    cascade. adoptPatternFlyLightHostStyles() adds only scoped host overrides.
  * 3. Slots: Native <slot> does NOT work without a shadow root. Label and icon
  *    content are projected by passing host child nodes into the Lit template.
- * 4. Theming: Use attribute/selector hooks (pf-button-light [part="control"]),
- *    NOT ::part() — part attributes here are plain markup hooks, not shadow parts.
+ * 4. Theming: Set CSS custom properties on the host or target PatternFly BEM classes
+ *    (e.g. pf-button-light .pf-v6-c-button). Unlike shadow DOM, there is no ::part().
+ *
+ * FORM ASSOCIATION — same ElementInternals API as pf-button-shadow.
+ *
+ * ACTIVATOR — `as` attribute, rel/target on links, aria-expanded on hamburger (all tags).
  *
  * CONTENT PROJECTION NOTE
  * -----------------------
- * After the first render, label nodes move from the host into [part="text"].
+ * After the first render, label nodes move from the host into .pf-v6-c-button__text.
  * _getDefaultSlotNodes() checks the host first, then falls back to the rendered
  * text region so re-renders (e.g. toggling loading) preserve slotted content.
  */
@@ -24,6 +28,9 @@ import { adoptPatternFlyLightHostStyles } from '../../styles/adopted-light.js';
 
 /** Custom element tag name for the light DOM button. */
 export const ELEMENT_TAG = 'pf-button-light';
+
+const BUTTON_CONTROL_SELECTOR = '.pf-v6-c-button';
+const BUTTON_TEXT_SELECTOR = '.pf-v6-c-button__text';
 
 /**
  * Maps button options to PatternFly core (pf-v6-c-button) class names.
@@ -279,6 +286,20 @@ function applyLoadingActivation(button, dispatch) {
   }
 }
 
+/**
+ * Validates the `as` attribute — only button, a, and span are supported activators.
+ *
+ * @param {string | undefined | null} as
+ * @returns {'button' | 'a' | 'span'}
+ */
+function normalizeActivatorTag(as) {
+  const tag = as || 'button';
+  if (tag === 'button' || tag === 'a' || tag === 'span') {
+    return tag;
+  }
+  return 'button';
+}
+
 export class PFButtonLight extends LitElement {
   static formAssociated = true;
 
@@ -294,6 +315,8 @@ export class PFButtonLight extends LitElement {
     value: { type: String, reflect: true },
     as: { type: String, reflect: true },
     href: { type: String },
+    rel: { type: String },
+    target: { type: String },
     extraClass: { type: String, attribute: 'extra-class' },
     ariaLabel: { type: String, attribute: 'aria-label' },
     ariaLabelFavorited: { type: String, attribute: 'aria-label-favorited' },
@@ -462,7 +485,7 @@ export class PFButtonLight extends LitElement {
   _getProjectableChildNodes() {
     return [...this.childNodes].filter((node) => {
       return !(
-        node.nodeType === Node.ELEMENT_NODE && node.getAttribute('part') === 'control'
+        node.nodeType === Node.ELEMENT_NODE && node.classList?.contains('pf-v6-c-button')
       );
     });
   }
@@ -475,14 +498,14 @@ export class PFButtonLight extends LitElement {
       return fromHost;
     }
 
-    const textPart = this._getControlElement()?.querySelector('[part="text"]');
-    if (!textPart) {
+    const textRegion = this._getControlElement()?.querySelector(BUTTON_TEXT_SELECTOR);
+    if (!textRegion) {
       return [];
     }
 
-    return [...textPart.childNodes].filter((node) => {
+    return [...textRegion.childNodes].filter((node) => {
       return !(
-        node.nodeType === Node.ELEMENT_NODE && node.getAttribute('part') === 'sr-text'
+        node.nodeType === Node.ELEMENT_NODE && node.classList?.contains('pf-v6-screen-reader')
       );
     });
   }
@@ -495,7 +518,7 @@ export class PFButtonLight extends LitElement {
   }
 
   _getControlElement() {
-    return this.querySelector('[part="control"]');
+    return this.querySelector(BUTTON_CONTROL_SELECTOR);
   }
 
   _replayFavoriteAnimation() {
@@ -599,7 +622,7 @@ export class PFButtonLight extends LitElement {
   }
 
   _getTagName() {
-    return this.as || 'button';
+    return normalizeActivatorTag(this.as);
   }
 
   _getButtonType() {
@@ -669,14 +692,15 @@ export class PFButtonLight extends LitElement {
       : 'pf-v6-c-spinner pf-m-md';
 
     return html`
-      <span class="pf-v6-c-button__progress" part="progress">
+      <span class="pf-v6-c-button__progress">
         <svg
           class=${spinnerClass}
-          part="spinner"
           role="progressbar"
           viewBox="0 0 100 100"
           aria-label=${spinnerLabel}
           aria-labelledby=${hasLabelledBy ? this.spinnerAriaLabelledBy : undefined}
+          aria-valuemin="0"
+          aria-valuemax="100"
           aria-valuetext=${valueText}
         >
           <circle class="pf-v6-c-spinner__path" cx="50" cy="50" r="45" fill="none"></circle>
@@ -722,8 +746,8 @@ export class PFButtonLight extends LitElement {
 
     if (this.favorite) {
       iconContent = html`
-        <span class="pf-v6-c-button__icon-favorite" part="icon-favorite">${rhUiStarIcon}</span>
-        <span class="pf-v6-c-button__icon-favorited" part="icon-favorited">${rhUiStarFillIcon}</span>
+        <span class="pf-v6-c-button__icon-favorite">${rhUiStarIcon}</span>
+        <span class="pf-v6-c-button__icon-favorited">${rhUiStarFillIcon}</span>
       `;
     } else if (this.settings) {
       iconContent = rhUiSettingsFillIcon;
@@ -738,7 +762,7 @@ export class PFButtonLight extends LitElement {
     }
 
     return html`
-      <span class="pf-v6-c-button__icon ${position}" part="icon" aria-hidden="true">
+      <span class="pf-v6-c-button__icon ${position}" aria-hidden="true">
         ${iconContent}
       </span>
     `;
@@ -752,8 +776,8 @@ export class PFButtonLight extends LitElement {
     const badgeClass = this.countRead ? 'pf-v6-c-badge pf-m-read' : 'pf-v6-c-badge pf-m-unread';
 
     return html`
-      <span class="pf-v6-c-button__count" part="count">
-        <span class=${badgeClass} part="badge">${this.count}</span>
+      <span class="pf-v6-c-button__count">
+        <span class=${badgeClass}>${this.count}</span>
       </span>
     `;
   }
@@ -764,7 +788,7 @@ export class PFButtonLight extends LitElement {
     }
 
     const srText = this.srText
-      ? html` <span class="pf-v6-screen-reader" part="sr-text">${this.srText}</span>`
+      ? html` <span class="pf-v6-screen-reader">${this.srText}</span>`
       : null;
 
     if (this.variant === 'plain' && this.ariaLabel && !this._hasDefaultSlotContent()) {
@@ -773,10 +797,10 @@ export class PFButtonLight extends LitElement {
 
     const progressLabel = getProgressLabelText(this);
     if (progressLabel !== null) {
-      return html`<span class="pf-v6-c-button__text" part="text">${progressLabel}${srText}</span>`;
+      return html`<span class="pf-v6-c-button__text">${progressLabel}${srText}</span>`;
     }
 
-    return html`<span class="pf-v6-c-button__text" part="text">${this._renderDefaultSlotContent()}${srText}</span>`;
+    return html`<span class="pf-v6-c-button__text">${this._renderDefaultSlotContent()}${srText}</span>`;
   }
 
   _renderButtonContent() {
@@ -840,11 +864,13 @@ export class PFButtonLight extends LitElement {
       return html`
         <a
           class=${classes}
-          part="control"
           id=${controlId}
           href=${this._getHref()}
+          rel=${this.rel || undefined}
+          target=${this.target || undefined}
           aria-disabled=${ariaDisabled}
           aria-label=${ariaLabel}
+          aria-expanded=${ariaExpanded}
           tabindex=${tabIndex}
           @click=${this._handleActivatorClick}
         >
@@ -857,11 +883,11 @@ export class PFButtonLight extends LitElement {
       return html`
         <span
           class=${classes}
-          part="control"
           id=${controlId}
           role="button"
           aria-disabled=${ariaDisabled}
           aria-label=${ariaLabel}
+          aria-expanded=${ariaExpanded}
           tabindex=${tabIndex}
           @click=${this._handleActivatorClick}
           @keydown=${this._handleSpanKeydown}
@@ -874,7 +900,6 @@ export class PFButtonLight extends LitElement {
     return html`
       <button
         class=${classes}
-        part="control"
         id=${controlId}
         type=${this._getButtonType()}
         ?disabled=${this.disabled}

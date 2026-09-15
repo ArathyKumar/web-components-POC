@@ -11,6 +11,13 @@
  *    Label content goes in the default slot; icons use slot="icon".
  * 4. Theming: exportparts on the activator exposes internal parts for ::part()
  *    styling from outside the component (e.g. pf-button-shadow::part(control)).
+ *
+ * FORM ASSOCIATION — formAssociated + ElementInternals (submit/reset/value/disabled).
+ *
+ * ACTIVATOR — `as` attribute selects <button>, <a>, or <span role="button">.
+ * Link buttons support href, rel, target. Hamburger sets aria-expanded on all activators.
+ *
+ * @see https://www.patternfly.org/components/button
  */
 import { LitElement, html } from 'lit';
 import { adoptPatternFlyShadowStyles } from './styles/adopted-shadow.js';
@@ -276,6 +283,21 @@ function applyLoadingActivation(button, dispatch) {
   }
 }
 
+/**
+ * Validates the `as` attribute — only button, a, and span are supported activators.
+ * Invalid values fall back to button to avoid rendering unknown HTML elements.
+ *
+ * @param {string | undefined | null} as
+ * @returns {'button' | 'a' | 'span'}
+ */
+function normalizeActivatorTag(as) {
+  const tag = as || 'button';
+  if (tag === 'button' || tag === 'a' || tag === 'span') {
+    return tag;
+  }
+  return 'button';
+}
+
 export class PFButtonShadow extends LitElement {
   static formAssociated = true;
 
@@ -291,6 +313,8 @@ export class PFButtonShadow extends LitElement {
     value: { type: String, reflect: true },
     as: { type: String, reflect: true },
     href: { type: String },
+    rel: { type: String },
+    target: { type: String },
     extraClass: { type: String, attribute: 'extra-class' },
     ariaLabel: { type: String, attribute: 'aria-label' },
     ariaLabelFavorited: { type: String, attribute: 'aria-label-favorited' },
@@ -605,7 +629,7 @@ export class PFButtonShadow extends LitElement {
   }
 
   _getTagName() {
-    return this.as || 'button';
+    return normalizeActivatorTag(this.as);
   }
 
   _getButtonType() {
@@ -683,6 +707,8 @@ export class PFButtonShadow extends LitElement {
           viewBox="0 0 100 100"
           aria-label=${spinnerLabel}
           aria-labelledby=${hasLabelledBy ? this.spinnerAriaLabelledBy : undefined}
+          aria-valuemin="0"
+          aria-valuemax="100"
           aria-valuetext=${valueText}
         >
           <circle class="pf-v6-c-spinner__path" cx="50" cy="50" r="45" fill="none"></circle>
@@ -840,8 +866,11 @@ export class PFButtonShadow extends LitElement {
           exportparts=${EXPORT_PARTS}
           id=${controlId}
           href=${this._getHref()}
+          rel=${this.rel || undefined}
+          target=${this.target || undefined}
           aria-disabled=${ariaDisabled}
           aria-label=${ariaLabel}
+          aria-expanded=${ariaExpanded}
           tabindex=${tabIndex}
           @click=${this._handleActivatorClick}
         >
@@ -860,6 +889,7 @@ export class PFButtonShadow extends LitElement {
           role="button"
           aria-disabled=${ariaDisabled}
           aria-label=${ariaLabel}
+          aria-expanded=${ariaExpanded}
           tabindex=${tabIndex}
           @click=${this._handleActivatorClick}
           @keydown=${this._handleSpanKeydown}

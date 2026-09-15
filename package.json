@@ -16,7 +16,8 @@
   "scripts": {
     "dev": "npx http-server . -o -c-1",
     "sync-styles": "node scripts/sync-patternfly-styles.mjs",
-    "postinstall": "npm run sync-styles"
+    "postinstall": "npm run sync-styles",
+    "lint": "find components scripts styles -name '*.js' -print0 | xargs -0 node --check"
   },
   "dependencies": {
     "@patternfly/patternfly": "^6.6.1",

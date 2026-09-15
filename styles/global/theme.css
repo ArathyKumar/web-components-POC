@@ -1,32 +1,44 @@
 /*
- * Theme overrides for PatternFly web components.
+ * theme.css — Application-level PatternFly overrides (loaded after patternfly.css).
  *
- * Light DOM (pf-accordion-item-light, pf-button-light): target PatternFly classes
- * under the item host — markup is in the document tree.
+ * THEMING
+ * -------
+ * Light DOM: set --pf-v6-c-button--* on pf-button-light / target BEM classes under
+ *   pf-accordion-item-light. Primary and secondary variants use theme bridges in
+ *   adopted-light.js (host vars → .pf-m-primary / .pf-m-secondary).
  *
- * Shadow DOM (pf-accordion-item-shadow, pf-button-shadow): use ::part() selectors
- * on the item host. Accordion item parts: item, toggle, toggle-icon, content.
+ * Shadow DOM: use ::part() on pf-accordion-item-shadow / pf-button-shadow.
+ *   Set PatternFly tokens on ::part(control) — borders use --pf-v6-c-button--BorderColor
+ *   (drawn on .pf-v6-c-button::after inside shadow), not raw border-color.
+ *
+ * Accordion ::part() (shadow only): item, toggle, toggle-icon, content.
+ * Light accordion: target BEM classes under pf-accordion-item-light.
+ *
+ * SCOPING
+ * -------
+ * fluid-heading-markup is a class on item one only (not an id). Button green override
+ * requires an accordion ancestor so global primary brand colors still apply elsewhere.
  */
 
 /* --- Accordion item one (light DOM) --- */
-.fluid-heading-markup .pf-v6-c-accordion__item.pf-m-expanded {
+pf-accordion-item-light.fluid-heading-markup .pf-v6-c-accordion__item.pf-m-expanded {
   --pf-v6-c-accordion__item--m-expanded--BackgroundColor: #e0f0ff;
 }
 
-.fluid-heading-markup .pf-v6-c-accordion__toggle {
+pf-accordion-item-light.fluid-heading-markup .pf-v6-c-accordion__toggle {
   --pf-v6-c-accordion__toggle--BackgroundColor: #0066cc;
   --pf-v6-c-accordion__toggle-text--Color: #fff;
 }
 
-.fluid-heading-markup .pf-v6-c-accordion__toggle-icon {
+pf-accordion-item-light.fluid-heading-markup .pf-v6-c-accordion__toggle-icon {
   color: #fff;
 }
 
-.fluid-heading-markup .pf-v6-c-accordion__item.pf-m-expanded .pf-v6-c-accordion__toggle {
+pf-accordion-item-light.fluid-heading-markup .pf-v6-c-accordion__item.pf-m-expanded .pf-v6-c-accordion__toggle {
   --pf-v6-c-accordion__item--m-expanded__toggle--BackgroundColor: #0066cc;
 }
 
-/* --- Accordion item one (shadow DOM) — style via ::part() from parent --- */
+/* --- Accordion item one (shadow DOM) --- */
 pf-accordion-item-shadow.fluid-heading-markup[expanded]::part(item) {
   --pf-v6-c-accordion__item--m-expanded--BackgroundColor: #e0f0ff;
 }
@@ -44,8 +56,8 @@ pf-accordion-item-shadow.fluid-heading-markup[expanded]::part(toggle) {
   --pf-v6-c-accordion__item--m-expanded__toggle--BackgroundColor: #0066cc;
 }
 
-/* --- Button in accordion item one slot content --- */
-pf-accordion-light #fluid-heading-markup pf-button-shadow::part(control),
+/* --- Button in accordion item one (requires accordion ancestor) --- */
+pf-accordion-light pf-accordion-item-light.fluid-heading-markup pf-button-shadow::part(control),
 pf-accordion-shadow pf-accordion-item-shadow.fluid-heading-markup pf-button-shadow::part(control) {
   --pf-v6-c-button--m-primary--BackgroundColor: green;
   --pf-v6-c-button--m-primary--Color: #fff;
@@ -57,7 +69,7 @@ pf-accordion-shadow pf-accordion-item-shadow.fluid-heading-markup pf-button-shad
   --pf-v6-c-button--hover--Color: #fff;
 }
 
-/* --- Button --- */
+/* --- Global primary brand override --- */
 pf-button-shadow,
 pf-button-light {
   --pf-v6-c-button--m-primary--BackgroundColor: #008768;

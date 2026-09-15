@@ -1,3 +1,4 @@
+/** Public barrel — shadow and light accordion custom elements plus tag constants. */
 export {
   PFAccordionShadow,
   PFAccordionItemShadow,

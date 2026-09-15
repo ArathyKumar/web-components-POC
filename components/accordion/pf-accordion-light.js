@@ -1,11 +1,24 @@
 /**
- * pf-accordion-light / pf-accordion-item-light — PatternFly accordion in the light DOM.
+ * pf-accordion-light / pf-accordion-item-light — PatternFly accordion (Light DOM).
  *
- * Requires global patternfly.css on the page. Slots are projected manually because
- * native <slot> does not work without a shadow root.
+ * CONTENT PROJECTION — no shadow root, so slots are manual: non-`slot="content"`
+ * host children → toggle label; `slot="content"` → panel. After first render, label
+ * nodes may live under `.pf-v6-c-accordion__toggle-text`; getters preserve them on
+ * re-render.
+ *
+ * THEMING — target PatternFly BEM classes under the host (e.g. .pf-v6-c-accordion__toggle).
+ * Shadow items use ::part(); light items do not use part attributes.
+ *
+ * A11Y — keyboard nav via accordion-a11y.js; collapsed panels use hidden + inert.
+ *
+ * @see https://www.patternfly.org/components/accordion
  */
 import { LitElement, html, nothing } from 'lit';
 import { adoptPatternFlyLightHostStyles } from '../../styles/adopted-light.js';
+import {
+  getAccordionToggleButtons,
+  handleAccordionToggleKeydown,
+} from './accordion-a11y.js';
 
 export const ACCORDION_TAG = 'pf-accordion-light';
 export const ACCORDION_ITEM_TAG = 'pf-accordion-item-light';
@@ -194,6 +207,10 @@ class PFAccordionLight extends LitElement {
     super();
     this.definitionList = true;
     this.headingLevel = 'h3';
+    this._handleToggleKeydown = (event) => {
+      const toggles = getAccordionToggleButtons(this, ACCORDION_ITEM_TAG, false);
+      handleAccordionToggleKeydown(event, toggles);
+    };
   }
 
   createRenderRoot() {
@@ -204,12 +221,14 @@ class PFAccordionLight extends LitElement {
     adoptPatternFlyLightHostStyles();
     super.connectedCallback();
     this.addEventListener(ACCORDION_TOGGLE_EVENT, this._handleItemToggle);
+    this.addEventListener('keydown', this._handleToggleKeydown);
     queueMicrotask(() => this._syncItemUpdates());
   }
 
   disconnectedCallback() {
     super.disconnectedCallback();
     this.removeEventListener(ACCORDION_TOGGLE_EVENT, this._handleItemToggle);
+    this.removeEventListener('keydown', this._handleToggleKeydown);
   }
 
   updated(changedProperties) {
@@ -358,9 +377,7 @@ class PFAccordionItemLight extends LitElement {
   _getProjectableChildNodes() {
     return [...this.childNodes].filter((node) => {
       return !(
-        node.nodeType === Node.ELEMENT_NODE &&
-        (node.getAttribute('part') === 'control' ||
-          node.classList?.contains('pf-v6-c-accordion__item'))
+        node.nodeType === Node.ELEMENT_NODE && node.classList?.contains('pf-v6-c-accordion__item')
       );
     });
   }
@@ -437,6 +454,10 @@ class PFAccordionItemLight extends LitElement {
     return html`<div class="${ACCORDION_BLOCK}__expandable-content-body">${content}</div>`;
   }
 
+  /**
+   * Renders the expandable panel. Collapsed panels use hidden + inert so focus cannot
+   * enter panel content while the section is closed.
+   */
   _renderContent(content, asDefinitionList) {
     const contentClass = getAccordionContentClassNames(this.fixed, this.contentExtraClass);
     const contentBody = this._renderContentBody(content);
@@ -448,6 +469,7 @@ class PFAccordionItemLight extends LitElement {
           class=${contentClass}
           id=${this.contentId}
           ?hidden=${!this.expanded}
+          ?inert=${!this.expanded}
           role=${fixedExpanded ? 'region' : nothing}
           tabindex=${fixedExpanded ? '0' : nothing}
           aria-labelledby=${fixedExpanded ? this.toggleId : nothing}
@@ -463,6 +485,7 @@ class PFAccordionItemLight extends LitElement {
         class=${contentClass}
         id=${this.contentId}
         ?hidden=${!this.expanded}
+        ?inert=${!this.expanded}
         role=${fixedExpanded ? 'region' : nothing}
         tabindex=${fixedExpanded ? '0' : nothing}
         aria-labelledby=${fixedExpanded ? this.toggleId : nothing}

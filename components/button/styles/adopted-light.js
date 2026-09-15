@@ -1,4 +1,14 @@
-/** Light DOM host overrides for pf-button-light (no component CSS). */
+/**
+ * Light DOM host overrides for pf-button-light.
+ *
+ * Component structure/states come from global patternfly.css. This sheet only adds:
+ * - Host layout (inline-block, block, hidden)
+ * - Circle button icon centering
+ * - Disabled link pointer-events
+ * - Theme bridge: host --pf-v6-c-button--* → .pf-m-primary / .pf-m-secondary
+ *
+ * Secondary borders use --pf-v6-c-button--BorderColor (drawn on ::after), not border-color.
+ */
 export const BUTTON_LIGHT_HOST_STYLES = `
 pf-button-light {
   display: inline-block;
@@ -78,5 +88,36 @@ pf-button-light .pf-v6-c-button.pf-m-primary {
   --pf-v6-c-button--m-primary--m-clicked--Color: var(--pf-button-theme-primary-clicked-color);
   --pf-v6-c-button--m-primary--m-clicked--BackgroundColor: var(--pf-button-theme-primary-clicked-bg);
   --pf-v6-c-button--m-primary--m-clicked__icon--Color: var(--pf-button-theme-primary-clicked-icon-color);
+}
+
+pf-button-light {
+  --pf-button-theme-secondary-color: var(--pf-v6-c-button--m-secondary--Color, var(--pf-t--global--text--color--brand--default));
+  --pf-button-theme-secondary-border-color: var(--pf-v6-c-button--m-secondary--BorderColor, var(--pf-t--global--border--color--brand--default));
+  --pf-button-theme-secondary-icon-color: var(--pf-v6-c-button--m-secondary__icon--Color, var(--pf-t--global--icon--color--brand--default));
+  --pf-button-theme-secondary-hover-color: var(--pf-v6-c-button--m-secondary--hover--Color, var(--pf-t--global--text--color--brand--hover));
+  --pf-button-theme-secondary-hover-border-color: var(--pf-v6-c-button--m-secondary--hover--BorderColor, var(--pf-t--global--border--color--brand--hover));
+  --pf-button-theme-secondary-hover-icon-color: var(--pf-v6-c-button--m-secondary--hover__icon--Color, var(--pf-t--global--icon--color--brand--hover));
+  --pf-button-theme-secondary-clicked-color: var(--pf-v6-c-button--m-secondary--m-clicked--Color, var(--pf-t--global--text--color--brand--clicked));
+  --pf-button-theme-secondary-clicked-border-color: var(--pf-v6-c-button--m-secondary--m-clicked--BorderColor, var(--pf-t--global--border--color--brand--clicked));
+  --pf-button-theme-secondary-clicked-icon-color: var(--pf-v6-c-button--m-secondary--m-clicked__icon--Color, var(--pf-t--global--icon--color--brand--clicked));
+}
+
+pf-button-light .pf-v6-c-button.pf-m-secondary {
+  --pf-v6-c-button--m-secondary--Color: var(--pf-button-theme-secondary-color);
+  --pf-v6-c-button--m-secondary--BorderColor: var(--pf-button-theme-secondary-border-color);
+  --pf-v6-c-button--m-secondary__icon--Color: var(--pf-button-theme-secondary-icon-color);
+  --pf-v6-c-button--Color: var(--pf-button-theme-secondary-color);
+  --pf-v6-c-button--BorderColor: var(--pf-button-theme-secondary-border-color);
+  --pf-v6-c-button__icon--Color: var(--pf-button-theme-secondary-icon-color);
+  --pf-v6-c-button--m-secondary--hover--Color: var(--pf-button-theme-secondary-hover-color);
+  --pf-v6-c-button--m-secondary--hover--BorderColor: var(--pf-button-theme-secondary-hover-border-color);
+  --pf-v6-c-button--hover--Color: var(--pf-button-theme-secondary-hover-color);
+  --pf-v6-c-button--hover--BorderColor: var(--pf-button-theme-secondary-hover-border-color);
+  --pf-v6-c-button--hover__icon--Color: var(--pf-button-theme-secondary-hover-icon-color);
+  --pf-v6-c-button--m-secondary--m-clicked--Color: var(--pf-button-theme-secondary-clicked-color);
+  --pf-v6-c-button--m-secondary--m-clicked--BorderColor: var(--pf-button-theme-secondary-clicked-border-color);
+  --pf-v6-c-button--m-clicked--Color: var(--pf-button-theme-secondary-clicked-color);
+  --pf-v6-c-button--m-clicked--BorderColor: var(--pf-button-theme-secondary-clicked-border-color);
+  --pf-v6-c-button--m-clicked__icon--Color: var(--pf-button-theme-secondary-clicked-icon-color);
 }
 `;
