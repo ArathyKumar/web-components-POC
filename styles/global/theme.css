@@ -8,13 +8,15 @@
  * var(--pf-t--global--color--brand--*).
  */
 
-
 pf-button-shadow,
 pf-button-light {
   --pf-v6-c-button--m-primary--BackgroundColor: #008768;
-}
-
-
-body {
-  height: auto;
+  --pf-v6-c-button--m-primary--Color: #fff;
+  --pf-v6-c-button--m-primary__icon--Color: #fff;
+  --pf-v6-c-button--m-primary--hover--BackgroundColor: #006d56;
+  --pf-v6-c-button--m-primary--hover--Color: #fff;
+  --pf-v6-c-button--m-primary--hover__icon--Color: #fff;
+  --pf-v6-c-button--m-primary--m-clicked--BackgroundColor: #005c49;
+  --pf-v6-c-button--m-primary--m-clicked--Color: #fff;
+  --pf-v6-c-button--m-primary--m-clicked__icon--Color: #fff;
 }

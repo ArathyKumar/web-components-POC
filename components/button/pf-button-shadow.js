@@ -6,55 +6,276 @@
  * 1. Encapsulation: Lit renders into an open shadow root (createRenderRoot).
  * 2. Styles: Full button/spinner/badge CSS is adopted into the shadow root via
  *    adoptPatternFlyShadowStyles(). Global patternfly.css is still required on
- *    the page for design tokens (--pf-t--* variables) to resolve inside shadow.
+ *    the page for design tokens (--pf-t--*) to resolve inside shadow.
  * 3. Slots: Native <slot> elements project host children into the shadow tree.
  *    Label content goes in the default slot; icons use slot="icon".
  * 4. Theming: exportparts on the activator exposes internal parts for ::part()
  *    styling from outside the component (e.g. pf-button-shadow::part(control)).
- *
- * DIFFERS FROM pf-button-light
- * ----------------------------
- * - Uses a shadow root (this.shadowRoot exists).
- * - Does NOT rely on global component CSS reaching inner markup.
- * - Uses <slot> instead of manual DOM-node projection.
- * - Supports exportparts; light DOM does not.
- * - Queries the activator via this.renderRoot (inside shadow boundary).
  */
-import { LitElement, html, nothing } from 'lit';
-import { getPatternFlyButtonClassNames } from './lib/class-names.js';
-import {
-  rhUiStarIcon,
-  rhUiStarFillIcon,
-  rhUiSettingsFillIcon,
-  rhUiAddCircleFillIcon,
-  hamburgerIcon,
-  getButtonIcon,
-} from './lib/icons.js';
+import { LitElement, html } from 'lit';
 import { adoptPatternFlyShadowStyles } from './styles/adopted-shadow.js';
-import {
-  autoToggleConverter,
-  getProgressLabelText,
-  isIconOnlyProgressButton,
-  captureDefaultAriaLabel,
-  syncFavoriteAriaLabel,
-  syncLoadingPresentation,
-  applyFavoriteActivation,
-  applyLoadingActivation,
-} from './lib/state.js';
 
 /** Custom element tag name for the shadow DOM button. */
 export const ELEMENT_TAG = 'pf-button-shadow';
 
-/**
- * Re-exported on the activator so consumers can style internals with ::part().
- * Only meaningful inside a shadow root — ignored in light DOM components.
- */
+/** exportparts for ::part() theming — only meaningful inside a shadow root. */
 const EXPORT_PARTS =
   'control, icon, icon-favorite, icon-favorited, text, sr-text, progress, spinner, count, badge';
 
 /**
- * PatternFly button rendered inside a shadow root with encapsulated styles.
+ * Maps button options to PatternFly core (pf-v6-c-button) class names.
+ * @see https://www.patternfly.org/components/button
  */
+function getPatternFlyButtonClassNames({
+  variant = 'primary',
+  size = 'default',
+  state = 'unread',
+  className = '',
+  block = false,
+  disabled = false,
+  ariaDisabled = false,
+  loading = false,
+  clicked = false,
+  inline = false,
+  danger = false,
+  favorite = false,
+  favorited = false,
+  noPadding = false,
+  settings = false,
+  hamburger = false,
+  hamburgerVariant,
+  circle = false,
+  docked = false,
+  textExpanded = false,
+} = {}) {
+  const classes = ['pf-v6-c-button'];
+
+  if (variant === 'stateful') {
+    classes.push('pf-m-stateful');
+    if (state === 'read') classes.push('pf-m-read');
+    else if (state === 'attention') classes.push('pf-m-attention');
+    else classes.push('pf-m-unread');
+  } else {
+    classes.push(`pf-m-${variant}`);
+  }
+
+  if (size === 'sm') classes.push('pf-m-small');
+  if (size === 'lg') classes.push('pf-m-display-lg');
+
+  if (block) classes.push('pf-m-block');
+  if (disabled) classes.push('pf-m-disabled');
+  if (ariaDisabled) classes.push('pf-m-aria-disabled');
+  if (clicked) classes.push('pf-m-clicked');
+  if (loading && variant !== 'plain') classes.push('pf-m-progress');
+  if (loading) classes.push('pf-m-in-progress');
+  if (inline) classes.push('pf-m-inline');
+  if (danger) classes.push('pf-m-danger');
+  if (favorite) classes.push('pf-m-favorite');
+  if (favorite && favorited) classes.push('pf-m-favorited');
+  if (settings) classes.push('pf-m-settings');
+  if (hamburger) {
+    classes.push('pf-m-hamburger');
+    if (hamburgerVariant === 'expand') classes.push('pf-m-expand');
+    if (hamburgerVariant === 'collapse') classes.push('pf-m-collapse');
+  }
+  if (circle) classes.push('pf-m-circle');
+  if (docked) classes.push('pf-m-docked');
+  if (textExpanded) classes.push('pf-m-text-expanded');
+  if (noPadding) classes.push('pf-m-no-padding');
+
+  if (className) classes.push(className);
+
+  return classes.join(' ');
+}
+
+function pfIconSvg(pathData, viewBox = '0 0 32 32') {
+  return html`
+    <svg
+      class="pf-v6-svg"
+      fill="currentColor"
+      viewBox=${viewBox}
+      aria-hidden="true"
+      role="img"
+      width="1em"
+      height="1em"
+    >
+      <path d=${pathData}></path>
+    </svg>
+  `;
+}
+
+const rhUiStarIcon = pfIconSvg(
+  'M24 30c-.184 0-.368-.051-.53-.152L16 25.18l-7.47 4.668a.998.998 0 0 1-1.51-1.044l1.885-9.425-7.749-6.619a1 1 0 0 1 .557-1.756l10.245-.945 3.119-7.446a1 1 0 0 1 1.844 0l3.119 7.446 10.245.945a1 1 0 0 1 .557 1.756l-7.749 6.619 1.885 9.425a.998.998 0 0 1-.98 1.197Zm-8-7c.184 0 .368.051.53.152l6.035 3.771-1.545-7.728a1.002 1.002 0 0 1 .331-.957l6.394-5.461-8.485-.783a1 1 0 0 1-.831-.609L16 5.587l-2.429 5.798a.998.998 0 0 1-.831.609l-8.485.783 6.394 5.461c.275.235.402.602.331.957l-1.545 7.728 6.035-3.771A.993.993 0 0 1 16 23Z'
+);
+
+const rhUiStarFillIcon = pfIconSvg(
+  'm30.844 12.76-7.749 6.619 1.885 9.425a.998.998 0 0 1-.98 1.197c-.184 0-.368-.051-.53-.152L16 25.181l-7.47 4.668a.998.998 0 0 1-1.51-1.044l1.885-9.425-7.749-6.62a1 1 0 0 1 .557-1.756l10.245-.945 3.119-7.446a1 1 0 0 1 1.844 0l3.119 7.446 10.245.945a1 1 0 0 1 .557 1.756Z'
+);
+
+const rhUiSettingsFillIcon = pfIconSvg(
+  'M26.463 16.845a9.635 9.635 0 0 0-.002-1.688l3.41-1.974a.5.5 0 0 0 .235-.548 14.47 14.47 0 0 0-4.142-7.167.5.5 0 0 0-.594-.07l-3.404 1.97c-.469-.326-.96-.61-1.466-.85V2.58a.5.5 0 0 0-.356-.48 14.662 14.662 0 0 0-8.288 0 .5.5 0 0 0-.356.48v3.944c-.513.245-1.003.528-1.462.846L6.63 5.397a.5.5 0 0 0-.594.07 14.47 14.47 0 0 0-4.142 7.168.5.5 0 0 0 .236.548l3.407 1.972a9.635 9.635 0 0 0 .002 1.688l-3.41 1.974a.5.5 0 0 0-.235.548 14.47 14.47 0 0 0 4.142 7.167c.16.154.405.18.594.07l3.404-1.97c.469.326.96.61 1.466.85v3.938a.5.5 0 0 0 .356.48c1.333.398 2.728.6 4.144.6s2.81-.202 4.144-.6a.5.5 0 0 0 .356-.48v-3.944a10.449 10.449 0 0 0 1.462-.846l3.408 1.973a.5.5 0 0 0 .594-.07 14.47 14.47 0 0 0 4.142-7.168.5.5 0 0 0-.236-.548l-3.407-1.972ZM16 21c-2.757 0-5-2.243-5-5s2.243-5 5-5 5 2.243 5 5-2.243 5-5 5Z'
+);
+
+const rhUiAddCircleFillIcon = pfIconSvg(
+  'M16 1C7.729 1 1 7.729 1 16s6.729 15 15 15 15-6.729 15-15S24.271 1 16 1Zm7 16.125h-5.875V23a1.125 1.125 0 0 1-2.25 0v-5.875H9a1.125 1.125 0 0 1 0-2.25h5.875V9a1.125 1.125 0 0 1 2.25 0v5.875H23a1.125 1.125 0 0 1 0 2.25Z'
+);
+
+const rhUiNotificationFillIcon = pfIconSvg(
+  'M28.75 22v3.5c0 .689-.561 1.25-1.25 1.25h-7.521c.005.084.021.166.021.25 0 2.206-1.794 4-4 4s-4-1.794-4-4c0-.084.016-.166.021-.25H4.5c-.689 0-1.25-.561-1.25-1.25V22a.75.75 0 0 1 .75-.75c1.24 0 2.25-1.009 2.25-2.25v-4c0-4.826 3.528-8.833 8.138-9.605A2.482 2.482 0 0 1 13.5 3.5C13.5 2.122 14.621 1 16 1s2.5 1.122 2.5 2.5c0 .761-.349 1.436-.888 1.895 4.61.772 8.138 4.779 8.138 9.605v4c0 1.241 1.01 2.25 2.25 2.25a.75.75 0 0 1 .75.75Z'
+);
+
+const rhUiCopyFillIcon = pfIconSvg(
+  'M28 7v22.607c0 .768-.622 1.393-1.387 1.393H10a1 1 0 1 1 0-2h16V7a1 1 0 1 1 2 0Zm-5.25 17.5v-22c0-.689-.561-1.25-1.25-1.25h-8.375v7.364c0 .833-.678 1.511-1.512 1.511H4.25V24.5c0 .689.561 1.25 1.25 1.25h16c.689 0 1.25-.561 1.25-1.25ZM10.875 1.275a.738.738 0 0 0-.405.195l-6 6a.738.738 0 0 0-.195.405h6.6v-6.6Z'
+);
+
+const rhMicronsCloseIcon = pfIconSvg(
+  'M17.8 16.2 11.59 10l6.21-6.21c.42-.46.39-1.17-.07-1.59-.43-.4-1.09-.4-1.52 0l-6.2 6.2-6.22-6.19c-.44-.44-1.15-.44-1.59 0-.44.44-.44 1.15 0 1.59l6.2 6.21-6.2 6.2c-.42.46-.39 1.17.07 1.59.43.4 1.09.4 1.52 0L10 11.59l6.2 6.2c.44.44 1.15.44 1.59 0 .44-.45.44-1.16 0-1.6Z',
+  '0 0 20 20'
+);
+
+const uploadIcon = pfIconSvg(
+  'M296 384h-80c-13.3 0-24-10.7-24-24V192h-87.7c-17.8 0-26.7-21.5-14.1-34.1L242.3 5.7c7.5-7.5 19.8-7.5 27.3 0l152.2 152.2c12.6 12.6 3.7 34.1-14.1 34.1H320v168c0 13.3-10.7 24-24 24zm216-8v112c0 13.3-10.7 24-24 24H24c-13.3 0-24-10.7-24-24V376c0-13.3 10.7-24 24-24h136v8c0 30.9 25.1 56 56 56h80c30.9 0 56-25.1 56-56v-8h136c13.3 0 24 10.7 24 24zm-124 88c0-11-9-20-20-20s-20 9-20 20 9 20 20 20 20-9 20-20zm64 0c0-11-9-20-20-20s-20 9-20 20 9 20 20 20 20-9 20-20z',
+  '0 0 512 512'
+);
+
+const hamburgerIcon = html`
+  <svg
+    viewBox="0 0 10 10"
+    class="pf-v6-c-button--hamburger-icon pf-v6-svg"
+    width="1em"
+    height="1em"
+    aria-hidden="true"
+    role="img"
+  >
+    <path class="pf-v6-c-button--hamburger-icon--top" d="M1,1 L9,1"></path>
+    <path class="pf-v6-c-button--hamburger-icon--middle" d="M1,5 L9,5"></path>
+    <path class="pf-v6-c-button--hamburger-icon--arrow" d="M1,5 L1,5 L1,5"></path>
+    <path class="pf-v6-c-button--hamburger-icon--bottom" d="M9,9 L1,9"></path>
+  </svg>
+`;
+
+const buttonIconMap = {
+  'add-circle': rhUiAddCircleFillIcon,
+  notification: rhUiNotificationFillIcon,
+  copy: rhUiCopyFillIcon,
+  close: rhMicronsCloseIcon,
+  upload: uploadIcon,
+};
+
+function getButtonIcon(name) {
+  return buttonIconMap[name] ?? null;
+}
+
+const autoToggleConverter = {
+  fromAttribute(value) {
+    return value !== 'false';
+  },
+  toAttribute(value) {
+    return value ? null : 'false';
+  },
+};
+
+function isProgressCapable(button) {
+  return (
+    button.loading ||
+    Boolean(button.spinnerAriaLabel) ||
+    Boolean(button.spinnerAriaLabelledBy) ||
+    Boolean(button.spinnerAriaValueText)
+  );
+}
+
+function usesProgressLabels(button) {
+  return Boolean(button.idleLabel || button.loadingLabel);
+}
+
+function getProgressLabelText(button) {
+  if (!usesProgressLabels(button)) {
+    return null;
+  }
+
+  if (button.loading) {
+    return button.loadingLabel ?? button.idleLabel ?? '';
+  }
+
+  return button.idleLabel ?? button.loadingLabel ?? '';
+}
+
+function isIconOnlyProgressButton(button, hasDefaultSlotContent) {
+  return isProgressCapable(button) && !usesProgressLabels(button) && !hasDefaultSlotContent;
+}
+
+function captureDefaultAriaLabel(button) {
+  button._defaultAriaLabel = button.ariaLabel || button.getAttribute('aria-label') || '';
+}
+
+function syncFavoriteAriaLabel(button, favorited) {
+  const favoritedLabel = button.ariaLabelFavorited;
+  const unfavoritedLabel = button.ariaLabelUnfavorited ?? button._defaultAriaLabel;
+
+  if (favoritedLabel || unfavoritedLabel) {
+    button.ariaLabel = favorited
+      ? (favoritedLabel || 'Unfavorite')
+      : (unfavoritedLabel || 'Favorite');
+    return;
+  }
+
+  button.ariaLabel = favorited ? 'Unfavorite' : 'Favorite';
+}
+
+function syncLoadingPresentation(button, loading, hasDefaultSlotContent) {
+  if (!isIconOnlyProgressButton(button, hasDefaultSlotContent)) {
+    return;
+  }
+
+  if (loading && (button.spinnerAriaLabel || button.spinnerAriaLabelledBy)) {
+    button.ariaLabel = undefined;
+  } else {
+    button.ariaLabel = button._defaultAriaLabel || undefined;
+  }
+}
+
+function shouldAutoToggleFavorite(button) {
+  if (!button.favorite) {
+    return false;
+  }
+
+  return button.autoToggleFavorite !== false;
+}
+
+function shouldAutoToggleLoading(button) {
+  if (!isProgressCapable(button)) {
+    return false;
+  }
+
+  return button.autoToggleLoading !== false;
+}
+
+function applyFavoriteActivation(button, dispatch) {
+  if (shouldAutoToggleFavorite(button)) {
+    const favorited = !button.favorited;
+    button.favorited = favorited;
+    dispatch('pf-favorite-change', { favorited });
+    return;
+  }
+
+  if (button.favorite) {
+    dispatch('pf-favorite-change', { favorited: !button.favorited });
+  }
+}
+
+function applyLoadingActivation(button, dispatch) {
+  if (shouldAutoToggleLoading(button)) {
+    const loading = !button.loading;
+    button.loading = loading;
+    dispatch('pf-loading-change', { loading });
+    return;
+  }
+
+  if (isProgressCapable(button)) {
+    dispatch('pf-loading-change', { loading: !button.loading });
+  }
+}
+
 export class PFButtonShadow extends LitElement {
   static formAssociated = true;
 
@@ -100,50 +321,59 @@ export class PFButtonShadow extends LitElement {
     spinnerAriaLabelledBy: { type: String, attribute: 'spinner-aria-labelledby' },
     spinnerAriaValueText: { type: String, attribute: 'spinner-aria-value-text' },
     controlId: { type: String, attribute: 'control-id' },
-    autoToggleFavorite: { attribute: 'auto-toggle-favorite', reflect: true, converter: autoToggleConverter },
-    autoToggleLoading: { attribute: 'auto-toggle-loading', reflect: true, converter: autoToggleConverter },
+    autoToggleFavorite: {
+      attribute: 'auto-toggle-favorite',
+      reflect: true,
+      converter: autoToggleConverter,
+    },
+    autoToggleLoading: {
+      attribute: 'auto-toggle-loading',
+      reflect: true,
+      converter: autoToggleConverter,
+    },
   };
 
-  /** Attaches ElementInternals for form-associated custom element behavior. */
   constructor() {
     super();
     this.internals = this.attachInternals();
+    this._authorDisabled = false;
+    this._formDisabled = false;
+    this._iconHoverAbort = null;
   }
 
-  /**
-   * Creates the shadow root and adopts encapsulated PatternFly CSS into it.
-   * Component styles live here; design tokens still come from the document.
-   */
   createRenderRoot() {
     const root = super.createRenderRoot();
     adoptPatternFlyShadowStyles(root);
     return root;
   }
 
-  /** Captures default aria-label and syncs initial form/favorite presentation. */
   connectedCallback() {
     super.connectedCallback();
+    this._authorDisabled = this.hasAttribute('disabled');
     captureDefaultAriaLabel(this);
     this._syncFormDisabledState();
     this._syncFormValue();
   }
 
-  /** Delegates focus to the inner activator element. */
+  disconnectedCallback() {
+    this._iconHoverAbort?.abort();
+    this._iconHoverAbort = null;
+    super.disconnectedCallback();
+  }
+
   focus(options) {
     this._getControlElement()?.focus(options);
   }
 
-  /** Delegates blur to the inner activator element. */
   blur() {
     this._getControlElement()?.blur();
   }
 
-  /** FACE lifecycle: mirrors the associated form's disabled state onto the host. */
   formDisabledCallback(disabled) {
-    this.disabled = disabled;
+    this._formDisabled = disabled;
+    this.disabled = this._authorDisabled || disabled;
   }
 
-  /** FACE lifecycle: resets stateful properties and restores aria/label presentation. */
   formResetCallback() {
     this.loading = false;
     this.favorited = false;
@@ -151,21 +381,30 @@ export class PFButtonShadow extends LitElement {
     this.expanded = false;
   }
 
-  /** Sets initial favorite aria-label and binds settings/hamburger hover handlers. */
   firstUpdated() {
     if (this.favorite) {
       syncFavoriteAriaLabel(this, this.favorited);
     }
 
-    if (this.settings || this.hamburger) {
-      this._bindIconHoverHandlers();
-    }
+    this._syncIconHoverHandlers();
   }
 
-  /** Syncs presentation when properties change externally or after internal toggles. */
   updated(changedProperties) {
+    if (changedProperties.has('disabled')) {
+      if (this._formDisabled && !this.disabled) {
+        this.disabled = true;
+      } else if (!this._formDisabled) {
+        this._authorDisabled = this.disabled;
+      }
+    }
+
+    if (changedProperties.has('icon') && this.icon && !getButtonIcon(this.icon)) {
+      console.warn(`[pf-button] Unknown icon name: "${this.icon}"`);
+    }
+
     if (changedProperties.has('ariaLabel')) {
-      const iconOnlyLoading = this.loading && isIconOnlyProgressButton(this, this._hasDefaultSlotContent());
+      const iconOnlyLoading =
+        this.loading && isIconOnlyProgressButton(this, this._hasDefaultSlotContent());
       if (!iconOnlyLoading) {
         captureDefaultAriaLabel(this);
       }
@@ -196,20 +435,21 @@ export class PFButtonShadow extends LitElement {
     if (changedProperties.has('value') || changedProperties.has('name')) {
       this._syncFormValue();
     }
+
+    if (changedProperties.has('settings') || changedProperties.has('hamburger')) {
+      this._syncIconHoverHandlers();
+    }
   }
 
-  /** Renders the shadow-DOM activator with exportparts for ::part() theming. */
   render() {
-    return this._renderControl(EXPORT_PARTS);
+    return this._renderControl();
   }
 
-  /** Mirrors disabled/aria-disabled state to ElementInternals for form association. */
   _syncFormDisabledState() {
     const disabled = this.disabled || this.ariaDisabled;
     this.internals.ariaDisabled = disabled;
   }
 
-  /** Updates the form value exposed via ElementInternals when name/value change. */
   _syncFormValue() {
     if (this.name) {
       this.internals.setFormValue(this.value ?? '');
@@ -219,11 +459,6 @@ export class PFButtonShadow extends LitElement {
     this.internals.setFormValue(null);
   }
 
-  /**
-   * Returns true when a host child belongs in the default (label) slot.
-   * Slotted children remain in the light DOM tree on the host element;
-   * the shadow <slot> projects them visually into the button text area.
-   */
   _isDefaultSlotNode(node) {
     if (node.nodeType === Node.TEXT_NODE) {
       return Boolean(node.textContent?.trim());
@@ -235,43 +470,40 @@ export class PFButtonShadow extends LitElement {
     return false;
   }
 
-  /**
-   * Finds a host child assigned to the icon slot.
-   * Must query the host (this), not the shadow root — slotted nodes stay on the host.
-   */
   _getIconSlotNode() {
     return this.querySelector(':scope > [slot="icon"]');
   }
 
-  /**
-   * Returns the inner activator inside the shadow root.
-   * Always use renderRoot here; the control is not a direct child of the host.
-   */
   _getControlElement() {
     return this.renderRoot?.querySelector('[part="control"]');
   }
 
-  /**
-   * Toggles pf-m-shadow-hover on the activator for settings/hamburger icon
-   * animations when :hover/:focus inside adopted shadow styles is unreliable.
-   */
-  _bindIconHoverHandlers() {
-    const control = this._getControlElement();
-    if (!control || control.dataset.pfIconHoverBound === 'true') {
+  _syncIconHoverHandlers() {
+    this._iconHoverAbort?.abort();
+    this._iconHoverAbort = null;
+
+    if (!this.settings && !this.hamburger) {
       return;
     }
+
+    const control = this._getControlElement();
+    if (!control) {
+      return;
+    }
+
+    const abort = new AbortController();
+    this._iconHoverAbort = abort;
+    const { signal } = abort;
 
     const activate = () => control.classList.add('pf-m-shadow-hover');
     const deactivate = () => control.classList.remove('pf-m-shadow-hover');
 
-    control.addEventListener('pointerenter', activate);
-    control.addEventListener('pointerleave', deactivate);
-    control.addEventListener('focus', activate);
-    control.addEventListener('blur', deactivate);
-    control.dataset.pfIconHoverBound = 'true';
+    control.addEventListener('pointerenter', activate, { signal });
+    control.addEventListener('pointerleave', deactivate, { signal });
+    control.addEventListener('focus', activate, { signal });
+    control.addEventListener('blur', deactivate, { signal });
   }
 
-  /** Re-triggers the pf-m-favorited CSS animation by toggling the class in one frame. */
   _replayFavoriteAnimation() {
     requestAnimationFrame(() => {
       const control = this._getControlElement();
@@ -285,7 +517,6 @@ export class PFButtonShadow extends LitElement {
     });
   }
 
-  /** Resolves the associated form via ElementInternals or the form attribute. */
   _getAssociatedForm() {
     if (this.internals.form) {
       return this.internals.form;
@@ -298,7 +529,6 @@ export class PFButtonShadow extends LitElement {
     return null;
   }
 
-  /** Dispatches a SubmitEvent with this element as the submitter. */
   _submitForm() {
     const form = this._getAssociatedForm();
     if (!form) {
@@ -323,13 +553,11 @@ export class PFButtonShadow extends LitElement {
     }
   }
 
-  /** Resets the associated form, which triggers formResetCallback on participants. */
   _resetForm() {
     const form = this._getAssociatedForm();
     form?.reset();
   }
 
-  /** Dispatches a bubbling, composed CustomEvent from the host. */
   _dispatchComponentEvent(name, detail) {
     this.dispatchEvent(
       new CustomEvent(name, {
@@ -340,7 +568,6 @@ export class PFButtonShadow extends LitElement {
     );
   }
 
-  /** Dispatches pf-activate and applies favorite/loading state toggles on click. */
   _dispatchActivateEvents() {
     this._dispatchComponentEvent('pf-activate', {
       variant: this.variant || 'primary',
@@ -352,7 +579,6 @@ export class PFButtonShadow extends LitElement {
     applyLoadingActivation(this, dispatch);
   }
 
-  /** Builds the PatternFly BEM class list from current component properties. */
   _getClassNames() {
     return getPatternFlyButtonClassNames({
       variant: this.variant || 'primary',
@@ -378,23 +604,19 @@ export class PFButtonShadow extends LitElement {
     });
   }
 
-  /** Returns the activator element name: button, a, or span. */
   _getTagName() {
     return this.as || 'button';
   }
 
-  /** Returns the native button type: button, submit, or reset. */
   _getButtonType() {
     return this.type || 'button';
   }
 
-  /** Returns true when aria-disabled should be set on the activator. */
   _shouldRenderAriaDisabled() {
     const tag = this._getTagName();
     return this.ariaDisabled || (tag !== 'button' && this.disabled);
   }
 
-  /** Computes tabindex for link/span activators and disabled states. */
   _getTabIndex() {
     const tag = this._getTagName();
     if (this.disabled) {
@@ -409,37 +631,41 @@ export class PFButtonShadow extends LitElement {
     return null;
   }
 
-  /** Returns true when the icon should render after the label text. */
+  _getHref() {
+    if (this.disabled || this.ariaDisabled) {
+      return undefined;
+    }
+
+    return this.href || undefined;
+  }
+
   _iconPositionAtEnd() {
     return this.iconPosition === 'end' || this.iconPosition === 'right';
   }
 
-  /**
-   * Checks host children for default-slot content before render.
-   * In shadow DOM, assigned nodes stay on the host until the <slot> displays them.
-   */
   _hasDefaultSlotContent() {
     return [...this.childNodes].some((node) => this._isDefaultSlotNode(node));
   }
 
-  /** Returns true when a host child is assigned to the icon slot. */
   _hasIconSlotContent() {
     return Boolean(this._getIconSlotNode());
   }
 
-  /** Returns true when any icon source (builtin, slot, or variant flag) is present. */
+  _hasValidBuiltInIcon() {
+    return Boolean(this.icon && getButtonIcon(this.icon));
+  }
+
   _shouldRenderIcon() {
     return (
       this.favorite ||
       this.settings ||
       this.hamburger ||
-      Boolean(this.icon) ||
+      this._hasValidBuiltInIcon() ||
       this.circle ||
       this._hasIconSlotContent()
     );
   }
 
-  /** Renders the in-button progress spinner with accessible spinner attributes. */
   _renderProgress() {
     const valueText = this.spinnerAriaValueText || 'Loading...';
     const hasLabelledBy = Boolean(this.spinnerAriaLabelledBy);
@@ -465,7 +691,6 @@ export class PFButtonShadow extends LitElement {
     `;
   }
 
-  /** Returns pf-m-start/pf-m-end for labeled buttons, or empty for icon-only. */
   _getIconPositionClass() {
     const hasLabel = this._hasDefaultSlotContent();
     const isIconOnly =
@@ -473,7 +698,7 @@ export class PFButtonShadow extends LitElement {
       this.settings ||
       this.hamburger ||
       (this.circle && !hasLabel) ||
-      (Boolean(this.icon) && !hasLabel) ||
+      (this._hasValidBuiltInIcon() && !hasLabel) ||
       (this._hasIconSlotContent() && !hasLabel);
 
     if (!hasLabel && isIconOnly) {
@@ -483,7 +708,6 @@ export class PFButtonShadow extends LitElement {
     return this._iconPositionAtEnd() ? 'pf-m-end' : 'pf-m-start';
   }
 
-  /** Renders the icon region using builtin icons, circle default, or the icon slot. */
   _renderIcon() {
     if (!this._shouldRenderIcon()) {
       return null;
@@ -506,7 +730,6 @@ export class PFButtonShadow extends LitElement {
     } else if (this.circle) {
       iconContent = rhUiAddCircleFillIcon;
     } else {
-      // Native slot: host child with slot="icon" is projected here automatically.
       iconContent = html`<slot name="icon"></slot>`;
     }
 
@@ -517,7 +740,6 @@ export class PFButtonShadow extends LitElement {
     `;
   }
 
-  /** Renders the optional unread/read count badge beside the label. */
   _renderCount() {
     if (this.count == null) {
       return null;
@@ -532,10 +754,6 @@ export class PFButtonShadow extends LitElement {
     `;
   }
 
-  /**
-   * Renders the label region with a native default <slot>.
-   * Host text/elements without a slot attribute are projected into this slot.
-   */
   _renderLabel() {
     if (this.circle) {
       return null;
@@ -557,7 +775,6 @@ export class PFButtonShadow extends LitElement {
     return html`<span class="pf-v6-c-button__text" part="text"><slot></slot>${srText}</span>`;
   }
 
-  /** Assembles progress, icon, label, and count in the correct visual order. */
   _renderButtonContent() {
     const progress = this.loading ? this._renderProgress() : null;
     const icon = this._renderIcon();
@@ -571,7 +788,6 @@ export class PFButtonShadow extends LitElement {
     return html`${progress}${icon}${label}${count}`;
   }
 
-  /** Maps Enter/Space to click for span-based inline link buttons. */
   _handleSpanKeydown(event) {
     if (this._getTagName() !== 'span') {
       return;
@@ -583,7 +799,6 @@ export class PFButtonShadow extends LitElement {
     }
   }
 
-  /** Handles activator click: form submit/reset, guards disabled, fires state events. */
   _handleActivatorClick(event) {
     if (this.disabled || this.ariaDisabled) {
       event.preventDefault();
@@ -607,11 +822,7 @@ export class PFButtonShadow extends LitElement {
     this._dispatchActivateEvents();
   }
 
-  /**
-   * Renders the activator with exportparts so external CSS can target internals.
-   * @param {string} exportParts Comma-separated part names for ::part() theming.
-   */
-  _renderControl(exportParts) {
+  _renderControl() {
     const classes = this._getClassNames();
     const content = this._renderButtonContent();
     const component = this._getTagName();
@@ -619,15 +830,16 @@ export class PFButtonShadow extends LitElement {
     const ariaLabel = this.ariaLabel || undefined;
     const tabIndex = this._getTabIndex() ?? undefined;
     const ariaExpanded = this.hamburger ? String(this.expanded ?? false) : undefined;
-    const exportparts = exportParts ?? nothing;
+    const controlId = this.controlId || undefined;
 
     if (component === 'a') {
       return html`
         <a
           class=${classes}
           part="control"
-          exportparts=${exportparts}
-          href=${this.href || undefined}
+          exportparts=${EXPORT_PARTS}
+          id=${controlId}
+          href=${this._getHref()}
           aria-disabled=${ariaDisabled}
           aria-label=${ariaLabel}
           tabindex=${tabIndex}
@@ -643,7 +855,8 @@ export class PFButtonShadow extends LitElement {
         <span
           class=${classes}
           part="control"
-          exportparts=${exportparts}
+          exportparts=${EXPORT_PARTS}
+          id=${controlId}
           role="button"
           aria-disabled=${ariaDisabled}
           aria-label=${ariaLabel}
@@ -660,8 +873,8 @@ export class PFButtonShadow extends LitElement {
       <button
         class=${classes}
         part="control"
-        exportparts=${exportparts}
-        id=${this.controlId || undefined}
+        exportparts=${EXPORT_PARTS}
+        id=${controlId}
         type=${this._getButtonType()}
         ?disabled=${this.disabled}
         aria-disabled=${ariaDisabled}

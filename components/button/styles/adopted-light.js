@@ -22,9 +22,14 @@ pf-button-light .pf-v6-screen-reader {
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+}
+
+pf-button-light a.pf-v6-c-button[aria-disabled="true"] {
+  pointer-events: none;
+  cursor: not-allowed;
 }
 
 pf-button-light .pf-v6-c-button.pf-m-circle {

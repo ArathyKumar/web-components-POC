@@ -34,9 +34,14 @@ const SHADOW_HOST_STYLES = `
   padding: 0;
   margin: -1px;
   overflow: hidden;
-  clip: rect(0, 0, 0, 0);
+  clip-path: inset(50%);
   white-space: nowrap;
   border: 0;
+}
+
+a.pf-v6-c-button[aria-disabled="true"] {
+  pointer-events: none;
+  cursor: not-allowed;
 }
 
 /* Circle buttons are icon-only squares; min-width is derived from 1lh + padding. */
@@ -141,7 +146,7 @@ const SHADOW_CSS = [
 ].join('\n');
 
 /** Bump when SHADOW_CSS changes so dev reloads pick up adopted stylesheet updates. */
-const SHADOW_STYLES_REVISION = 'shadow-theme-bridge-2';
+const SHADOW_STYLES_REVISION = 'shadow-theme-bridge-3';
 
 let shadowSheet = null;
 let shadowSheetRevision = null;

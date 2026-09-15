@@ -7,6 +7,10 @@ const ACCORDION_HOST_STYLES = `
 :host {
   display: block;
   font-family: var(--pf-t--global--font--family--body, sans-serif);
+  --pf-accordion-theme-expanded-toggle-bg: var(
+    --pf-v6-c-accordion__item--m-expanded__toggle--BackgroundColor,
+    transparent
+  );
 }
 
 :host([hidden]) {
@@ -43,7 +47,8 @@ const ACCORDION_SHADOW_COMPAT_STYLES = `
 const ACCORDION_THEME_BRIDGE_STYLES = `
 .pf-v6-c-accordion.pf-m-item-host {
   --pf-v6-c-accordion__item--m-expanded__toggle--BackgroundColor: var(
-    --pf-accordion-theme-expanded-toggle-bg
+    --pf-accordion-theme-expanded-toggle-bg,
+    transparent
   );
 }
 `;
@@ -86,7 +91,8 @@ const ACCORDION_ITEM_SHADOW_CSS = [
   ACCORDION_THEME_BRIDGE_STYLES,
 ].join('\n');
 
-const ACCORDION_STYLES_REVISION = 'accordion-shadow-6';
+/** Item shadow roots share one constructable stylesheet instance via getAccordionItemSheet(). */
+const ACCORDION_STYLES_REVISION = 'accordion-shadow-7';
 
 let accordionSheet = null;
 let accordionItemSheet = null;

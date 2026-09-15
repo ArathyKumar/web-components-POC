@@ -3,40 +3,199 @@
  *
  * Requires global patternfly.css on the page. Slots are projected manually because
  * native <slot> does not work without a shadow root.
- *
- * ACCORDION ATTRIBUTES (pf-accordion-light)
- * -----------------------------------------
- * - definition-list (default true) — use <dl>/<dt>/<dd> markup; set to false for heading markup
- * - single-expand — only one item open at a time
- * - bordered — pf-m-bordered
- * - plain — pf-m-plain
- * - no-plain-on-glass — pf-m-no-plain-on-glass
- * - display-lg — pf-m-display-lg
- * - toggle-start — pf-m-toggle-start (caret before label)
- * - heading-level — h1–h6 when definition-list="false" (default h3)
- * - aria-label, extra-class
- *
- * ITEM ATTRIBUTES (pf-accordion-item-light)
- * ---------------------------------------
- * - expanded — open/closed state (pf-m-expanded)
- * - toggle-id, content-id — a11y ids (auto-generated if omitted)
- * - fixed — scrollable fixed-height panel (pf-m-fixed)
- * - custom-content — skip the body wrapper
- * - content-aria-label, extra-class, content-extra-class
- *
- * CONTENT PROJECTION
- * ------------------
- * Default slot text → toggle label; <div slot="content"> → panel body.
  */
 import { LitElement, html, nothing } from 'lit';
-import { AccordionMixin } from './lib/base.js';
-import { AccordionItemMixin } from './lib/item-base.js';
 import { adoptPatternFlyLightHostStyles } from '../../styles/adopted-light.js';
 
 export const ACCORDION_TAG = 'pf-accordion-light';
 export const ACCORDION_ITEM_TAG = 'pf-accordion-item-light';
 
-class PFAccordionLight extends AccordionMixin(LitElement, ACCORDION_ITEM_TAG) {
+const ACCORDION_TOGGLE_EVENT = 'pf-accordion-toggle';
+const ACCORDION_BLOCK = 'pf-v6-c-accordion';
+const ACCORDION_PARENT_TAG = 'PF-ACCORDION-LIGHT';
+
+let accordionIdCounter = 0;
+
+function createAccordionId(prefix, instanceId) {
+  accordionIdCounter += 1;
+  return instanceId
+    ? `${prefix}-${instanceId}-${accordionIdCounter}`
+    : `${prefix}-${accordionIdCounter}`;
+}
+
+function createAccordionInstanceId() {
+  if (typeof crypto !== 'undefined' && typeof crypto.randomUUID === 'function') {
+    return crypto.randomUUID().slice(0, 8);
+  }
+
+  return `${Date.now().toString(36)}${Math.random().toString(36).slice(2, 6)}`;
+}
+
+function getAccordionRootClassNames({
+  bordered = false,
+  plain = false,
+  noPlainOnGlass = false,
+  displayLg = false,
+  toggleStart = false,
+  extraClass = '',
+} = {}) {
+  const classes = [ACCORDION_BLOCK];
+
+  if (bordered) classes.push('pf-m-bordered');
+  if (plain) classes.push('pf-m-plain');
+  if (noPlainOnGlass) classes.push('pf-m-no-plain-on-glass');
+  if (displayLg) classes.push('pf-m-display-lg');
+  if (toggleStart) classes.push('pf-m-toggle-start');
+  if (extraClass) classes.push(extraClass);
+
+  return classes.join(' ');
+}
+
+function getAccordionItemClassNames(expanded, extraClass = '') {
+  const classes = [`${ACCORDION_BLOCK}__item`];
+  if (expanded) classes.push('pf-m-expanded');
+  if (extraClass) classes.push(extraClass);
+  return classes.join(' ');
+}
+
+function getAccordionContentClassNames(fixed, extraClass = '') {
+  const classes = [`${ACCORDION_BLOCK}__expandable-content`];
+  if (fixed) classes.push('pf-m-fixed');
+  if (extraClass) classes.push(extraClass);
+  return classes.join(' ');
+}
+
+const accordionCaretDownIcon = html`
+  <svg
+    class="pf-v6-svg"
+    fill="currentColor"
+    viewBox="0 0 20 20"
+    aria-hidden="true"
+    role="img"
+    width="1em"
+    height="1em"
+  >
+    <path
+      d="M18.71 5.29a.996.996 0 0 0-1.41 0l-7.29 7.29-7.3-7.29a.987.987 0 0 0-1.41-.02.987.987 0 0 0-.02 1.41l.02.02 7.65 7.65c.29.29.68.44 1.06.44s.77-.15 1.06-.44l7.65-7.65a.996.996 0 0 0 0-1.41Z"
+    />
+  </svg>
+`;
+
+function getAccordionParent(item) {
+  let node = item.parentElement;
+
+  while (node) {
+    if (node.tagName === ACCORDION_PARENT_TAG) {
+      return node;
+    }
+    node = node.parentElement;
+  }
+
+  return null;
+}
+
+function readDefinitionList(parent) {
+  if (typeof parent.definitionList === 'boolean') {
+    return parent.definitionList;
+  }
+
+  if (!parent.hasAttribute('definition-list')) {
+    return true;
+  }
+
+  return parent.getAttribute('definition-list') !== 'false';
+}
+
+function getAccordionModifierOptions(parent) {
+  if (!parent) {
+    return {
+      bordered: false,
+      plain: false,
+      noPlainOnGlass: false,
+      displayLg: false,
+      toggleStart: false,
+      extraClass: '',
+    };
+  }
+
+  const hasAttr = (name) => parent.hasAttribute(name);
+  const getAttr = (name) => parent.getAttribute(name) || '';
+
+  return {
+    bordered: Boolean(parent.bordered || hasAttr('bordered')),
+    plain: Boolean(parent.plain || hasAttr('plain')),
+    noPlainOnGlass: Boolean(parent.noPlainOnGlass || hasAttr('no-plain-on-glass')),
+    displayLg: Boolean(parent.displayLg || hasAttr('display-lg')),
+    toggleStart: Boolean(parent.toggleStart || hasAttr('toggle-start')),
+    extraClass: parent.extraClass || getAttr('extra-class') || '',
+  };
+}
+
+function getItemContext(item) {
+  const parent = getAccordionParent(item);
+  const modifiers = getAccordionModifierOptions(parent);
+
+  if (!parent) {
+    return {
+      asDefinitionList: true,
+      headingLevel: 'h3',
+      togglePosition: 'end',
+    };
+  }
+
+  return {
+    asDefinitionList: readDefinitionList(parent),
+    headingLevel: parent.getAttribute('heading-level') || parent.headingLevel || 'h3',
+    togglePosition: modifiers.toggleStart ? 'start' : 'end',
+  };
+}
+
+function renderHeadingToggle(headingLevel, toggle) {
+  switch (headingLevel) {
+    case 'h1':
+      return html`<h1>${toggle}</h1>`;
+    case 'h2':
+      return html`<h2>${toggle}</h2>`;
+    case 'h4':
+      return html`<h4>${toggle}</h4>`;
+    case 'h5':
+      return html`<h5>${toggle}</h5>`;
+    case 'h6':
+      return html`<h6>${toggle}</h6>`;
+    case 'h3':
+    default:
+      return html`<h3>${toggle}</h3>`;
+  }
+}
+
+class PFAccordionLight extends LitElement {
+  static properties = {
+    definitionList: {
+      type: Boolean,
+      attribute: 'definition-list',
+      reflect: true,
+      converter: {
+        fromAttribute: (value) => value !== 'false',
+        toAttribute: (value) => (value ? '' : null),
+      },
+    },
+    bordered: { type: Boolean, reflect: true },
+    plain: { type: Boolean, reflect: true },
+    noPlainOnGlass: { type: Boolean, attribute: 'no-plain-on-glass', reflect: true },
+    displayLg: { type: Boolean, attribute: 'display-lg', reflect: true },
+    toggleStart: { type: Boolean, attribute: 'toggle-start', reflect: true },
+    headingLevel: { type: String, attribute: 'heading-level' },
+    singleExpand: { type: Boolean, attribute: 'single-expand', reflect: true },
+    ariaLabel: { type: String, attribute: 'aria-label' },
+    extraClass: { type: String, attribute: 'extra-class' },
+  };
+
+  constructor() {
+    super();
+    this.definitionList = true;
+    this.headingLevel = 'h3';
+  }
+
   createRenderRoot() {
     return this;
   }
@@ -44,6 +203,64 @@ class PFAccordionLight extends AccordionMixin(LitElement, ACCORDION_ITEM_TAG) {
   connectedCallback() {
     adoptPatternFlyLightHostStyles();
     super.connectedCallback();
+    this.addEventListener(ACCORDION_TOGGLE_EVENT, this._handleItemToggle);
+    queueMicrotask(() => this._syncItemUpdates());
+  }
+
+  disconnectedCallback() {
+    super.disconnectedCallback();
+    this.removeEventListener(ACCORDION_TOGGLE_EVENT, this._handleItemToggle);
+  }
+
+  updated(changedProperties) {
+    const modifierProps = [
+      'bordered',
+      'plain',
+      'noPlainOnGlass',
+      'displayLg',
+      'toggleStart',
+      'extraClass',
+      'definitionList',
+      'headingLevel',
+    ];
+
+    if (modifierProps.some((prop) => changedProperties.has(prop))) {
+      this._syncItemUpdates();
+    }
+  }
+
+  _syncItemUpdates() {
+    this.querySelectorAll(ACCORDION_ITEM_TAG).forEach((item) => {
+      item.requestUpdate?.();
+    });
+  }
+
+  _handleItemToggle(event) {
+    if (!this.singleExpand) {
+      return;
+    }
+
+    const { item, expanded } = event.detail;
+    if (!expanded) {
+      return;
+    }
+
+    this.querySelectorAll(ACCORDION_ITEM_TAG).forEach((element) => {
+      if (element !== item) {
+        element.expanded = false;
+      }
+    });
+  }
+
+  _getRootClass() {
+    return getAccordionRootClassNames({
+      bordered: this.bordered,
+      plain: this.plain,
+      noPlainOnGlass: this.noPlainOnGlass,
+      displayLg: this.displayLg,
+      toggleStart: this.toggleStart,
+      extraClass: this.extraClass,
+    });
   }
 
   _getItemElements() {
@@ -86,87 +303,83 @@ class PFAccordionLight extends AccordionMixin(LitElement, ACCORDION_ITEM_TAG) {
   }
 }
 
-class PFAccordionItemLight extends AccordionItemMixin(LitElement) {
+class PFAccordionItemLight extends LitElement {
+  static properties = {
+    expanded: { type: Boolean, reflect: true },
+    toggleId: { type: String, attribute: 'toggle-id' },
+    contentId: { type: String, attribute: 'content-id' },
+    fixed: { type: Boolean, reflect: true },
+    customContent: { type: Boolean, attribute: 'custom-content', reflect: true },
+    contentAriaLabel: { type: String, attribute: 'content-aria-label' },
+    extraClass: { type: String, attribute: 'extra-class' },
+    contentExtraClass: { type: String, attribute: 'content-extra-class' },
+  };
+
+  constructor() {
+    super();
+    this.expanded = false;
+    this.fixed = false;
+    this.customContent = false;
+    this._idScope = createAccordionInstanceId();
+  }
+
   createRenderRoot() {
     return this;
   }
 
   connectedCallback() {
-    this._captureHostProjection();
     super.connectedCallback();
+    this._ensureIds();
+  }
+
+  _ensureIds() {
+    if (!this.toggleId) {
+      this.toggleId = createAccordionId('accordion-toggle', this._idScope);
+    }
+    if (!this.contentId) {
+      this.contentId = createAccordionId('accordion-content', this._idScope);
+    }
   }
 
   _isContentNode(node) {
     return node.nodeType === Node.ELEMENT_NODE && node.getAttribute('slot') === 'content';
   }
 
-  /**
-   * Snapshot host children before Lit moves them into the rendered accordion markup.
-   */
-  _captureHostProjection() {
-    if (this._projectionCaptured) {
-      return;
+  _isToggleNode(node) {
+    if (node.nodeType === Node.TEXT_NODE) {
+      return Boolean(node.textContent?.trim());
     }
-
-    const toggleNodes = [...this.childNodes].filter((node) => {
-      if (node.nodeType === Node.TEXT_NODE) {
-        return node.textContent?.trim();
-      }
-      if (node.nodeType === Node.ELEMENT_NODE) {
-        return !this._isContentNode(node);
-      }
-      return false;
-    });
-    const contentNodes = [...this.querySelectorAll('[slot="content"]')];
-
-    if (!toggleNodes.length && !contentNodes.length) {
-      return;
+    if (node.nodeType === Node.ELEMENT_NODE) {
+      return !this._isContentNode(node);
     }
-
-    this._toggleLabel = toggleNodes
-      .map((node) => node.textContent ?? '')
-      .join('')
-      .trim();
-    this._contentProjection = contentNodes;
-    this._projectionCaptured = true;
-
-    toggleNodes.forEach((node) => node.remove());
-  }
-
-  _cleanupOrphanHostNodes() {
-    [...this.childNodes].forEach((node) => {
-      if (node.nodeType === Node.TEXT_NODE && node.textContent?.trim()) {
-        node.remove();
-      }
-    });
-  }
-
-  _useItemHostWrapper() {
     return false;
   }
 
-  _getToggleLabel() {
-    if (this._toggleLabel) {
-      return this._toggleLabel;
+  _getProjectableChildNodes() {
+    return [...this.childNodes].filter((node) => {
+      return !(
+        node.nodeType === Node.ELEMENT_NODE &&
+        (node.getAttribute('part') === 'control' ||
+          node.classList?.contains('pf-v6-c-accordion__item'))
+      );
+    });
+  }
+
+  _getToggleNodes() {
+    const fromHost = [...this._getProjectableChildNodes()].filter((node) =>
+      this._isToggleNode(node)
+    );
+    if (fromHost.length) {
+      return fromHost;
     }
 
     const region = this.querySelector('.pf-v6-c-accordion__toggle-text');
-    const label = region?.textContent?.trim();
-    if (label) {
-      this._toggleLabel = label;
-    }
-
-    return this._toggleLabel ?? '';
+    return region ? [...region.childNodes] : [];
   }
 
-  _getContentProjection() {
-    if (this._contentProjection?.length) {
-      return this._contentProjection;
-    }
-
-    const fromHost = [...this.querySelectorAll('[slot="content"]')];
+  _getContentNodes() {
+    const fromHost = [...this.querySelectorAll(':scope > [slot="content"]')];
     if (fromHost.length) {
-      this._contentProjection = fromHost;
       return fromHost;
     }
 
@@ -174,11 +387,121 @@ class PFAccordionItemLight extends AccordionItemMixin(LitElement) {
     return region ? [...region.childNodes] : [];
   }
 
-  render() {
-    this._captureHostProjection();
-    this._cleanupOrphanHostNodes();
+  _handleToggleClick(event) {
+    event.preventDefault();
+    const nextExpanded = !this.expanded;
+    this.expanded = nextExpanded;
 
-    return this._renderItemStructure(this._getToggleLabel(), this._getContentProjection());
+    this.dispatchEvent(
+      new CustomEvent(ACCORDION_TOGGLE_EVENT, {
+        bubbles: true,
+        composed: true,
+        detail: {
+          item: this,
+          expanded: nextExpanded,
+          toggleId: this.toggleId,
+        },
+      })
+    );
+  }
+
+  _renderToggle(toggleContent, togglePosition) {
+    const icon = html`
+      <span class="${ACCORDION_BLOCK}__toggle-icon">${accordionCaretDownIcon}</span>
+    `;
+    const toggleText = html`
+      <span class="${ACCORDION_BLOCK}__toggle-text">${toggleContent}</span>
+    `;
+    const children =
+      togglePosition === 'start' ? html`${icon}${toggleText}` : html`${toggleText}${icon}`;
+
+    return html`
+      <button
+        class="${ACCORDION_BLOCK}__toggle"
+        type="button"
+        id=${this.toggleId}
+        aria-expanded=${this.expanded ? 'true' : 'false'}
+        aria-controls=${this.contentId}
+        @click=${this._handleToggleClick}
+      >
+        ${children}
+      </button>
+    `;
+  }
+
+  _renderContentBody(content) {
+    if (this.customContent) {
+      return content;
+    }
+
+    return html`<div class="${ACCORDION_BLOCK}__expandable-content-body">${content}</div>`;
+  }
+
+  _renderContent(content, asDefinitionList) {
+    const contentClass = getAccordionContentClassNames(this.fixed, this.contentExtraClass);
+    const contentBody = this._renderContentBody(content);
+    const fixedExpanded = this.fixed && this.expanded;
+
+    if (asDefinitionList) {
+      return html`
+        <dd
+          class=${contentClass}
+          id=${this.contentId}
+          ?hidden=${!this.expanded}
+          role=${fixedExpanded ? 'region' : nothing}
+          tabindex=${fixedExpanded ? '0' : nothing}
+          aria-labelledby=${fixedExpanded ? this.toggleId : nothing}
+          aria-label=${this.contentAriaLabel || nothing}
+        >
+          ${contentBody}
+        </dd>
+      `;
+    }
+
+    return html`
+      <div
+        class=${contentClass}
+        id=${this.contentId}
+        ?hidden=${!this.expanded}
+        role=${fixedExpanded ? 'region' : nothing}
+        tabindex=${fixedExpanded ? '0' : nothing}
+        aria-labelledby=${fixedExpanded ? this.toggleId : nothing}
+        aria-label=${this.contentAriaLabel || nothing}
+      >
+        ${contentBody}
+      </div>
+    `;
+  }
+
+  _renderItemStructure() {
+    const { asDefinitionList, headingLevel, togglePosition } = getItemContext(this);
+    const itemClass = getAccordionItemClassNames(this.expanded, this.extraClass);
+    const toggleNodes = this._getToggleNodes();
+    const contentNodes = this._getContentNodes();
+    const toggleContent = toggleNodes.length ? toggleNodes : nothing;
+    const panelContent = contentNodes.length ? contentNodes : nothing;
+    const toggle = this._renderToggle(toggleContent, togglePosition);
+    const content = this._renderContent(panelContent, asDefinitionList);
+
+    if (asDefinitionList) {
+      return html`
+        <div class="${itemClass}">
+          <dt>${toggle}</dt>
+          ${content}
+        </div>
+      `;
+    }
+
+    return html`
+      <div class="${itemClass}">
+        ${renderHeadingToggle(headingLevel, toggle)}
+        ${content}
+      </div>
+    `;
+  }
+
+  render() {
+    return this._renderItemStructure();
   }
 }
 

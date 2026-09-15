@@ -242,9 +242,37 @@ npm run sync-styles
 | `idle-label` / `loading-label` | Progress button label text (bypasses default slot) |
 | `aria-label-favorited` / `aria-label-unfavorited` | Favorite button aria labels per state |
 | `auto-toggle-favorite` / `auto-toggle-loading` | Lit properties; set to `false` for controlled mode (default: toggle on activate). Also settable as `btn.autoToggleFavorite = false`. |
-| `control-id` | `id` on the inner activator element |
+| `control-id` | `id` on the inner activator (`button`, `a`, or `span` activator) |
 
-See `index.html` for full PatternFly button doc examples (variants, sizes, progress, favorites, forms, icons).
+See `demos/button.html` for full PatternFly button doc examples (variants, sizes, progress, favorites, forms, icons).
+
+### Accordion (`pf-accordion-shadow` / `pf-accordion-light`)
+
+| Attribute | Description |
+|-----------|-------------|
+| `definition-list` | Use `<dl>`/`<dt>`/`<dd>` markup (default `true`); set `false` for heading markup |
+| `single-expand` | Only one item open at a time |
+| `bordered`, `plain`, `no-plain-on-glass`, `display-lg`, `toggle-start` | PatternFly layout modifiers |
+| `heading-level` | `h1`–`h6` when `definition-list="false"` (default `h3`) |
+| `aria-label`, `extra-class` | Accessible name and additional BEM classes |
+
+**Item attributes** (`pf-accordion-item-shadow` / `pf-accordion-item-light`):
+
+| Attribute | Description |
+|-----------|-------------|
+| `expanded` | Open/closed state |
+| `toggle-id`, `content-id` | ARIA ids (auto-generated if omitted) |
+| `fixed` | Scrollable fixed-height panel |
+| `custom-content` | Skip the default body wrapper |
+| `content-aria-label`, `extra-class`, `content-extra-class` | Panel labeling and classes |
+
+**Content projection:** default slot → toggle label; `<div slot="content">` → panel body. Light DOM items preserve rich toggle markup (not flattened to text).
+
+| Event | Detail | When |
+|-------|--------|------|
+| `pf-accordion-toggle` | `{ item, expanded, toggleId }` | Item expanded/collapsed |
+
+See `demos/accordion.html` for side-by-side shadow and light examples.
 
 ## Accessibility
 
@@ -253,6 +281,8 @@ See `index.html` for full PatternFly button doc examples (variants, sizes, progr
 - `as="span"` inline buttons support **Enter** and **Space** activation.
 - Call `focus()` on the host to focus the inner control.
 - Progress spinners expose `spinner-aria-label`, `spinner-aria-labelledby`, and `spinner-aria-value-text`.
+- Accordion containers should have `aria-label` (or an associated visible heading). Items wire `aria-expanded`, `aria-controls`, and toggle/content ids automatically.
+- Hamburger buttons expose `aria-expanded` but do not auto-toggle `expanded` — set `expanded` in your click handler for animated menu icons.
 
 ## Project structure
 
@@ -267,16 +297,14 @@ web-components-POC/
 ├── components/
 │   ├── catalog.js                      # Front-page component registry
 │   ├── button/
-│   │   ├── pf-button-shadow.js         # Shadow DOM entry
-│   │   ├── pf-button-light.js          # Light DOM entry
+│   │   ├── pf-button-shadow.js         # Shadow DOM button (self-contained)
+│   │   ├── pf-button-light.js          # Light DOM button (self-contained)
 │   │   ├── index.js                    # Package re-exports
-│   │   ├── lib/                        # Shared logic (class names, icons, state)
 │   │   └── styles/                     # Synced PF CSS + adopted shadow/light fragments
 │   └── accordion/
-│       ├── pf-accordion-shadow.js
-│       ├── pf-accordion-light.js
+│       ├── pf-accordion-shadow.js      # Shadow DOM accordion + item (self-contained)
+│       ├── pf-accordion-light.js       # Light DOM accordion + item (self-contained)
 │       ├── index.js
-│       ├── lib/                        # Shared logic (base, item, context, …)
 │       └── styles/
 │
 ├── styles/
@@ -291,7 +319,7 @@ web-components-POC/
     └── render-catalog.js
 ```
 
-Each component folder is self-contained: entry files, shared `lib/`, and `styles/` (synced PatternFly CSS plus adopted shadow/light rules).
+Each component folder is self-contained: entry files and `styles/` (synced PatternFly CSS plus adopted shadow/light rules). Button and accordion logic each live entirely in their shadow and light entry files.
 
 ## File reference
 
@@ -299,11 +327,8 @@ Each component folder is self-contained: entry files, shared `lib/`, and `styles
 
 | Path | Purpose |
 |------|---------|
-| `pf-button-shadow.js` | Registers `<pf-button-shadow>` with shadow encapsulation and `exportparts`. |
-| `pf-button-light.js` | Registers `<pf-button-light>` in the light DOM. |
-| `lib/class-names.js` | Maps props → PatternFly BEM classes. |
-| `lib/icons.js` | SVG icon templates. |
-| `lib/state.js` | Favorite/loading state helpers. |
+| `pf-button-shadow.js` | Self-contained shadow DOM button: class names, icons, state, form association, slots, and `exportparts`. |
+| `pf-button-light.js` | Self-contained light DOM button: same behavior with manual content projection. |
 | `styles/adopted-shadow.js` | Shadow adopted stylesheet (host + button/spinner/badge CSS). |
 | `styles/adopted-light.js` | Light host override CSS fragment for buttons. |
 | `styles/*-styles.js` | Auto-generated from PatternFly (do not edit). |
@@ -312,9 +337,8 @@ Each component folder is self-contained: entry files, shared `lib/`, and `styles
 
 | Path | Purpose |
 |------|---------|
-| `pf-accordion-shadow.js` | Registers `<pf-accordion-shadow>` and `<pf-accordion-item-shadow>`. |
-| `pf-accordion-light.js` | Registers `<pf-accordion-light>` and `<pf-accordion-item-light>`. |
-| `lib/` | Shared accordion behavior, context, class names, and icons. |
+| `pf-accordion-shadow.js` | Self-contained shadow DOM accordion: container, items, class names, context, toggle behavior, and markup. |
+| `pf-accordion-light.js` | Self-contained light DOM accordion: same behavior with manual content projection. |
 | `styles/adopted-shadow.js` | Shadow adopted stylesheet and plain/glass compat rules. |
 | `styles/adopted-light.js` | Light host override CSS fragment for accordions. |
 | `styles/accordion-styles.js` | Auto-generated from PatternFly (do not edit). |
