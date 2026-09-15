@@ -84,38 +84,52 @@
           </div>
         </section>
 
-        <section id="fluid-heading-markup" class="demo-section">
+        <section class="demo-section">
           <h2>Fluid (heading markup)</h2>
           <div class="demo-compare">
             <div class="demo-compare__col">
               <pf-accordion-shadow definition-list="false" aria-label="Fluid accordion">
-                <pf-accordion-item-shadow expanded>
+                <pf-accordion-item-shadow class="fluid-heading-markup" expanded>
                   Item one
-                  <div slot="content">This panel is expanded by default.</div>
+                  <div slot="content">
+                    <p>This panel is expanded by default.</p>
+                    <pf-button-shadow variant="primary" size="sm">Action</pf-button-shadow>
+                  </div>
                 </pf-accordion-item-shadow>
                 <pf-accordion-item-shadow>
                   Item two
-                  <div slot="content">This text is hidden until expanded.</div>
+                  <div slot="content">
+                    <p>This text is hidden until expanded.</p>
+                  </div>
                 </pf-accordion-item-shadow>
                 <pf-accordion-item-shadow>
                   Item three
-                  <div slot="content">Another collapsible section.</div>
+                  <div slot="content">
+                    <p>Another collapsible section.</p>
+                  </div>
                 </pf-accordion-item-shadow>
               </pf-accordion-shadow>
             </div>
             <div class="demo-compare__col">
               <pf-accordion-light definition-list="false" aria-label="Light fluid accordion">
-                <pf-accordion-item-light expanded>
+                <pf-accordion-item-light class="fluid-heading-markup" expanded>
                   Item one
-                  <div slot="content">This panel is expanded by default.</div>
+                  <div slot="content">
+                    <p>This panel is expanded by default.</p>
+                    <pf-button-shadow variant="primary" size="sm">Action</pf-button-shadow>
+                  </div>
                 </pf-accordion-item-light>
                 <pf-accordion-item-light>
                   Item two
-                  <div slot="content">This text is hidden until expanded.</div>
+                  <div slot="content">
+                    <p>This text is hidden until expanded.</p>
+                  </div>
                 </pf-accordion-item-light>
                 <pf-accordion-item-light>
                   Item three
-                  <div slot="content">Another collapsible section.</div>
+                  <div slot="content">
+                    <p>Another collapsible section.</p>
+                  </div>
                 </pf-accordion-item-light>
               </pf-accordion-light>
             </div>
@@ -307,6 +321,7 @@
       }
     </script>
 
+    <script type="module" src="../components/button/pf-button-shadow.js"></script>
     <script type="module" src="../components/accordion/pf-accordion-shadow.js"></script>
     <script type="module" src="../components/accordion/pf-accordion-light.js"></script>
   </body>
