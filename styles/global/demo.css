@@ -6,6 +6,37 @@
   gap: var(--pf-t--global--spacer--4xl);
 }
 
+.demo--compare {
+  flex-direction: column;
+  gap: 0;
+}
+
+.demo-compare {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--pf-t--global--spacer--xl);
+  align-items: start;
+}
+
+.demo-compare__col {
+  min-width: 0;
+}
+
+.demo-compare__label {
+  margin: 0 0 var(--pf-t--global--spacer--sm);
+  font-size: var(--pf-t--global--font--size--heading--sm);
+  font-weight: var(--pf-t--global--font--weight--heading--default);
+  color: var(--pf-t--global--text--color--regular);
+}
+
+.demo-compare__label code {
+  font-size: inherit;
+}
+
+.demo-compare--header {
+  margin-bottom: var(--pf-t--global--spacer--lg);
+}
+
 .demo-section {
   margin-bottom: var(--pf-t--global--spacer--2xl);
 }
@@ -61,5 +92,9 @@
   .demo {
     flex-direction: column;
     gap: var(--pf-t--global--spacer--2xl);
+  }
+
+  .demo-compare {
+    grid-template-columns: 1fr;
   }
 }

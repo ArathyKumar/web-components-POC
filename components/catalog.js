@@ -24,4 +24,19 @@ export const componentCatalog = [
     elements: ['pf-button-shadow', 'pf-button-light'],
     status: 'ready',
   },
+  {
+    id: 'accordion',
+    name: 'Accordion',
+    description:
+      'PatternFly accordion with shadow and light DOM implementations, definition list markup, single-expand, bordered, plain, and display size variants.',
+    href: 'demos/accordion.html',
+    tags: ['PatternFly', 'Shadow DOM', 'Light DOM', 'Expandable'],
+    elements: [
+      'pf-accordion-shadow',
+      'pf-accordion-item-shadow',
+      'pf-accordion-light',
+      'pf-accordion-item-light',
+    ],
+    status: 'ready',
+  },
 ];

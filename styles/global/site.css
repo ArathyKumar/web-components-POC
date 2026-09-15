@@ -17,6 +17,10 @@ body {
   border-radius: var(--pf-t--global--border--radius--medium);
 }
 
+.site-main--wide {
+  max-width: 96rem;
+}
+
 .site-intro {
   margin: 0 0 var(--pf-t--global--spacer--xl);
   max-width: 48rem;

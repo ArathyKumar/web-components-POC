@@ -2,17 +2,22 @@
   "name": "web-components-poc",
   "version": "0.2.0",
   "private": true,
-  "description": "Production-ready PatternFly button web components with Lit",
+  "description": "Production-ready PatternFly web components with Lit",
   "type": "module",
   "exports": {
-    ".": "./components/pf-button-shadow.js",
-    "./pf-button-shadow": "./components/pf-button-shadow.js",
-    "./pf-button-light": "./components/pf-button-light.js"
+    ".": "./components/button/pf-button-shadow.js",
+    "./pf-button-shadow": "./components/button/pf-button-shadow.js",
+    "./pf-button-light": "./components/button/pf-button-light.js",
+    "./button": "./components/button/index.js",
+    "./pf-accordion-shadow": "./components/accordion/pf-accordion-shadow.js",
+    "./pf-accordion-light": "./components/accordion/pf-accordion-light.js",
+    "./accordion": "./components/accordion/index.js"
   },
   "scripts": {
     "dev": "npx http-server . -o -c-1",
     "sync-styles": "node scripts/sync-patternfly-styles.mjs",
-    "postinstall": "npm run sync-styles"
+    "postinstall": "npm run sync-styles",
+    "lint": "find components scripts styles -name '*.js' -print0 | xargs -0 node --check"
   },
   "dependencies": {
     "@patternfly/patternfly": "^6.6.1",
