@@ -1,19 +1,34 @@
 # Web Components POC
 
-A [PatternFly v6](https://www.patternfly.org/) proof of concept built with [Lit](https://lit.dev/). Each component ships as **two parallel implementations** — shadow DOM and light DOM — so you can compare encapsulation, styling, and content projection side by side.
+A [PatternFly v6](https://www.patternfly.org/) proof of concept built with [Lit](https://lit.dev/). Each component exists in two forms — **shadow DOM** (`pf-*-shadow`) and **light DOM** (`pf-*-light`) — with the same attributes, events, and form behavior.
 
-**Components:** [Button](https://www.patternfly.org/components/button) (`pf-button-shadow` / `pf-button-light`) and [Accordion](https://www.patternfly.org/components/accordion) (`pf-accordion-shadow` / `pf-accordion-light`).
+**Components:** [Button](https://www.patternfly.org/components/button) and [Accordion](https://www.patternfly.org/components/accordion).
 
-This is a **demonstration codebase**, not a production component library. See [Known limitations](#known-limitations) for intentional tradeoffs and open issues.
+Open the compare demos, inspect the source, and note where the implementations diverge. This is a **demonstration codebase**, not a production component library.
 
-## Overview
+## Two implementations, one API
 
-| Approach | Elements | Shadow root | PatternFly styles | Content projection | Theming |
-|----------|----------|-------------|-------------------|--------------------|---------|
-| Shadow DOM | `pf-*-shadow` | Yes | Encapsulated adopted stylesheet per shadow root | Native `<slot>` | `::part()` via `part` + `exportparts` |
-| Light DOM | `pf-*-light` | No | Global `patternfly.css` + document-level host overrides | Manual DOM-node projection | Host CSS vars / BEM class selectors (no `part` attributes) |
+| | Shadow DOM | Light DOM |
+|--|------------|-----------|
+| **Tags** | `pf-button-shadow`, `pf-accordion-shadow`, `pf-accordion-item-shadow` | `pf-button-light`, `pf-accordion-light`, `pf-accordion-item-light` |
+| **Render target** | Open shadow root per component | Host element (`createRenderRoot()` returns `this`) |
+| **PatternFly CSS** | Adopted into shadow root (`components/*/styles/adopted-shadow.js`) | Global `patternfly.css` on the page |
+| **Content projection** | Native `<slot>` | Host child nodes moved into Lit templates |
+| **Theming from outside** | `::part()` via `part` + `exportparts` | Host CSS variables or BEM descendant selectors |
+| **Package default** | `import 'web-components-poc'` → `pf-button-shadow.js` | `import 'web-components-poc/pf-button-light'` |
 
-Shadow and light variants share the same public API and behavior where possible. Implementation details differ — see [Shadow vs light DOM](#shadow-vs-light-dom).
+Both variants still require global `patternfly.css` for design tokens (`--pf-t--*`). Brand overrides live in `styles/global/theme.css`.
+
+## What to look for in the demos
+
+`demos/button.html` and `demos/accordion.html` render shadow and light variants side by side (shadow in the left column). While exploring, consider:
+
+- **Style isolation** — Add a broad page rule targeting `.pf-v6-c-button` or `.pf-v6-c-accordion__toggle`. Which column changes?
+- **Slots** — Inspect how label and icon content are projected. Shadow items use `<slot>`; light items re-query the DOM after each render.
+- **Theming** — Compare `pf-button-shadow::part(control)` in `theme.css` with BEM selectors on `pf-accordion-item-light`. Which approach depends on internal markup?
+- **Source size** — Shadow and light entry files are parallel, but light DOM carries extra projection logic for the same features.
+
+The differences are intentional. The repo is structured so you can reach your own conclusion about which model fits reusable components.
 
 ## Prerequisites
 
@@ -27,7 +42,7 @@ npm install   # also runs npm run sync-styles via postinstall
 npm run dev
 ```
 
-Open [http://127.0.0.1:8080](http://127.0.0.1:8080). ES modules and Lit imports require a dev server — they do not work over `file://`.
+Open [http://127.0.0.1:8080](http://127.0.0.1:8080). ES modules require a dev server — they do not work over `file://`.
 
 ### Page setup
 
@@ -51,8 +66,9 @@ Open [http://127.0.0.1:8080](http://127.0.0.1:8080). ES modules and Lit imports 
 </script>
 
 <script type="module" src="components/button/pf-button-shadow.js"></script>
-<script type="module" src="components/button/pf-button-light.js"></script>
 <script type="module" src="components/accordion/pf-accordion-shadow.js"></script>
+<!-- Register light variants to enable the compare columns -->
+<script type="module" src="components/button/pf-button-light.js"></script>
 <script type="module" src="components/accordion/pf-accordion-light.js"></script>
 ```
 
@@ -60,63 +76,68 @@ With a bundler:
 
 ```javascript
 import 'web-components-poc/pf-button-shadow';
-import 'web-components-poc/pf-button-light';
 import 'web-components-poc/pf-accordion-shadow';
-import 'web-components-poc/pf-accordion-light';
 ```
 
-## Shadow vs light DOM
+## Shadow DOM
 
-The POC exists to make these differences concrete. Use the compare layout in `demos/button.html` and `demos/accordion.html`.
+### Button — `<pf-button-shadow>`
 
-### Button — `<pf-button-shadow>` / `<pf-button-light>`
+Lit renders into an open shadow root. Button, spinner, and badge CSS are adopted via a shared constructable stylesheet in `components/button/styles/adopted-shadow.js` (one parse, many instances).
 
-| Concern | Shadow | Light |
-|---------|--------|-------|
-| Render target | Open shadow root (`this.shadowRoot` exists) | Host element (`createRenderRoot()` returns `this`) |
-| Component CSS | Adopted into shadow root (`components/button/styles/adopted-shadow.js`) | Global `patternfly.css` on the page |
-| Design tokens | Still need global `patternfly.css` for `--pf-t--*` inside shadow | Same global stylesheet |
-| Content projection | Native `<slot>` and `<slot name="icon">` | Host child nodes passed into Lit template; recovered on re-render via BEM selectors |
-| Theming from outside | `pf-button-shadow::part(control)` etc. (`exportparts` on activator) | `pf-button-light { --pf-v6-c-* }` or `pf-button-light .pf-v6-c-button` — **no `part` attributes** |
-| Internal queries | `this.renderRoot.querySelector('[part="control"]')` | `this.querySelector('.pf-v6-c-button')` |
+| Concern | Approach |
+|---------|----------|
+| Slots | Native `<slot>` and `<slot name="icon">` |
+| Theming | `exportparts` on the activator — `pf-button-shadow::part(control)`, `::part(icon)`, etc. |
+| Forms | `formAssociated` + `ElementInternals` |
+| Internal queries | `this.renderRoot.querySelector('[part="control"]')` |
 
-> **Light DOM caveat:** Avoid setting `textContent` on `<pf-button-light>` — it removes host children and breaks icon/label projection. Update slotted content or use attributes/events instead.
+Exported parts: `control`, `icon`, `icon-favorite`, `icon-favorited`, `text`, `sr-text`, `progress`, `spinner`, `count`, `badge`.
 
-### Accordion — `<pf-accordion-shadow>` / `<pf-accordion-light>`
+### Accordion — `<pf-accordion-shadow>` / `<pf-accordion-item-shadow>`
 
-| Concern | Shadow | Light |
-|---------|--------|-------|
-| Structure | Container + item custom elements; each item has its own shadow root | Container + items render PatternFly BEM markup on the host |
-| Content projection | Native slots: default → toggle label, `slot="content"` → panel | Manual: non-`slot="content"` children → toggle; `[slot="content"]` → panel |
-| Theming from outside | `pf-accordion-item-shadow::part(toggle)` etc. (parts: `item`, `toggle`, `toggle-icon`, `content`) | BEM selectors under `pf-accordion-item-light` (e.g. `.pf-v6-c-accordion__toggle`) |
-| Layout | Items use `display: contents`; parent modifiers re-applied per item inside shadow (`pf-m-item-host`) so plain/glass tokens resolve | Items use `display: contents` on the host for flat accordion layout |
-| Keyboard nav | Shared `accordion-a11y.js`; see [known limitation](#known-limitations) for shadow retargeting | Arrow/Home/End between toggle buttons |
+Container + item elements; each item owns a shadow root.
 
-### What shadow DOM gives you here
+| Concern | Approach |
+|---------|----------|
+| Slots | Default → toggle label; `slot="content"` → panel |
+| Theming | Shadow parts: `item`, `toggle`, `toggle-icon`, `content` |
+| Modifiers | Parent classes (plain, glass) re-applied per item via `pf-m-item-host` inside shadow |
+| A11y | `aria-expanded`, `aria-controls`, `hidden` + `inert` on collapsed panels; keyboard nav in `accordion-a11y.js` |
 
-- Style encapsulation — page CSS cannot accidentally restyle inner `.pf-v6-c-button` markup.
-- `::part()` — theme internal regions without piercing the full shadow tree.
-- Native slots — simpler, more robust content projection.
+## Light DOM
 
-### What light DOM gives you here
+### Button — `<pf-button-light>`
 
-- No shadow boundary — global PatternFly CSS applies directly; familiar BEM selectors.
-- Simpler debugging — all markup visible in DevTools on the host.
-- No `::part()` — theming is host CSS variables or descendant class selectors.
+Lit renders directly onto the host. Component CSS comes from global `patternfly.css`; `styles/adopted-light.js` adds document-level host overrides.
 
-### What both approaches still share
+| Concern | Approach |
+|---------|----------|
+| Slots | Host children passed into the template; recovered on re-render via `.pf-v6-c-button__text` |
+| Theming | CSS variables on `pf-button-light` or selectors on `.pf-v6-c-button` — no `part` attributes |
+| Forms | Same `ElementInternals` API as shadow |
+| Internal queries | `this.querySelector('.pf-v6-c-button')` |
 
-- Global `patternfly.css` is required on every page (tokens, and light DOM component CSS).
-- `styles/global/theme.css` for brand overrides.
-- Form-associated button behavior via `ElementInternals`.
+> Setting `textContent` on `<pf-button-light>` removes host children and breaks label/icon projection.
+
+### Accordion — `<pf-accordion-light>` / `<pf-accordion-item-light>`
+
+Same attributes and events as shadow. Items use `display: contents` on the host so accordion BEM structure stays flat.
+
+| Concern | Approach |
+|---------|----------|
+| Slots | Non-`slot="content"` children → toggle; `[slot="content"]` → panel |
+| Theming | BEM selectors under `pf-accordion-item-light` (e.g. `.pf-v6-c-accordion__toggle`) |
+| A11y | Same panel and ARIA wiring; keyboard nav shares `accordion-a11y.js` |
 
 ## Usage
+
+Examples below use `pf-button-shadow`. Replace `-shadow` with `-light` to exercise the other implementation.
 
 ### Label (default slot)
 
 ```html
 <pf-button-shadow variant="primary">Save changes</pf-button-shadow>
-<pf-button-light variant="primary">Save changes</pf-button-light>
 ```
 
 ### Custom icon slot
@@ -185,7 +206,7 @@ All events bubble and are composed (`composed: true`).
 
 ## Forms
 
-Both elements are [form-associated custom elements](https://developer.mozilla.org/en-US/docs/Web/API/Element/attachInternals). Use `type`, `name`, `value`, and `form` like a native button. Submit uses `SubmitEvent` with the host as `submitter`.
+Both button variants are [form-associated custom elements](https://developer.mozilla.org/en-US/docs/Web/API/Element/attachInternals). Use `type`, `name`, `value`, and `form` like a native button. Submit uses `SubmitEvent` with the host as `submitter`.
 
 ```html
 <form id="demo-form">
@@ -198,61 +219,46 @@ Both elements are [form-associated custom elements](https://developer.mozilla.or
 
 ## Theming
 
-### Shadow DOM — `::part()` (shadow only)
+See `styles/global/theme.css` for working examples of both approaches.
+
+### Shadow DOM — `::part()`
 
 ```css
-/* Button */
 pf-button-shadow::part(control) {
   border-radius: 999px;
 }
 
-/* Accordion item */
 pf-accordion-item-shadow.fluid-heading-markup::part(toggle) {
   --pf-v6-c-accordion__toggle--BackgroundColor: #0066cc;
 }
 ```
 
-Button exported parts: `control`, `icon`, `icon-favorite`, `icon-favorited`, `text`, `sr-text`, `progress`, `spinner`, `count`, `badge`.
+Shadow buttons use a theme bridge in `components/button/styles/adopted-shadow.js`: PatternFly sets modifier tokens on `.pf-m-primary` / `.pf-m-secondary`, which blocks host inheritance, so host/`::part()` overrides are re-mapped onto the inner control. Secondary borders require `--pf-v6-c-button--BorderColor` (drawn on `::after`), not raw `border-color`.
 
-Accordion exported parts: `item`, `toggle`, `toggle-icon`, `content`.
-
-Shadow buttons use a **theme bridge** in `components/button/styles/adopted-shadow.js`: PatternFly sets modifier tokens on `.pf-m-primary` / `.pf-m-secondary`, which blocks host inheritance, so host/`::part()` overrides are re-mapped onto the inner control. Secondary borders require `--pf-v6-c-button--BorderColor` (drawn on `::after`), not raw `border-color`.
-
-### Light DOM — host vars or BEM selectors (no `part`)
+### Light DOM — host vars and BEM selectors
 
 ```css
-/* Button — host tokens (preferred) */
 pf-button-light {
   --pf-v6-c-button--m-primary--BackgroundColor: #008768;
 }
 
-/* Button — BEM descendant */
-pf-button-light .pf-v6-c-button {
-  border-radius: 999px;
-}
-
-/* Accordion */
 pf-accordion-item-light.fluid-heading-markup .pf-v6-c-accordion__toggle {
   --pf-v6-c-accordion__toggle--BackgroundColor: #0066cc;
 }
 ```
 
-Light buttons use a matching theme bridge in `components/button/styles/adopted-light.js` (host vars → `.pf-m-primary` / `.pf-m-secondary`).
-
-### Brand overrides
-
-See `styles/global/theme.css` for scoped accordion + button examples. Tokens on `:root` or a container inherit into shadow DOM automatically.
+Light buttons use a matching bridge in `components/button/styles/adopted-light.js`.
 
 ## Styling architecture
 
 | Concern | Shadow DOM | Light DOM |
 |---------|------------|-----------|
-| Component CSS | `components/*/styles/adopted-shadow.js` (shared constructable sheet per component type) | Global `patternfly.css` |
-| Host overrides | Inside each component shadow root | `styles/adopted-light.js` (document-level) |
-| External theming | `::part()` on `pf-*-shadow` elements | Host CSS vars or BEM selectors on `pf-*-light` |
-| Theme bridge (buttons) | `adopted-shadow.js` maps host/`::part()` vars → `.pf-m-primary` / `.pf-m-secondary` | `adopted-light.js` maps host vars → modifier classes |
-| Design tokens | Global `patternfly.css` on `:root` | Global `patternfly.css` on `:root` |
-| Brand overrides | `styles/global/theme.css` | `styles/global/theme.css` |
+| Component CSS | `components/*/styles/adopted-shadow.js` (shared constructable sheet) | Global `patternfly.css` |
+| Host overrides | Inside each shadow root | `styles/adopted-light.js` (document-level) |
+| External theming | `::part()` on `pf-*-shadow` | Host vars or BEM on `pf-*-light` |
+| Theme bridge (buttons) | `adopted-shadow.js` | `adopted-light.js` |
+| Design tokens | Global `patternfly.css` on `:root` | Same |
+| Brand overrides | `styles/global/theme.css` | Same |
 
 Sync vendored CSS after upgrading PatternFly:
 
@@ -262,7 +268,7 @@ npm run sync-styles
 
 ## API reference
 
-### Content
+### Button — content
 
 | Attribute / slot | Description |
 |------------------|-------------|
@@ -271,7 +277,7 @@ npm run sync-styles
 | `icon` | Built-in icon name |
 | `sr-text` | Screen-reader-only text appended to label |
 
-### Appearance
+### Button — appearance
 
 | Attribute | Values | Default |
 |-----------|--------|---------|
@@ -280,7 +286,7 @@ npm run sync-styles
 | `state` | `read`, `unread`, `attention` (stateful) | `unread` |
 | `block`, `danger`, `inline`, `circle`, `favorite`, `loading`, … | Boolean flags | `false` |
 
-### Form and behavior
+### Button — form and behavior
 
 | Attribute | Description |
 |-----------|-------------|
@@ -298,9 +304,9 @@ npm run sync-styles
 | `auto-toggle-favorite` / `auto-toggle-loading` | Lit properties; set to `false` for controlled mode (default: toggle on activate). Also settable as `btn.autoToggleFavorite = false`. |
 | `control-id` | `id` on the inner activator (`button`, `a`, or `span` activator) |
 
-See `demos/button.html` for full PatternFly button doc examples (variants, sizes, progress, favorites, forms, icons).
+See `demos/button.html` for full PatternFly button doc examples.
 
-### Accordion (`pf-accordion-shadow` / `pf-accordion-light`)
+### Accordion
 
 | Attribute | Description |
 |-----------|-------------|
@@ -320,13 +326,13 @@ See `demos/button.html` for full PatternFly button doc examples (variants, sizes
 | `custom-content` | Skip the default body wrapper |
 | `content-aria-label`, `extra-class`, `content-extra-class` | Panel labeling and classes |
 
-**Content projection:** default slot → toggle label; `<div slot="content">` → panel body. Light DOM items preserve rich toggle markup (not flattened to text).
+**Content projection:** default slot → toggle label; `<div slot="content">` → panel body.
 
 | Event | Detail | When |
 |-------|--------|------|
 | `pf-accordion-toggle` | `{ item, expanded, toggleId }` | Item expanded/collapsed |
 
-See `demos/accordion.html` for side-by-side shadow and light examples.
+See `demos/accordion.html` for the side-by-side layout.
 
 ## Accessibility
 
@@ -337,24 +343,22 @@ See `demos/accordion.html` for side-by-side shadow and light examples.
 - Progress spinners expose `spinner-aria-label`, `spinner-aria-labelledby`, `spinner-aria-value-text`, `aria-valuemin`, and `aria-valuemax`.
 - Accordion containers should have `aria-label` (or an associated visible heading). Items wire `aria-expanded`, `aria-controls`, and toggle/content ids automatically.
 - Collapsed accordion panels use `hidden` and `inert` so focus cannot enter closed content.
-- Arrow/Home/End keyboard navigation between accordion toggles is implemented in `components/accordion/accordion-a11y.js` (light DOM works; shadow has a known issue — see below).
+- Arrow/Home/End keyboard navigation between accordion toggles is implemented in `components/accordion/accordion-a11y.js`.
 - Hamburger buttons expose `aria-expanded` but do not auto-toggle `expanded` — set `expanded` in your click handler for animated menu icons.
 
 ## Known limitations
 
-Intentional POC tradeoffs and open issues:
-
-| Area | Issue | Notes |
-|------|-------|-------|
-| **Duplication** | ~2,900 lines duplicated across shadow/light entry files | Keeps each variant self-contained for side-by-side reading; fixes must be applied twice |
-| **Shadow accordion keyboard** | Arrow/Home/End may not work on shadow toggles | `accordion-a11y.js` uses `event.target`, which is retargeted to the item host across shadow boundaries; needs `event.composedPath()` |
-| **Light DOM projection** | Manual slot simulation is fragile | Re-renders rely on BEM queries to preserve author DOM; avoid `textContent` on light hosts |
-| **Partial encapsulation** | Shadow components still need global `patternfly.css` | Design tokens (`--pf-t--*`) resolve from the document, not from adopted sheets alone |
-| **Accordion layout** | `display: contents` on item hosts | Flattened layout for PatternFly structure; has known a11y/tree quirks in some browsers |
-| **Shadow item modifiers** | `pf-m-item-host` wrapper per shadow item | Re-applies parent accordion modifiers inside each item shadow so plain/glass tokens work |
-| **Demo compare** | Light accordion column uses `pf-button-shadow` in one section | `demos/accordion.html` fluid-heading-markup — should use `pf-button-light` for a fair comparison |
-| **Testing** | Syntax lint only (`npm run lint`) | No unit, a11y, or visual regression tests |
-| **Legacy fallback** | Per-shadow-root `<style>` injection | When Constructable Stylesheets are unavailable, full PF CSS is duplicated per instance |
+| Area | Shadow DOM | Light DOM |
+|------|------------|-----------|
+| Design tokens | Global `patternfly.css` required for `--pf-t--*` | Same |
+| Accordion keyboard | Arrow/Home/End may not work on shadow toggles — `accordion-a11y.js` uses `event.target`, which is retargeted across shadow boundaries | Works — toggles are in the document tree |
+| Accordion layout | `display: contents` + `pf-m-item-host` per item for PatternFly modifiers inside shadow | `display: contents` on item host |
+| Content projection | Native slots | Manual; re-renders query BEM nodes to preserve author DOM |
+| Theming surface | `::part()` + theme bridge | BEM classes / host CSS variables |
+| Style scope | Encapsulated adopted stylesheet | Depends on global `patternfly.css`; page CSS can reach internals |
+| Code duplication | ~2,900 lines mirrored across `-shadow` and `-light` entry files | Same |
+| Testing | `npm run lint` — syntax only | Same |
+| Legacy browsers | Per-shadow-root `<style>` fallback when Constructable Stylesheets unavailable | N/A |
 
 ## Project structure
 
@@ -362,37 +366,37 @@ Intentional POC tradeoffs and open issues:
 web-components-POC/
 ├── index.html
 ├── package.json
-├── demos/                              # Per-component demo pages
-│   ├── button.html
+├── demos/
+│   ├── button.html                     # Shadow (left) vs light (right)
 │   └── accordion.html
 │
 ├── components/
-│   ├── catalog.js                      # Front-page component registry
+│   ├── catalog.js
 │   ├── button/
-│   │   ├── pf-button-shadow.js         # Shadow DOM button (self-contained)
-│   │   ├── pf-button-light.js          # Light DOM button (self-contained)
-│   │   ├── index.js                    # Package re-exports
-│   │   └── styles/                     # Synced PF CSS + adopted shadow/light fragments
+│   │   ├── pf-button-shadow.js
+│   │   ├── pf-button-light.js
+│   │   ├── index.js
+│   │   └── styles/
 │   └── accordion/
-│       ├── accordion-a11y.js           # Shared keyboard navigation helpers
-│       ├── pf-accordion-shadow.js      # Shadow DOM accordion + item (self-contained)
-│       ├── pf-accordion-light.js       # Light DOM accordion + item (self-contained)
+│       ├── accordion-a11y.js
+│       ├── pf-accordion-shadow.js
+│       ├── pf-accordion-light.js
 │       ├── index.js
 │       └── styles/
 │
 ├── styles/
-│   ├── adopted-light.js                # Document-level light DOM host overrides
-│   └── global/                         # Site-wide CSS (theme, layout, demo)
+│   ├── adopted-light.js
+│   └── global/
 │       ├── theme.css
 │       ├── site.css
 │       └── demo.css
 │
 └── scripts/
-    ├── sync-patternfly-styles.mjs      # Syncs PF CSS into component style modules
+    ├── sync-patternfly-styles.mjs
     └── render-catalog.js
 ```
 
-Each component folder is self-contained: entry files and `styles/` (synced PatternFly CSS plus adopted shadow/light rules). Button and accordion logic each live entirely in their shadow and light entry files, except accordion keyboard helpers in `accordion-a11y.js`.
+Each component folder is self-contained. Shadow and light entry files implement the same API independently; `accordion-a11y.js` is the only shared behavior module.
 
 ## File reference
 
@@ -400,38 +404,38 @@ Each component folder is self-contained: entry files and `styles/` (synced Patte
 
 | Path | Purpose |
 |------|---------|
-| `pf-button-shadow.js` | Self-contained shadow DOM button: class names, icons, state, form association, slots, and `exportparts`. |
-| `pf-button-light.js` | Self-contained light DOM button: same behavior with manual content projection (no `part` attributes). |
-| `styles/adopted-shadow.js` | Shadow adopted stylesheet (host + button/spinner/badge CSS). |
-| `styles/adopted-light.js` | Light host override CSS fragment for buttons. |
+| `pf-button-shadow.js` | Shadow DOM button: slots, `exportparts`, form association, adopted styles. |
+| `pf-button-light.js` | Light DOM button: manual content projection, global CSS dependency. |
+| `styles/adopted-shadow.js` | Encapsulated stylesheet (shared constructable sheet + theme bridge). |
+| `styles/adopted-light.js` | Document-level host overrides for light variant. |
 | `styles/*-styles.js` | Auto-generated from PatternFly (do not edit). |
 
 ### `components/accordion/`
 
 | Path | Purpose |
 |------|---------|
-| `accordion-a11y.js` | Shared Arrow/Home/End keyboard navigation between accordion toggles. |
-| `pf-accordion-shadow.js` | Self-contained shadow DOM accordion: container, items, class names, context, toggle behavior, shadow parts, and markup. |
-| `pf-accordion-light.js` | Self-contained light DOM accordion: same behavior with manual content projection (no `part` attributes). |
-| `styles/adopted-shadow.js` | Shadow adopted stylesheet and plain/glass compat rules. |
-| `styles/adopted-light.js` | Light host override CSS fragment for accordions. |
+| `accordion-a11y.js` | Arrow/Home/End keyboard navigation between accordion toggles. |
+| `pf-accordion-shadow.js` | Shadow DOM accordion with `::part()` theming. |
+| `pf-accordion-light.js` | Light DOM accordion with BEM-based theming. |
+| `styles/adopted-shadow.js` | Encapsulated stylesheet and plain/glass compat rules. |
+| `styles/adopted-light.js` | Document-level host overrides for light variant. |
 | `styles/accordion-styles.js` | Auto-generated from PatternFly (do not edit). |
 
 ### `styles/`
 
 | Path | Purpose |
 |------|---------|
-| `adopted-light.js` | Combines component light host fragments; adopted once per document. |
-| `global/theme.css` | Brand/component token overrides; shadow uses `::part()`, light uses BEM/host vars. |
+| `adopted-light.js` | Combines light host fragments; adopted once per document. |
+| `global/theme.css` | Brand overrides — `::part()` for shadow, BEM/host vars for light. |
 | `global/site.css` | Site layout and catalog styles. |
-| `global/demo.css` | Demo page compare layout. |
+| `global/demo.css` | Compare layout for demo pages. |
 
 ### `scripts/`
 
 | Path | Purpose |
 |------|---------|
 | `sync-patternfly-styles.mjs` | Writes synced CSS into `components/*/styles/*-styles.js`. |
-| `render-catalog.js` | Renders the component catalog on `index.html` (safe DOM APIs, no `innerHTML` for dynamic tags). |
+| `render-catalog.js` | Renders the component catalog on `index.html`. |
 
 ## npm scripts
 
