@@ -7,7 +7,7 @@ import { ACCORDION_LIGHT_HOST_STYLES } from '../components/accordion/styles/adop
 
 const LIGHT_HOST_STYLES = [BUTTON_LIGHT_HOST_STYLES, ACCORDION_LIGHT_HOST_STYLES].join('\n');
 
-const LIGHT_HOST_STYLES_REVISION = 'light-host-9';
+const LIGHT_HOST_STYLES_REVISION = 'light-host-11';
 
 let lightSheet = null;
 let lightSheetRevision = null;

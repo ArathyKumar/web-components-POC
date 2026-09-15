@@ -7,10 +7,6 @@ const ACCORDION_HOST_STYLES = `
 :host {
   display: block;
   font-family: var(--pf-t--global--font--family--body, sans-serif);
-  --pf-accordion-theme-expanded-toggle-bg: var(
-    --pf-v6-c-accordion__item--m-expanded__toggle--BackgroundColor,
-    transparent
-  );
 }
 
 :host([hidden]) {
@@ -41,15 +37,6 @@ const ACCORDION_SHADOW_COMPAT_STYLES = `
   --pf-v6-c-accordion__expandable-content--BackgroundColor: transparent;
   --pf-v6-c-accordion__item--m-expanded--BackgroundColor: transparent;
   --pf-v6-c-accordion__item--m-expanded__toggle--BackgroundColor: var(--pf-v6-c-accordion--m-plain__item--m-expanded__toggle--BackgroundColor);
-}
-`;
-
-const ACCORDION_THEME_BRIDGE_STYLES = `
-.pf-v6-c-accordion.pf-m-item-host {
-  --pf-v6-c-accordion__item--m-expanded__toggle--BackgroundColor: var(
-    --pf-accordion-theme-expanded-toggle-bg,
-    transparent
-  );
 }
 `;
 
@@ -88,31 +75,23 @@ const ACCORDION_ITEM_SHADOW_CSS = [
   ACCORDION_ITEM_HOST_STYLES,
   ACCORDION_SHADOW_COMPAT_STYLES,
   accordionStyles,
-  ACCORDION_THEME_BRIDGE_STYLES,
 ].join('\n');
-
-/** Item shadow roots share one constructable stylesheet instance via getAccordionItemSheet(). */
-const ACCORDION_STYLES_REVISION = 'accordion-shadow-7';
 
 let accordionSheet = null;
 let accordionItemSheet = null;
-let accordionSheetRevision = null;
-let accordionItemSheetRevision = null;
 
 function getAccordionSheet() {
-  if (!accordionSheet || accordionSheetRevision !== ACCORDION_STYLES_REVISION) {
+  if (!accordionSheet) {
     accordionSheet = new CSSStyleSheet();
     accordionSheet.replaceSync(ACCORDION_SHADOW_CSS);
-    accordionSheetRevision = ACCORDION_STYLES_REVISION;
   }
   return accordionSheet;
 }
 
 function getAccordionItemSheet() {
-  if (!accordionItemSheet || accordionItemSheetRevision !== ACCORDION_STYLES_REVISION) {
+  if (!accordionItemSheet) {
     accordionItemSheet = new CSSStyleSheet();
     accordionItemSheet.replaceSync(ACCORDION_ITEM_SHADOW_CSS);
-    accordionItemSheetRevision = ACCORDION_STYLES_REVISION;
   }
   return accordionItemSheet;
 }

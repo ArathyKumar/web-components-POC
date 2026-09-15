@@ -349,7 +349,7 @@ class PFAccordionItemShadow extends LitElement {
 
   _renderToggle(toggleContent, togglePosition) {
     const icon = html`
-      <span class="${ACCORDION_BLOCK}__toggle-icon">${accordionCaretDownIcon}</span>
+      <span class="${ACCORDION_BLOCK}__toggle-icon" part="toggle-icon">${accordionCaretDownIcon}</span>
     `;
     const toggleText = html`
       <span class="${ACCORDION_BLOCK}__toggle-text">${toggleContent}</span>
@@ -360,6 +360,7 @@ class PFAccordionItemShadow extends LitElement {
     return html`
       <button
         class="${ACCORDION_BLOCK}__toggle"
+        part="toggle"
         type="button"
         id=${this.toggleId}
         aria-expanded=${this.expanded ? 'true' : 'false'}
@@ -388,6 +389,7 @@ class PFAccordionItemShadow extends LitElement {
       return html`
         <dd
           class=${contentClass}
+          part="content"
           id=${this.contentId}
           ?hidden=${!this.expanded}
           role=${fixedExpanded ? 'region' : nothing}
@@ -403,6 +405,7 @@ class PFAccordionItemShadow extends LitElement {
     return html`
       <div
         class=${contentClass}
+        part="content"
         id=${this.contentId}
         ?hidden=${!this.expanded}
         role=${fixedExpanded ? 'region' : nothing}
@@ -424,13 +427,13 @@ class PFAccordionItemShadow extends LitElement {
 
     const itemMarkup = asDefinitionList
       ? html`
-          <div class="${itemClass}">
+          <div class="${itemClass}" part="item">
             <dt>${toggle}</dt>
             ${content}
           </div>
         `
       : html`
-          <div class="${itemClass}">
+          <div class="${itemClass}" part="item">
             ${renderHeadingToggle(headingLevel, toggle)}
             ${content}
           </div>

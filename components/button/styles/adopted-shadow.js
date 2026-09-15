@@ -145,21 +145,16 @@ const SHADOW_CSS = [
   SHADOW_THEME_BRIDGE,
 ].join('\n');
 
-/** Bump when SHADOW_CSS changes so dev reloads pick up adopted stylesheet updates. */
-const SHADOW_STYLES_REVISION = 'shadow-theme-bridge-3';
-
 let shadowSheet = null;
-let shadowSheetRevision = null;
 
 /**
  * Lazily creates and caches the shared constructable stylesheet for shadow roots.
  * @returns {CSSStyleSheet}
  */
 function getShadowSheet() {
-  if (!shadowSheet || shadowSheetRevision !== SHADOW_STYLES_REVISION) {
+  if (!shadowSheet) {
     shadowSheet = new CSSStyleSheet();
     shadowSheet.replaceSync(SHADOW_CSS);
-    shadowSheetRevision = SHADOW_STYLES_REVISION;
   }
   return shadowSheet;
 }

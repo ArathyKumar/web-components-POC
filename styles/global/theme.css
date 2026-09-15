@@ -1,13 +1,50 @@
 /*
  * Theme overrides for PatternFly web components.
  *
- * Set component tokens on :root and/or the component host. Shadow and light variants
- * re-resolve these on inner PatternFly markup via adopted host styles.
+ * Light DOM (pf-accordion-light, pf-button-light): target PatternFly classes
+ * under the host — markup is in the document tree.
  *
- * Alternatively, override brand tokens on :root — both variants pick those up via
- * var(--pf-t--global--color--brand--*).
+ * Shadow DOM (pf-accordion-item-shadow, pf-button-shadow): use ::part() selectors
+ * on the custom element host. Accordion item parts: item, toggle, toggle-icon, content.
  */
 
+/* --- Accordion (light DOM) --- */
+#fluid-heading-markup pf-accordion-light .pf-v6-c-accordion__item.pf-m-expanded {
+  --pf-v6-c-accordion__item--m-expanded--BackgroundColor: #e0f0ff;
+}
+
+#fluid-heading-markup pf-accordion-light .pf-v6-c-accordion__toggle {
+  --pf-v6-c-accordion__toggle--BackgroundColor: #0066cc;
+  --pf-v6-c-accordion__toggle-text--Color: #fff;
+}
+
+#fluid-heading-markup pf-accordion-light .pf-v6-c-accordion__toggle-icon {
+  color: #fff;
+}
+
+#fluid-heading-markup pf-accordion-light .pf-v6-c-accordion__item.pf-m-expanded .pf-v6-c-accordion__toggle {
+  --pf-v6-c-accordion__item--m-expanded__toggle--BackgroundColor: #0066cc;
+}
+
+/* --- Accordion (shadow DOM) — style via ::part() from parent --- */
+#fluid-heading-markup pf-accordion-shadow pf-accordion-item-shadow[expanded]::part(item) {
+  --pf-v6-c-accordion__item--m-expanded--BackgroundColor: #e0f0ff;
+}
+
+#fluid-heading-markup pf-accordion-shadow pf-accordion-item-shadow::part(toggle) {
+  --pf-v6-c-accordion__toggle--BackgroundColor: #0066cc;
+  --pf-v6-c-accordion__toggle-text--Color: #fff;
+}
+
+#fluid-heading-markup pf-accordion-shadow pf-accordion-item-shadow::part(toggle-icon) {
+  color: #fff;
+}
+
+#fluid-heading-markup pf-accordion-shadow pf-accordion-item-shadow[expanded]::part(toggle) {
+  --pf-v6-c-accordion__item--m-expanded__toggle--BackgroundColor: #0066cc;
+}
+
+/* --- Button --- */
 pf-button-shadow,
 pf-button-light {
   --pf-v6-c-button--m-primary--BackgroundColor: #008768;
