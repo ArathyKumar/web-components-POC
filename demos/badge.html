@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Badge — Web Components POC</title>
+    <link
+      rel="stylesheet"
+      href="../node_modules/@patternfly/patternfly/patternfly.css"
+    />
+    <link rel="stylesheet" href="../styles/global/theme.css" />
+    <link rel="stylesheet" href="../styles/global/site.css" />
+    <link rel="stylesheet" href="../styles/global/demo.css" />
+  </head>
+  <body>
+    <main class="site-main site-main--wide">
+      <header class="site-header">
+        <a class="site-header__back" href="../index.html">← All components</a>
+        <h1 class="site-header__title pf-v6-c-title pf-m-3xl">Badge</h1>
+        <p class="site-header__subtitle">
+          PatternFly badge examples mirror the
+          <a href="https://www.patternfly.org/components/badge">PatternFly Badge</a>,
+          implemented as <code>&lt;pf-badge-shadow&gt;</code> and
+          <code>&lt;pf-badge-light&gt;</code>.
+          The shadow variant uses an encapsulated stylesheet, native <code>&lt;slot&gt;</code>
+          for content projection, and exposes <code>::part(badge)</code> for theming.
+          The light variant relies on global <code>patternfly.css</code>, uses a
+          <code>count</code> attribute instead of a slot (native slots require a shadow
+          root), and is themed via standard BEM selectors.
+        </p>
+      </header>
+
+      <div class="demo demo--compare">
+        <div class="demo-compare demo-compare--header">
+          <div class="demo-compare__col">
+            <p class="demo-compare__label">Shadow DOM (<code>pf-badge-shadow</code>)</p>
+          </div>
+          <div class="demo-compare__col">
+            <p class="demo-compare__label">Light DOM (<code>pf-badge-light</code>)</p>
+          </div>
+        </div>
+
+        <section class="demo-section">
+          <h2>Read</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <div class="demo-row">
+                <pf-badge-shadow read>7</pf-badge-shadow>
+                <pf-badge-shadow read>24</pf-badge-shadow>
+                <pf-badge-shadow read>240</pf-badge-shadow>
+                <pf-badge-shadow read>999+</pf-badge-shadow>
+              </div>
+            </div>
+            <div class="demo-compare__col">
+              <div class="demo-row">
+                <!-- Light DOM uses count="" attribute — no native <slot> without shadow root -->
+                <pf-badge-light read count="7"></pf-badge-light>
+                <pf-badge-light read count="24"></pf-badge-light>
+                <pf-badge-light read count="240"></pf-badge-light>
+                <pf-badge-light read count="999+"></pf-badge-light>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="demo-section">
+          <h2>Unread</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <div class="demo-row">
+                <pf-badge-shadow unread screen-reader-text="Unread Messages">7</pf-badge-shadow>
+                <pf-badge-shadow unread screen-reader-text="Unread Messages">24</pf-badge-shadow>
+                <pf-badge-shadow unread screen-reader-text="Unread Messages">240</pf-badge-shadow>
+                <pf-badge-shadow unread screen-reader-text="Unread Messages">999+</pf-badge-shadow>
+              </div>
+            </div>
+            <div class="demo-compare__col">
+              <div class="demo-row">
+                <!-- Light DOM uses count="" attribute — no native <slot> without shadow root -->
+                <pf-badge-light unread count="7" screen-reader-text="Unread Messages"></pf-badge-light>
+                <pf-badge-light unread count="24" screen-reader-text="Unread Messages"></pf-badge-light>
+                <pf-badge-light unread count="240" screen-reader-text="Unread Messages"></pf-badge-light>
+                <pf-badge-light unread count="999+" screen-reader-text="Unread Messages"></pf-badge-light>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section class="demo-section">
+          <h2>Disabled</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <div class="demo-row">
+                <pf-badge-shadow disabled>7</pf-badge-shadow>
+                <pf-badge-shadow disabled>24</pf-badge-shadow>
+                <pf-badge-shadow disabled>240</pf-badge-shadow>
+                <pf-badge-shadow disabled>999+</pf-badge-shadow>
+              </div>
+            </div>
+            <div class="demo-compare__col">
+              <div class="demo-row">
+                <!-- Light DOM uses count="" attribute — no native <slot> without shadow root -->
+                <pf-badge-light disabled count="7"></pf-badge-light>
+                <pf-badge-light disabled count="24"></pf-badge-light>
+                <pf-badge-light disabled count="240"></pf-badge-light>
+                <pf-badge-light disabled count="999+"></pf-badge-light>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+    </main>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "lit": "../node_modules/lit/index.js",
+          "lit/": "../node_modules/lit/",
+          "@lit/reactive-element": "../node_modules/@lit/reactive-element/reactive-element.js",
+          "@lit/reactive-element/": "../node_modules/@lit/reactive-element/",
+          "lit-element": "../node_modules/lit-element/index.js",
+          "lit-element/": "../node_modules/lit-element/",
+          "lit-html": "../node_modules/lit-html/lit-html.js",
+          "lit-html/": "../node_modules/lit-html/"
+        }
+      }
+    </script>
+
+    <script type="module" src="../components/badge/pf-badge-shadow.js"></script>
+    <script type="module" src="../components/badge/pf-badge-light.js"></script>
+  </body>
+</html>

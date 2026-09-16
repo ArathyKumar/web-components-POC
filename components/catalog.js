@@ -39,4 +39,14 @@ export const componentCatalog = [
     ],
     status: 'ready',
   },
+  {
+    id: 'badge',
+    name: 'Badge',
+    description:
+      'PatternFly badge with shadow and light DOM implementations. Supports read, unread, and disabled states with an optional screen-reader label.',
+    href: 'demos/badge.html',
+    tags: ['PatternFly', 'Shadow DOM', 'Light DOM'],
+    elements: ['pf-badge-shadow', 'pf-badge-light'],
+    status: 'ready',
+  },
 ];

@@ -35,6 +35,10 @@ const styleFiles = [
     source: 'components/Accordion/accordion.css',
     output: 'components/accordion/styles/accordion-styles.js',
   },
+  {
+    source: 'components/Badge/badge.css',
+    output: 'components/badge/styles/badge-styles.js',
+  },
 ];
 
 const missingSources = styleFiles

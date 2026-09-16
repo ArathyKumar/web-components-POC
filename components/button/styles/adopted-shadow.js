@@ -12,6 +12,16 @@ import badgeStyles from './badge-styles.js';
 const COMPONENT_STYLES = [buttonStyles, spinnerStyles, badgeStyles].join('\n');
 
 const SHADOW_HOST_STYLES = `
+/*
+ * Box-sizing reset: global patternfly.css sets * { box-sizing: border-box } on
+ * the page, but that rule does not cross shadow boundaries. Without this reset,
+ * padding is added to the element's declared width instead of being subtracted
+ * from the content area, causing layout differences vs. the light DOM variant.
+ */
+*, *::before, *::after {
+  box-sizing: border-box;
+}
+
 :host {
   display: inline-block;
   vertical-align: middle;
