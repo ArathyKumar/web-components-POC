@@ -49,4 +49,14 @@ export const componentCatalog = [
     elements: ['pf-badge-shadow', 'pf-badge-light'],
     status: 'ready',
   },
+  {
+    id: 'card',
+    name: 'Card',
+    description:
+      'PatternFly card with shadow and light DOM implementations. Demonstrates named-slot projection, expandable content, header actions, and theming differences (::part() vs BEM selectors).',
+    href: 'demos/card.html',
+    tags: ['PatternFly', 'Shadow DOM', 'Light DOM', 'Expandable'],
+    elements: ['pf-card-shadow', 'pf-card-light'],
+    status: 'ready',
+  },
 ];

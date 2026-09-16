@@ -30,7 +30,7 @@ Three component tiers cover the key structural patterns:
 | Tier | Components | Patterns covered |
 |------|-----------|-----------------|
 | **Atom** | Button, Badge | Simple rendering, form association, icon slots |
-| **Compound** | *(Card — planned)* | Nested structure, multiple regions |
+| **Compound** | Card | Named slots, multiple content regions, expandable, theming via `::part()` |
 | **Interactive** | Accordion | Keyboard navigation, expand/collapse state, compound items |
 
 ---
@@ -76,7 +76,7 @@ import 'web-components-poc/pf-button-light';
 
 ## What the demos reveal
 
-Open `demos/button.html`, `demos/accordion.html`, and `demos/badge.html`. Each page renders the **shadow DOM variant on the left** and the **light DOM variant on the right**. The differences below are **structural facts, not opinions** — use them to form your own conclusion.
+Open `demos/button.html`, `demos/accordion.html`, `demos/badge.html`, and `demos/card.html`. Each page renders the **shadow DOM variant on the left** and the **light DOM variant on the right**. The differences below are **structural facts, not opinions** — use them to form your own conclusion.
 
 ### 1. Style isolation
 
@@ -282,6 +282,77 @@ Shadow exported parts: `badge`.
 
 ---
 
+### Card — `<pf-card-shadow>` / `<pf-card-light>`
+
+Mirrors the [PatternFly Card](https://www.patternfly.org/components/card).
+
+#### Slots / projection regions
+
+| Slot name | Description |
+|-----------|-------------|
+| `title` | Card title text |
+| `subtitle` | Subtitle below the title (optional) |
+| `header-image` | Brand logo or image in the header (optional) |
+| `header-actions` | Action buttons in the header (optional) |
+| `body` | Main card content |
+| `footer` | Card footer (optional) |
+| `expandable-content` | Hidden content revealed when expanded (requires `expandable`) |
+
+Both implementations use the same authoring syntax: `<element slot="body">content</element>`.
+
+| Attribute | Description |
+|-----------|-------------|
+| `compact` | Reduced padding (`pf-m-compact`); mutually exclusive with `large` |
+| `large` | Increased spacing (`pf-m-display-lg`); mutually exclusive with `compact` |
+| `full-height` | Fills the height of its container (`pf-m-full-height`) |
+| `plain` | Removes border and background (`pf-m-plain`) |
+| `variant` | `'default'` or `'secondary'` — secondary background color |
+| `expandable` | Enables a caret toggle in the card header |
+| `expanded` | Current expand state (reflected); also drives caret animation via CSS |
+| `toggle-right-aligned` | Moves the expand caret to the right (`pf-m-toggle-right-aligned`) |
+| `actions-no-offset` | Removes default negative-margin offset from actions (`pf-m-no-offset`) |
+| `expand-aria-label` | Accessible label for the expand toggle button |
+| `extra-class` | Additional BEM classes on the card root element |
+
+Events dispatched: `pf-card-expand` — `detail: { expanded: boolean }`.
+
+Shadow exported parts: `card`, `header`, `header-main`, `title`, `subtitle`, `actions`, `body`, `footer`, `expandable-content`.
+
+#### Content projection: shadow vs light DOM
+
+```html
+<!-- Identical authoring syntax for both implementations -->
+<pf-card-shadow>
+  <h2 slot="title">My card</h2>
+  <p  slot="body">Body text</p>
+  <div slot="footer">Footer</div>
+</pf-card-shadow>
+
+<pf-card-light>
+  <h2 slot="title">My card</h2>
+  <p  slot="body">Body text</p>
+  <div slot="footer">Footer</div>
+</pf-card-light>
+```
+
+**Shadow DOM:** The browser routes `slot="body"` to `<slot name="body">` inside the shadow root natively. A `@slotchange` event fires when the assignment changes, driving conditional section visibility via reactive `_has*` state properties.
+
+**Light DOM:** There are no native slots. `_getSlottedNodes(slotName)` manually scans host children for `[slot="<name>"]` on every render. After the first render, projected nodes live inside `[data-card-slot="<name>"]` wrapper divs — a Phase 2 query fallback finds them there on subsequent re-renders. This is O(n) manual scanning instead of browser-native routing.
+
+#### Theming card internals
+
+```css
+/* Shadow DOM — only reachable via ::part() */
+pf-card-shadow::part(card)   { border-left: 4px solid #0066cc; }
+pf-card-shadow::part(body)   { background: #f5f5f5; }
+
+/* Light DOM — standard BEM selectors work directly */
+pf-card-light .pf-v6-c-card        { border-left: 4px solid #0066cc; }
+pf-card-light .pf-v6-c-card__body  { background: #f5f5f5; }
+```
+
+---
+
 ## Theming
 
 `styles/global/theme.css` contains working examples of both approaches.
@@ -382,7 +453,8 @@ web-components-POC/
 ├── demos/
 │   ├── button.html                     # Shadow (left) vs light (right)
 │   ├── accordion.html
-│   └── badge.html
+│   ├── badge.html
+│   └── card.html
 │
 ├── components/
 │   ├── catalog.js
@@ -405,14 +477,22 @@ web-components-POC/
 │   │       ├── adopted-shadow.js
 │   │       ├── adopted-light.js
 │   │       └── accordion-styles.js     # ← auto-generated (do not edit)
-│   └── badge/
-│       ├── pf-badge-shadow.js
-│       ├── pf-badge-light.js
+│   ├── badge/
+│   │   ├── pf-badge-shadow.js
+│   │   ├── pf-badge-light.js
+│   │   ├── index.js
+│   │   └── styles/
+│   │       ├── adopted-shadow.js
+│   │       ├── adopted-light.js
+│   │       └── badge-styles.js         # ← auto-generated (do not edit)
+│   └── card/
+│       ├── pf-card-shadow.js           # Shadow DOM — named slots + slotchange tracking
+│       ├── pf-card-light.js            # Light DOM — manual _getSlottedNodes projection
 │       ├── index.js
 │       └── styles/
 │           ├── adopted-shadow.js
 │           ├── adopted-light.js
-│           └── badge-styles.js         # ← auto-generated (do not edit)
+│           └── card-styles.js          # ← auto-generated (do not edit)
 │
 ├── styles/
 │   ├── adopted-light.js                # Aggregates all light host overrides
@@ -454,7 +534,10 @@ web-components-POC/
   "./accordion":            "./components/accordion/index.js",
   "./pf-badge-shadow":      "./components/badge/pf-badge-shadow.js",
   "./pf-badge-light":       "./components/badge/pf-badge-light.js",
-  "./badge":                "./components/badge/index.js"
+  "./badge":                "./components/badge/index.js",
+  "./pf-card-shadow":       "./components/card/pf-card-shadow.js",
+  "./pf-card-light":        "./components/card/pf-card-light.js",
+  "./card":                 "./components/card/index.js"
 }
 ```
 

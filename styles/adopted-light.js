@@ -13,14 +13,16 @@
 import { BUTTON_LIGHT_HOST_STYLES } from '../components/button/styles/adopted-light.js';
 import { ACCORDION_LIGHT_HOST_STYLES } from '../components/accordion/styles/adopted-light.js';
 import { BADGE_LIGHT_HOST_STYLES } from '../components/badge/styles/adopted-light.js';
+import { CARD_LIGHT_HOST_STYLES } from '../components/card/styles/adopted-light.js';
 
 const LIGHT_HOST_STYLES = [
   BUTTON_LIGHT_HOST_STYLES,
   ACCORDION_LIGHT_HOST_STYLES,
   BADGE_LIGHT_HOST_STYLES,
+  CARD_LIGHT_HOST_STYLES,
 ].join('\n');
 
-const LIGHT_HOST_STYLES_REVISION = 'light-host-14';
+const LIGHT_HOST_STYLES_REVISION = 'light-host-15';
 
 let lightSheet = null;
 let lightSheetRevision = null;

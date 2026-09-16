@@ -39,6 +39,10 @@ const styleFiles = [
     source: 'components/Badge/badge.css',
     output: 'components/badge/styles/badge-styles.js',
   },
+  {
+    source: 'components/Card/card.css',
+    output: 'components/card/styles/card-styles.js',
+  },
 ];
 
 const missingSources = styleFiles

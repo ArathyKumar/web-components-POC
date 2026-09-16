@@ -1,0 +1,444 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Card — Web Components POC</title>
+    <link rel="stylesheet" href="../node_modules/@patternfly/patternfly/patternfly.css" />
+    <link rel="stylesheet" href="../styles/global/theme.css" />
+    <link rel="stylesheet" href="../styles/global/site.css" />
+    <link rel="stylesheet" href="../styles/global/demo.css" />
+  </head>
+  <body>
+    <main class="site-main site-main--wide">
+      <header class="site-header">
+        <a class="site-header__back" href="../index.html">← All components</a>
+        <h1 class="site-header__title pf-v6-c-title pf-m-3xl">Card</h1>
+        <p class="site-header__subtitle">
+          PatternFly card examples mirror the
+          <a href="https://www.patternfly.org/components/card">PatternFly Card</a>,
+          implemented as <code>&lt;pf-card-shadow&gt;</code> and
+          <code>&lt;pf-card-light&gt;</code>.
+          The shadow variant uses encapsulated CSS, native named <code>&lt;slot&gt;</code>
+          elements for content projection, and exposes <code>::part()</code> selectors
+          for targeted external theming.
+          The light variant renders its BEM structure directly into the document, inherits
+          global <code>patternfly.css</code> without adoption, and uses
+          <code>data-card-slot</code> wrapper divs to manually re-project
+          <code>slot="..."</code> children on every render cycle — because light DOM
+          has no native slot mechanism.
+        </p>
+      </header>
+
+      <div class="demo demo--compare">
+        <!-- Column headers -->
+        <div class="demo-compare demo-compare--header">
+          <div class="demo-compare__col">
+            <p class="demo-compare__label">Shadow DOM (<code>pf-card-shadow</code>)</p>
+          </div>
+          <div class="demo-compare__col">
+            <p class="demo-compare__label">Light DOM (<code>pf-card-light</code>)</p>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             BASIC CARD
+             A card with title, body text, and a footer — the simplest pattern.
+             Both implementations use the same slot="..." authoring syntax.
+             Shadow DOM routes children to <slot name="..."> natively.
+             Light DOM uses _getSlottedNodes() to project them manually.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Basic card</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow>
+                <span slot="title">Card title</span>
+                <p slot="body">
+                  Body text. This is the main content area of the card. You can put
+                  any elements here using <code>slot="body"</code>.
+                </p>
+                <span slot="footer">Footer</span>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <!--
+                LIGHT DOM: Same slot="..." authoring syntax as shadow. Internally,
+                pf-card-light scans for [slot="title"], [slot="body"], [slot="footer"]
+                children via _getSlottedNodes() and places them in wrapper divs
+                with data-card-slot="..." markers for subsequent re-renders.
+              -->
+              <pf-card-light>
+                <span slot="title">Card title</span>
+                <p slot="body">
+                  Body text. This is the main content area of the card. You can put
+                  any elements here using <code>slot="body"</code>.
+                </p>
+                <span slot="footer">Footer</span>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             CARD WITH SUBTITLE
+             slot="subtitle" is projected below the title text inside
+             .pf-v6-c-card__title. The shadow version renders a <p> wrapper only
+             when the subtitle slot has content (via slotchange + _hasSubtitle).
+             Light DOM checks subtitleNodes.length at render time (pull-based).
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Card with subtitle</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow>
+                <span slot="title">Title</span>
+                <span slot="subtitle">Subtitle</span>
+                <p slot="body">Body</p>
+                <span slot="footer">Footer</span>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light>
+                <span slot="title">Title</span>
+                <span slot="subtitle">Subtitle</span>
+                <p slot="body">Body</p>
+                <span slot="footer">Footer</span>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             COMPACT VARIANT
+             pf-m-compact reduces internal padding for dense/dashboard layouts.
+             Mutually exclusive with `large` — both are reflected attributes.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Compact</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow compact>
+                <span slot="title">Compact card</span>
+                <p slot="body">Reduced padding for dense layouts.</p>
+                <span slot="footer">Footer</span>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light compact>
+                <span slot="title">Compact card</span>
+                <p slot="body">Reduced padding for dense layouts.</p>
+                <span slot="footer">Footer</span>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             LARGE VARIANT
+             pf-m-display-lg increases spacing for prominent feature cards.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Large</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow large>
+                <span slot="title">Large card</span>
+                <p slot="body">Increased spacing for prominent display.</p>
+                <span slot="footer">Footer</span>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light large>
+                <span slot="title">Large card</span>
+                <p slot="body">Increased spacing for prominent display.</p>
+                <span slot="footer">Footer</span>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             PLAIN VARIANT
+             pf-m-plain removes the card's border and background for inline use
+             within surfaces that already have visual separation.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Plain</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow plain>
+                <span slot="title">Plain card</span>
+                <p slot="body">No border or background — blends into its container.</p>
+                <span slot="footer">Footer</span>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light plain>
+                <span slot="title">Plain card</span>
+                <p slot="body">No border or background — blends into its container.</p>
+                <span slot="footer">Footer</span>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             SECONDARY VARIANT
+             variant="secondary" applies pf-m-secondary which shifts the card
+             to use the secondary background color token.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Secondary variant</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow variant="secondary">
+                <span slot="title">Secondary card</span>
+                <p slot="body">Uses the secondary background color variant.</p>
+                <span slot="footer">Footer</span>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light variant="secondary">
+                <span slot="title">Secondary card</span>
+                <p slot="body">Uses the secondary background color variant.</p>
+                <span slot="footer">Footer</span>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             CARD WITH HEADER ACTIONS
+             slot="header-actions" places buttons/links in the top-right of the
+             card header (inside .pf-v6-c-card__actions).
+             Shadow DOM: routed to <slot name="header-actions"> natively.
+             Light DOM: collected via _getSlottedNodes('header-actions') and
+               rendered inside <div class="pf-v6-c-card__actions" data-card-slot="header-actions">.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>With header actions</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow>
+                <span slot="title">Card with actions</span>
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Kebab">
+                  ⋮
+                </button>
+                <p slot="body">Actions appear in the top-right corner of the card header.</p>
+                <span slot="footer">Footer</span>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <!--
+                LIGHT DOM: The same slot="header-actions" button is picked up by
+                _getSlottedNodes('header-actions') and placed inside:
+                  <div class="pf-v6-c-card__actions" data-card-slot="header-actions">
+                No browser-native routing — all manual DOM scanning.
+              -->
+              <pf-card-light>
+                <span slot="title">Card with actions</span>
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Kebab">
+                  ⋮
+                </button>
+                <p slot="body">Actions appear in the top-right corner of the card header.</p>
+                <span slot="footer">Footer</span>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             EXPANDABLE CARD
+             expandable enables a caret toggle in the card header. Content in
+             slot="expandable-content" is hidden (hidden + inert) when collapsed.
+
+             SHADOW DOM:
+               - Expandable content in the shadow root is wrapped by:
+                 <div class="pf-v6-c-card__expandable-content" ?hidden ?inert>
+                   <div class="pf-v6-c-card__expandable-content-body">
+                     <slot name="expandable-content"></slot>  ← native slot
+                   </div>
+                 </div>
+               - The slot's assigned nodes live in the HOST's light DOM.
+                 `?inert` on the shadow wrapper does NOT automatically inert the
+                 host children — because they're in a different tree. PF CSS's
+                 `display:none` (via `?hidden`) is what visually hides them.
+
+             LIGHT DOM:
+               - The expandable-content body is a regular div in the document.
+               - `?inert` applies directly to the subtree — correctly blocks
+                 focus and interaction on the content nodes.
+
+             Both dispatch `pf-card-expand` with `detail.expanded` on toggle.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Expandable</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow
+                expandable
+                expand-aria-label="Toggle card content"
+              >
+                <span slot="title">Expandable card</span>
+                <p slot="expandable-content">
+                  This content is hidden when the card is collapsed. Click the
+                  caret in the header to toggle visibility.
+                </p>
+                <p slot="expandable-content">
+                  Multiple nodes can be assigned to <code>slot="expandable-content"</code>.
+                </p>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <!--
+                LIGHT DOM EXPANDABLE:
+                _getSlottedNodes('expandable-content') collects both <p> nodes.
+                They are projected into:
+                  <div class="pf-v6-c-card__expandable-content-body" data-card-slot="expandable-content">
+                On re-render, Phase 2 fallback finds them via the data-card-slot query.
+              -->
+              <pf-card-light
+                expandable
+                expand-aria-label="Toggle card content"
+              >
+                <span slot="title">Expandable card</span>
+                <p slot="expandable-content">
+                  This content is hidden when the card is collapsed. Click the
+                  caret in the header to toggle visibility.
+                </p>
+                <p slot="expandable-content">
+                  Multiple nodes can be assigned to <code>slot="expandable-content"</code>.
+                </p>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             EXPANDABLE (TOGGLE RIGHT-ALIGNED)
+             toggle-right-aligned moves the caret to the right side of the header
+             via pf-m-toggle-right-aligned on the .pf-v6-c-card__header wrapper.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Expandable — toggle right-aligned</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow
+                expandable
+                toggle-right-aligned
+                expand-aria-label="Toggle card content"
+              >
+                <span slot="title">Toggle on the right</span>
+                <p slot="expandable-content">
+                  Revealed when expanded. The caret sits on the right side of the header.
+                </p>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light
+                expandable
+                toggle-right-aligned
+                expand-aria-label="Toggle card content"
+              >
+                <span slot="title">Toggle on the right</span>
+                <p slot="expandable-content">
+                  Revealed when expanded. The caret sits on the right side of the header.
+                </p>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             THEMING COMPARISON
+             Demonstrates the fundamental theming difference:
+               Shadow DOM → requires ::part() to reach the card element.
+               Light DOM  → standard BEM class selector works directly.
+
+             Both produce identical visual output for the themed card, but the
+             CSS paths to achieve it are fundamentally different.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Theming</h2>
+          <p class="demo-note">
+            <strong>Shadow DOM</strong> is themed via
+            <code>pf-card-shadow::part(card) { border-left: 4px solid var(--pf-t--color--blue--60); }</code>.
+            <strong>Light DOM</strong> is themed via
+            <code>pf-card-light .pf-v6-c-card { border-left: 4px solid var(--pf-t--color--blue--60); }</code>.
+          </p>
+
+          <style>
+            /* Shadow DOM theming — only works via ::part() */
+            .themed-shadow-card::part(card) {
+              border-left: 4px solid var(--pf-t--color--blue--60, #004080);
+            }
+
+            /* Light DOM theming — standard BEM class selector, no ::part() needed */
+            .themed-light-card .pf-v6-c-card {
+              border-left: 4px solid var(--pf-t--color--blue--60, #004080);
+            }
+          </style>
+
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow class="themed-shadow-card">
+                <span slot="title">Themed via <code>::part(card)</code></span>
+                <p slot="body">
+                  External CSS can only reach shadow internals through
+                  <code>::part(card)</code>. Without the <code>part</code>
+                  attribute, this element is unreachable from the outside.
+                </p>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <!--
+                Light DOM: The rendered .pf-v6-c-card div is in the regular document,
+                so .themed-light-card .pf-v6-c-card { } targets it directly.
+                No ::part() required — but this also means any global .pf-v6-c-card
+                rule can accidentally affect internals.
+              -->
+              <pf-card-light class="themed-light-card">
+                <span slot="title">Themed via BEM class selector</span>
+                <p slot="body">
+                  External CSS targets <code>.pf-v6-c-card</code> directly because
+                  there is no shadow boundary. No <code>::part()</code> needed —
+                  but the internals are also fully exposed to global CSS.
+                </p>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "lit": "../node_modules/lit/index.js",
+          "lit/": "../node_modules/lit/",
+          "@lit/reactive-element": "../node_modules/@lit/reactive-element/reactive-element.js",
+          "@lit/reactive-element/": "../node_modules/@lit/reactive-element/",
+          "lit-element": "../node_modules/lit-element/index.js",
+          "lit-element/": "../node_modules/lit-element/",
+          "lit-html": "../node_modules/lit-html/lit-html.js",
+          "lit-html/": "../node_modules/lit-html/"
+        }
+      }
+    </script>
+
+    <script type="module" src="../components/card/pf-card-shadow.js"></script>
+    <script type="module" src="../components/card/pf-card-light.js"></script>
+
+    <!--
+      Light DOM host styles: pf-card-light needs pf-card-light[expanded] CSS for
+      the toggle caret animation. This is injected via adoptPatternFlyLightHostStyles()
+      which reads from styles/adopted-light.js (aggregated sheet for all light components).
+    -->
+    <script type="module">
+      import { adoptPatternFlyLightHostStyles } from '../styles/adopted-light.js';
+      adoptPatternFlyLightHostStyles();
+    </script>
+  </body>
+</html>

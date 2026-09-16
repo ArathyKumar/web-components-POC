@@ -7,6 +7,8 @@ body {
   color: var(--pf-t--global--text--color--regular);
   font-family: var(--pf-t--global--font--family--body);
   line-height: var(--pf-t--global--font--line-height--body);
+  height: auto;
+  min-height: 100%;
 }
 
 .site-main {
