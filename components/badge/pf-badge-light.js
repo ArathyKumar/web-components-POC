@@ -75,8 +75,12 @@ export class PFBadgeLight extends LitElement {
      * Light DOM uses an attribute here because native <slot> is unavailable
      * without a shadow root. The shadow variant accepts child nodes via
      * <slot> instead — notice the different authoring API.
+     *
+     * `reflect: true` keeps the HTML attribute in sync with the JS property,
+     * so `element.count = '42'` is visible in DevTools and can be selected
+     * via `[count="42"]` CSS/query selectors.
      */
-    count: { type: String },
+    count: { type: String, reflect: true },
     /**
      * Visually hidden text appended after the count inside the badge span.
      *

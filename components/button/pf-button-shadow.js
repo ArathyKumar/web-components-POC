@@ -31,29 +31,90 @@ const EXPORT_PARTS =
 
 /**
  * Maps button options to PatternFly core (pf-v6-c-button) class names.
+ * Every parameter maps directly to one or more PF BEM modifiers. The function
+ * is intentionally pure — no DOM access, no side effects — so it can be called
+ * from render() on every Lit update without risk.
+ *
+ * @param {object}  [opts={}]
+ * @param {string}  [opts.variant='primary']       - Visual style: 'primary'|'secondary'|'tertiary'|
+ *                                                   'danger'|'warning'|'link'|'plain'|'control'|'stateful'
+ *                                                   → pf-m-{variant} (or pf-m-stateful for stateful)
+ * @param {string}  [opts.size='default']          - Size override: 'sm'→pf-m-small, 'lg'→pf-m-display-lg,
+ *                                                   'default' adds no modifier
+ * @param {string}  [opts.state='unread']          - Stateful variant sub-state (only applied when
+ *                                                   variant==='stateful'): 'read'→pf-m-read,
+ *                                                   'attention'→pf-m-attention, else pf-m-unread
+ * @param {string}  [opts.extraClass='']           - Arbitrary extra class(es) appended verbatim.
+ *                                                   Named `extraClass` (not `className`) to avoid
+ *                                                   colliding with the DOM `.className` property.
+ * @param {boolean} [opts.block=false]             - Full-width block layout → pf-m-block
+ * @param {boolean} [opts.disabled=false]          - Visually disabled (applies PF disabled styles
+ *                                                   to non-<button> activators too) → pf-m-disabled
+ * @param {boolean} [opts.ariaDisabled=false]      - Accessible-but-visible disabled state (focusable,
+ *                                                   announces as disabled to AT) → pf-m-aria-disabled
+ * @param {boolean} [opts.loading=false]           - Shows spinner; on non-plain variants also reserves
+ *                                                   space for the spinner → pf-m-in-progress (+pf-m-progress)
+ * @param {boolean} [opts.clicked=false]           - Momentary "clicked" visual feedback → pf-m-clicked
+ * @param {boolean} [opts.inline=false]            - Renders the button inline with surrounding text,
+ *                                                   same baseline and font-size → pf-m-inline
+ * @param {boolean} [opts.danger=false]            - Applies danger (destructive) tint to any variant
+ *                                                   (e.g. secondary+danger = outlined red) → pf-m-danger
+ * @param {boolean} [opts.favorite=false]          - Renders a star icon for bookmark/favorite actions;
+ *                                                   enables the favorited toggle → pf-m-favorite
+ * @param {boolean} [opts.favorited=false]         - Fills the star icon; only meaningful when
+ *                                                   favorite=true → pf-m-favorited (guarded by favorite)
+ * @param {boolean} [opts.noPadding=false]         - Strips all internal padding; used for icon-in-grid
+ *                                                   layouts where outer spacing is managed by the parent
+ *                                                   → pf-m-no-padding
+ * @param {boolean} [opts.settings=false]          - Renders a gear icon with a rotate-on-hover animation;
+ *                                                   also enables pf-m-shadow-hover JS class toggling
+ *                                                   (shadow DOM only — see _syncIconHoverHandlers) → pf-m-settings
+ * @param {boolean} [opts.hamburger=false]         - Renders an animated three-line ↔ arrow icon;
+ *                                                   also enables pf-m-shadow-hover JS class toggling
+ *                                                   (shadow DOM only — see _syncIconHoverHandlers) → pf-m-hamburger
+ * @param {string}  [opts.hamburgerVariant]        - Controls the hamburger animation direction when
+ *                                                   hamburger=true: 'expand'→pf-m-expand,
+ *                                                   'collapse'→pf-m-collapse, undefined→no sub-modifier
+ * @param {boolean} [opts.circle=false]            - Renders a perfectly circular icon button (plus icon
+ *                                                   by default); suppresses the text label slot
+ *                                                   → pf-m-circle
+ * @param {boolean} [opts.docked=false]            - Docked / persistent-panel variant (sidebar toggle)
+ *                                                   → pf-m-docked
+ * @param {boolean} [opts.textExpanded=false]      - Visually reveals hidden label text (used with docked
+ *                                                   sidebars to animate label in/out) → pf-m-text-expanded
+ * @returns {string} Space-separated class string ready for class=${...} in a Lit template
  * @see https://www.patternfly.org/components/button
  */
 function getPatternFlyButtonClassNames({
-  variant = 'primary',
-  size = 'default',
-  state = 'unread',
-  className = '',
-  block = false,
-  disabled = false,
-  ariaDisabled = false,
-  loading = false,
-  clicked = false,
-  inline = false,
-  danger = false,
-  favorite = false,
-  favorited = false,
-  noPadding = false,
-  settings = false,
-  hamburger = false,
-  hamburgerVariant,
-  circle = false,
-  docked = false,
-  textExpanded = false,
+  // ── Variant & size ────────────────────────────────────────────────────────
+  variant = 'primary',       // → pf-m-{variant} | pf-m-stateful (+state modifier)
+  size = 'default',          // → pf-m-small (sm) | pf-m-display-lg (lg) | nothing (default)
+  state = 'unread',          // → pf-m-read | pf-m-attention | pf-m-unread  (stateful only)
+
+  // ── Extra classes ─────────────────────────────────────────────────────────
+  extraClass = '',            // → appended verbatim; avoids DOM .className collision
+
+  // ── Layout modifiers ──────────────────────────────────────────────────────
+  block = false,             // → pf-m-block      (full-width)
+  inline = false,            // → pf-m-inline     (text-flow baseline)
+  noPadding = false,         // → pf-m-no-padding (grid / icon-flush)
+  circle = false,            // → pf-m-circle     (icon-only square pill)
+  docked = false,            // → pf-m-docked     (sidebar-toggle layout)
+  textExpanded = false,      // → pf-m-text-expanded (animate label in/out)
+
+  // ── State modifiers ───────────────────────────────────────────────────────
+  disabled = false,          // → pf-m-disabled      (visual, also covers non-<button> activators)
+  ariaDisabled = false,      // → pf-m-aria-disabled  (focusable but announced as disabled)
+  loading = false,           // → pf-m-in-progress (+pf-m-progress on non-plain variants)
+  clicked = false,           // → pf-m-clicked        (momentary press feedback)
+  danger = false,            // → pf-m-danger         (destructive tint on any variant)
+
+  // ── Specialty icon button modifiers ───────────────────────────────────────
+  favorite = false,          // → pf-m-favorite       (star icon visible)
+  favorited = false,         // → pf-m-favorited      (star filled; requires favorite=true)
+  settings = false,          // → pf-m-settings       (gear icon, rotate-on-hover; JS hover via _syncIconHoverHandlers)
+  hamburger = false,         // → pf-m-hamburger      (three-line ↔ arrow animation; JS hover via _syncIconHoverHandlers)
+  hamburgerVariant,          // → pf-m-expand | pf-m-collapse (sub-modifier; requires hamburger=true)
 } = {}) {
   const classes = ['pf-v6-c-button'];
 
@@ -90,7 +151,7 @@ function getPatternFlyButtonClassNames({
   if (textExpanded) classes.push('pf-m-text-expanded');
   if (noPadding) classes.push('pf-m-no-padding');
 
-  if (className) classes.push(className);
+  if (extraClass) classes.push(extraClass);
 
   return classes.join(' ');
 }
@@ -377,6 +438,12 @@ export class PFButtonShadow extends LitElement {
     captureDefaultAriaLabel(this);
     this._syncFormDisabledState();
     this._syncFormValue();
+    // Re-wire settings/hamburger hover handlers when the element is reconnected
+    // to the DOM (e.g. moved via appendChild). On first connect the shadow root
+    // has not rendered yet so _getControlElement() returns null and the call
+    // is a safe no-op; on reconnect the shadow tree is intact and handlers
+    // are correctly re-established.
+    this._syncIconHoverHandlers();
   }
 
   disconnectedCallback() {
@@ -608,7 +675,7 @@ export class PFButtonShadow extends LitElement {
       variant: this.variant || 'primary',
       size: this.size || 'default',
       state: this.state || 'unread',
-      className: this.extraClass || '',
+      extraClass: this.extraClass || '',
       block: this.block,
       disabled: this.disabled,
       ariaDisabled: this.ariaDisabled,

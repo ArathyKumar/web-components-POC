@@ -20,7 +20,7 @@ const LIGHT_HOST_STYLES = [
   BADGE_LIGHT_HOST_STYLES,
 ].join('\n');
 
-const LIGHT_HOST_STYLES_REVISION = 'light-host-13';
+const LIGHT_HOST_STYLES_REVISION = 'light-host-14';
 
 let lightSheet = null;
 let lightSheetRevision = null;
