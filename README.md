@@ -1,50 +1,52 @@
-# Web Components POC
+# Web Components POC — Light DOM Feasibility Study
 
-A [PatternFly v6](https://www.patternfly.org/) proof of concept built with [Lit](https://lit.dev/). Each component exists in two forms — **shadow DOM** (`pf-*-shadow`) and **light DOM** (`pf-*-light`) — with the same attributes, events, and form behavior.
+A [PatternFly v6](https://www.patternfly.org/) proof of concept evaluating whether **light DOM web components with shared CSS** are a viable migration path for products.
 
-**Components:** [Button](https://www.patternfly.org/components/button), [Accordion](https://www.patternfly.org/components/accordion), and [Badge](https://www.patternfly.org/components/badge).
+Each component ships in two forms — a **shadow DOM** reference implementation (`pf-*-shadow`) and a **light DOM** candidate (`pf-*-light`). They expose the same attributes, events, and form behavior so you can compare them directly.
 
-Open the compare demos, inspect the source, and note where the implementations diverge. This is a **demonstration codebase**, not a production component library.
+> **This is a demonstration codebase, not a production component library.**
 
-## Two implementations, one API
+---
 
-| | Shadow DOM | Light DOM |
-|--|------------|-----------|
-| **Tags** | `pf-button-shadow`, `pf-accordion-shadow`, `pf-accordion-item-shadow`, `pf-badge-shadow` | `pf-button-light`, `pf-accordion-light`, `pf-accordion-item-light`, `pf-badge-light` |
-| **Render target** | Open shadow root per component | Host element (`createRenderRoot()` returns `this`) |
-| **PatternFly CSS** | Adopted into shadow root (`components/*/styles/adopted-shadow.js`) | Global `patternfly.css` on the page |
-| **Content projection** | Native `<slot>` | Host child nodes moved into Lit templates |
-| **Theming from outside** | `::part()` via `part` + `exportparts` | Host CSS variables or BEM descendant selectors |
-| **Package default** | `import 'web-components-poc'` → `pf-button-shadow.js` | `import 'web-components-poc/pf-button-light'` |
+## Why this POC exists
 
-Both variants still require global `patternfly.css` for design tokens (`--pf-t--*`). Brand overrides live in `styles/global/theme.css`.
+RHDS web components use shadow DOM (per W3C spec recommendations and RHDS team expertise). This is not in question. What *is* being validated is a different concern:
 
-## What to look for in the demos
+> *If shadow DOM requires forcing products to migrate, we have to maintain two separate CSS implementations — PF React and RHDS web components — for years. If light DOM components can share PF React CSS, existing consumers stay uninterrupted while styling is unified.*
 
-`demos/button.html` and `demos/accordion.html` render shadow and light variants side by side (shadow in the left column). While exploring, consider:
+| Scenario | CSS implementations | Product migration required |
+|----------|---------------------|---------------------------|
+| Shadow DOM web components only | Two (PF React + RHDS WC) | Yes — products must adopt RHDS WC |
+| Light DOM with shared CSS | One (shared `pf-v6-*` classes) | No — products stay on PF React |
 
-- **Style isolation** — Add a broad page rule targeting `.pf-v6-c-button` or `.pf-v6-c-accordion__toggle`. Which column changes?
-- **Slots** — Inspect how label and icon content are projected. Shadow items use `<slot>`; light items re-query the DOM after each render.
-- **Theming** — Compare `pf-button-shadow::part(control)` in `theme.css` with BEM selectors on `pf-accordion-item-light`. Which approach depends on internal markup?
-- **Source size** — Shadow and light entry files are parallel, but light DOM carries extra projection logic for the same features.
+**Goal:** validate whether the light DOM approach is technically viable *enough* to serve as that migration path — or whether its tradeoffs make shadow DOM adoption the only defensible long-term choice regardless.
 
-The differences are intentional. The repo is structured so you can reach your own conclusion about which model fits reusable components.
+---
 
-## Prerequisites
+## Scope
 
-- [Node.js](https://nodejs.org/) (npm included)
-- A browser with shadow DOM and constructable stylesheets (fallback `<style>` tag when unavailable)
+Three component tiers cover the key structural patterns:
 
-## Getting started
+| Tier | Components | Patterns covered |
+|------|-----------|-----------------|
+| **Atom** | Button, Badge | Simple rendering, form association, icon slots |
+| **Compound** | *(Card — planned)* | Nested structure, multiple regions |
+| **Interactive** | Accordion | Keyboard navigation, expand/collapse state, compound items |
+
+---
+
+## How to run
+
+**Prerequisites:** [Node.js](https://nodejs.org/) and a browser with shadow DOM support.
 
 ```bash
-npm install   # also runs npm run sync-styles via postinstall
-npm run dev
+npm install   # also runs sync-styles via postinstall
+npm run dev   # opens http://127.0.0.1:8080
 ```
 
-Open [http://127.0.0.1:8080](http://127.0.0.1:8080). ES modules require a dev server — they do not work over `file://`.
+ES modules require a dev server — they do not work over `file://`.
 
-### Page setup
+### Page setup (without a bundler)
 
 ```html
 <link rel="stylesheet" href="node_modules/@patternfly/patternfly/patternfly.css" />
@@ -54,194 +56,261 @@ Open [http://127.0.0.1:8080](http://127.0.0.1:8080). ES modules require a dev se
   {
     "imports": {
       "lit": "./node_modules/lit/index.js",
-      "lit/": "./node_modules/lit/",
-      "@lit/reactive-element": "./node_modules/@lit/reactive-element/reactive-element.js",
-      "@lit/reactive-element/": "./node_modules/@lit/reactive-element/",
-      "lit-element": "./node_modules/lit-element/index.js",
-      "lit-element/": "./node_modules/lit-element/",
-      "lit-html": "./node_modules/lit-html/lit-html.js",
-      "lit-html/": "./node_modules/lit-html/"
+      "lit/":  "./node_modules/lit/"
     }
   }
 </script>
 
 <script type="module" src="components/button/pf-button-shadow.js"></script>
-<script type="module" src="components/accordion/pf-accordion-shadow.js"></script>
-<!-- Register light variants to enable the compare columns -->
 <script type="module" src="components/button/pf-button-light.js"></script>
-<script type="module" src="components/accordion/pf-accordion-light.js"></script>
 ```
 
 With a bundler:
 
-```javascript
+```js
 import 'web-components-poc/pf-button-shadow';
-import 'web-components-poc/pf-accordion-shadow';
+import 'web-components-poc/pf-button-light';
 ```
 
-## Shadow DOM
+---
 
-### Button — `<pf-button-shadow>`
+## What the demos reveal
 
-Lit renders into an open shadow root. Button, spinner, and badge CSS are adopted via a shared constructable stylesheet in `components/button/styles/adopted-shadow.js` (one parse, many instances).
+Open `demos/button.html`, `demos/accordion.html`, and `demos/badge.html`. Each page renders the **shadow DOM variant on the left** and the **light DOM variant on the right**. The differences below are **structural facts, not opinions** — use them to form your own conclusion.
 
-| Concern | Approach |
-|---------|----------|
-| Slots | Native `<slot>` and `<slot name="icon">` |
-| Theming | `exportparts` on the activator — `pf-button-shadow::part(control)`, `::part(icon)`, etc. |
-| Forms | `formAssociated` + `ElementInternals` |
-| Internal queries | `this.renderRoot.querySelector('[part="control"]')` |
+### 1. Style isolation
 
-Exported parts: `control`, `icon`, `icon-favorite`, `icon-favorited`, `text`, `sr-text`, `progress`, `spinner`, `count`, `badge`.
+Add a broad page rule targeting `.pf-v6-c-button` or `.pf-v6-c-accordion__toggle`:
 
-### Accordion — `<pf-accordion-shadow>` / `<pf-accordion-item-shadow>`
+```css
+.pf-v6-c-button { background: red !important; }
+```
 
-Container + item elements; each item owns a shadow root.
+- **Shadow DOM column:** unchanged — the shadow root's encapsulated stylesheet blocks the page rule.
+- **Light DOM column:** affected — the component's markup is in the document tree and inherits page CSS.
 
-| Concern | Approach |
-|---------|----------|
-| Slots | Default → toggle label; `slot="content"` → panel |
-| Theming | Shadow parts: `item`, `toggle`, `toggle-icon`, `content` |
-| Modifiers | Parent classes (plain, glass) re-applied per item via `pf-m-item-host` inside shadow |
-| A11y | `aria-expanded`, `aria-controls`, `hidden` + `inert` on collapsed panels; keyboard nav in `accordion-a11y.js` |
+**Relevance to adoption:** products with large existing stylesheets may unintentionally break light DOM components. Shadow DOM components are immune.
 
-## Light DOM
+### 2. Content projection
 
-### Button — `<pf-button-light>`
+Inspect how label text moves from the author's markup into the component's rendered output.
 
-Lit renders directly onto the host. Component CSS comes from global `patternfly.css`; `styles/adopted-light.js` adds document-level host overrides.
+- **Shadow DOM:** native `<slot>` — the browser handles projection; no framework code required.
+- **Light DOM:** Lit re-queries the host's child nodes after each render cycle and re-inserts them. Deleting the component's `textContent` from JS removes the label permanently.
 
-| Concern | Approach |
-|---------|----------|
-| Slots | Host children passed into the template; recovered on re-render via `.pf-v6-c-button__text` |
-| Theming | CSS variables on `pf-button-light` or selectors on `.pf-v6-c-button` — no `part` attributes |
-| Forms | Same `ElementInternals` API as shadow |
-| Internal queries | `this.querySelector('.pf-v6-c-button')` |
+**Relevance to adoption:** light DOM projection is fragile under direct DOM manipulation (common in legacy frameworks like jQuery or Backbone). Shadow DOM slots are mutation-safe.
 
-> Setting `textContent` on `<pf-button-light>` removes host children and breaks label/icon projection.
+### 3. Theming
 
-### Accordion — `<pf-accordion-light>` / `<pf-accordion-item-light>`
+Inspect `styles/global/theme.css` to compare both theming surfaces:
 
-Same attributes and events as shadow. Items use `display: contents` on the host so accordion BEM structure stays flat.
+- **Shadow DOM:** `pf-button-shadow::part(control)` — explicit, scoped, requires no knowledge of internal markup.
+- **Light DOM:** `pf-button-light .pf-v6-c-button.pf-m-primary` — requires knowledge of internal BEM class names; any internal rename is a breaking change.
 
-| Concern | Approach |
-|---------|----------|
-| Slots | Non-`slot="content"` children → toggle; `[slot="content"]` → panel |
-| Theming | BEM selectors under `pf-accordion-item-light` (e.g. `.pf-v6-c-accordion__toggle`) |
-| A11y | Same panel and ARIA wiring; keyboard nav shares `accordion-a11y.js` |
+**Relevance to adoption:** `::part()` creates a stable, versioned theming contract. BEM descendant selectors couple the consumer to implementation details.
 
-## Usage
+### 4. Authoring API divergence (Badge)
 
-Examples below use `pf-button-shadow`. Replace `-shadow` with `-light` to exercise the other implementation.
-
-### Label (default slot)
+The badge component exposes a difference in authoring syntax unavoidable without a shadow root:
 
 ```html
-<pf-button-shadow variant="primary">Save changes</pf-button-shadow>
+<!-- Shadow DOM: content via native slot -->
+<pf-badge-shadow unread>7</pf-badge-shadow>
+
+<!-- Light DOM: content via attribute — slots require a shadow root -->
+<pf-badge-light unread count="7"></pf-badge-light>
 ```
 
-### Custom icon slot
+**Relevance to adoption:** light DOM badge cannot match the React/shadow DOM authoring pattern of `<Badge>7</Badge>` — consumers must change their markup. This directly contradicts the "no migration required" premise.
 
-```html
-<pf-button-shadow variant="plain" aria-label="Custom action">
-  <svg slot="icon" ...></svg>
-</pf-button-shadow>
-```
+### 5. Implementation complexity
 
-Built-in icons use the `icon` attribute: `notification`, `add-circle`, `copy`, `close`, `upload`.
+Both entry files are kept intentionally parallel and unshared so the differences are visible. Examine:
 
-### Favorite and loading state
+- `components/button/pf-button-shadow.js` (~920 lines) vs `pf-button-light.js` (~980 lines)
+- Light DOM carries extra DOM-scanning methods (`_getProjectableChildNodes`, `_getDefaultSlotNodes`, `_getContentNodes`) absent from the shadow variant.
+- The shadow DOM button removed its icon hover workaround (`_syncIconHoverHandlers`) from the light variant because native CSS `:hover`/`:focus` handles it — **but** this means the light DOM relies on `patternfly.css` internals not to change.
 
-By default, favorite and progress-capable buttons are **uncontrolled**: they toggle `favorited` and `loading` internally on activation and keep aria/labels in sync. Listen for events to observe changes, or set properties programmatically — presentation syncs on external updates and form reset.
+---
 
-For **controlled** mode, disable internal toggling and apply state from event handlers:
+## Implementation comparison
 
-```html
-<pf-button-shadow
-  favorite
-  auto-toggle-favorite="false"
-  aria-label-unfavorited="Favorite example not favorited"
-  aria-label-favorited="Favorite example favorited"
-></pf-button-shadow>
-```
+| Concern | Shadow DOM | Light DOM |
+|---------|------------|-----------|
+| **Render target** | Open shadow root | Host element (`createRenderRoot()` returns `this`) |
+| **CSS scope** | Encapsulated per root | Global `patternfly.css` on the page |
+| **Content projection** | Native `<slot>` — browser-managed | Host child nodes re-queried per render |
+| **Authoring parity with React** | ✅ Same `children`/slot pattern | ❌ Attributes required for text-only content (Badge) |
+| **Page style bleed** | ❌ Blocked by shadow boundary | ✅ Page CSS applies; can be an advantage or a hazard |
+| **External theming** | `::part()` — explicit, version-stable | BEM descendant selectors — coupled to markup |
+| **Form association** | `formAssociated` + `ElementInternals` | Same |
+| **Box-sizing** | Requires explicit reset in shadow root | Inherits from `patternfly.css` |
+| **Design tokens** | Resolved from page `:root` via `var()` | Same |
+| **Keyboard nav (Accordion)** | `event.composedPath()[0]` needed to pierce shadow boundary | `event.target` works directly |
+| **Bundle size (per component est.)** | < 10 KB | < 10 KB |
+| **Legacy browser fallback** | `<style>` tag when Constructable Stylesheets unavailable | N/A |
 
-```javascript
-btn.addEventListener('pf-favorite-change', (event) => {
-  btn.favorited = event.detail.favorited;
-});
-```
+---
 
-Configure labels with attributes:
+## Success criteria tracker
 
-```html
-<pf-button-shadow
-  favorite
-  aria-label-unfavorited="Favorite example not favorited"
-  aria-label-favorited="Favorite example favorited"
-></pf-button-shadow>
+### Technical viability
 
-<pf-button-shadow
-  loading
-  idle-label="Click to start loading"
-  loading-label="Click to stop loading"
-  spinner-aria-label="Content being loaded"
-></pf-button-shadow>
-```
+| Criterion | Shadow DOM | Light DOM |
+|-----------|------------|-----------|
+| Renders with shared PF CSS | ✅ | ✅ |
+| Visual parity with React | ✅ | ✅ with caveats (box-sizing, slot API difference) |
+| Works across frameworks | ✅ | ⚠️ Fragile under direct DOM mutation (jQuery, Backbone) |
+| Bundle size < 10 KB avg | ✅ | ✅ |
+| Authoring API matches React | ✅ | ⚠️ Badge requires `count=""` attribute — no slot without shadow |
+| Immune to page style bleed | ✅ | ❌ |
+| Stable theming contract | ✅ `::part()` | ⚠️ Depends on BEM class names staying stable |
 
-**Progress label attributes bypass the default slot.** When `idle-label` or `loading-label` is set, the component renders that text instead of projecting host children. Do not leave label text in the slot when using these attributes.
+### Open questions for product teams
 
-**Favorite aria-label fallback:** If `aria-label-favorited` is omitted, the favorited state uses `"Unfavorite"`. If `aria-label-unfavorited` is omitted, the unfavorited state falls back to `aria-label` (or `"Favorite"` if neither is set).
+These require feedback from **3–5 current RHDS web component consumers** to close:
 
-**Progress toggle opt-out:** Buttons with spinner attributes are progress-capable and toggle `loading` on every click by default. For display-only spinners, set `auto-toggle-loading="false"` — the button still emits `pf-loading-change` with the proposed next state, but does not update `loading` internally.
+1. **Migration effort:** is switching from current shadow DOM components to light DOM components *actually* lower effort than switching to PF React directly?
+2. **Customization:** do the teams need `::part()` theming, or are host CSS variables and BEM selectors sufficient?
+3. **DOM manipulation:** do their codebases mutate component children directly (jQuery patterns, test utilities)? If yes, light DOM projection breaks.
+4. **Authoring parity:** does the `count=""` attribute pattern on Badge (and any similar divergence on other components) constitute an acceptable API difference?
+5. **Long-term:** would they adopt light DOM over staying on RHDS shadow DOM components, or does the theming surface regression push them back to shadow DOM anyway?
 
-Icon-only progress buttons (plain upload, circle upload) clear `aria-label` while loading so the spinner's `spinner-aria-label` takes over, then restore the saved label when idle.
+---
 
-| Event | Detail | When |
-|-------|--------|------|
+## Component API
+
+### Button — `<pf-button-shadow>` / `<pf-button-light>`
+
+#### Content
+
+| Attribute / slot | Description |
+|-----------------|-------------|
+| Default slot | Button label |
+| `slot="icon"` | Custom icon markup |
+| `icon` | Built-in icon: `notification`, `add-circle`, `copy`, `close`, `upload` |
+| `sr-text` | Screen-reader-only text appended to the label |
+
+#### Appearance
+
+| Attribute | Values | Default |
+|-----------|--------|---------|
+| `variant` | `primary` `secondary` `tertiary` `danger` `warning` `link` `plain` `control` `stateful` | `primary` |
+| `size` | `default` `sm` `lg` | `default` |
+| `state` | `read` `unread` `attention` *(stateful variant only)* | `unread` |
+| `block` `danger` `inline` `circle` `no-padding` | Boolean layout flags | `false` |
+| `favorite` `loading` `clicked` `settings` `hamburger` `docked` `text-expanded` | Boolean state flags | `false` |
+| `extra-class` | Additional BEM classes on the activator | — |
+
+#### Behavior and forms
+
+| Attribute | Description |
+|-----------|-------------|
+| `as` | Activator tag: `button` (default), `a`, or `span` |
+| `href` `rel` `target` | Link attributes when `as="a"` |
+| `type` | `button` `submit` `reset` |
+| `name` `value` `form` | Form association |
+| `disabled` | Native disabled; blocks submission |
+| `aria-disabled` | Visible but announced as disabled |
+| `idle-label` / `loading-label` | Progress label text (bypasses default slot) |
+| `spinner-aria-label` `spinner-aria-labelledby` `spinner-aria-value-text` | Spinner accessibility |
+| `auto-toggle-favorite` / `auto-toggle-loading` | `false` for controlled mode |
+| `aria-label-favorited` / `aria-label-unfavorited` | Per-state favorite labels |
+| `control-id` | `id` on the inner activator element |
+| `hamburger-variant` | `expand` or `collapse` — hamburger animation direction |
+
+#### Events
+
+| Event | `detail` | When |
+|-------|---------|------|
 | `pf-activate` | `{ variant, type }` | Every activation |
 | `pf-favorite-change` | `{ favorited }` | Favorite button activated |
 | `pf-loading-change` | `{ loading }` | Progress-capable button activated |
 
-All events bubble and are composed (`composed: true`).
+All events bubble and are `composed: true`.
 
-## Forms
+---
 
-Both button variants are [form-associated custom elements](https://developer.mozilla.org/en-US/docs/Web/API/Element/attachInternals). Use `type`, `name`, `value`, and `form` like a native button. Submit uses `SubmitEvent` with the host as `submitter`.
+### Accordion — `<pf-accordion-shadow>` / `<pf-accordion-light>`
 
-```html
-<form id="demo-form">
-  <pf-button-shadow type="submit" name="action" value="save" variant="primary">
-    Submit
-  </pf-button-shadow>
-  <pf-button-shadow type="reset" variant="secondary">Reset</pf-button-shadow>
-</form>
-```
+#### Container attributes
+
+| Attribute | Description |
+|-----------|-------------|
+| `definition-list` | Use `<dl>`/`<dt>`/`<dd>` (default `true`); `false` for heading markup |
+| `single-expand` | Only one item open at a time |
+| `bordered` `plain` `no-plain-on-glass` `display-lg` `toggle-start` | PF layout modifiers |
+| `heading-level` | `h1`–`h6` when `definition-list="false"` (default `h3`) |
+| `aria-label` `extra-class` | Accessible name, extra classes |
+
+#### Item attributes — `pf-accordion-item-shadow` / `pf-accordion-item-light`
+
+| Attribute | Description |
+|-----------|-------------|
+| `expanded` | Open / closed |
+| `toggle-id` `content-id` | ARIA ids (auto-generated if omitted) |
+| `fixed` | Scrollable fixed-height panel |
+| `custom-content` | Skip the default body wrapper `<div>` |
+| `content-aria-label` `extra-class` `content-extra-class` | Panel labeling and classes |
+
+**Content projection:** default slot → toggle label; `<div slot="content">` → panel body.
+
+#### Events
+
+| Event | `detail` | When |
+|-------|---------|------|
+| `pf-accordion-toggle` | `{ item, expanded, toggleId }` | Item expanded or collapsed |
+
+---
+
+### Badge — `<pf-badge-shadow>` / `<pf-badge-light>`
+
+Mirrors the [PatternFly Badge](https://www.patternfly.org/components/badge).
+
+| Attribute | Description |
+|-----------|-------------|
+| `read` | Grey background + high-contrast border (`pf-m-read`) |
+| `unread` | Brand-color background (`pf-m-unread`) |
+| `disabled` | Muted colors (`pf-m-disabled`); takes precedence |
+| `screen-reader-text` | Visually hidden label announced after the count |
+| `extra-class` | Additional BEM classes on the inner span |
+| `count` *(light DOM only)* | Display value — required because native slots need a shadow root |
+
+Shadow exported parts: `badge`.
+
+> **Note:** Shadow DOM accepts count as child content (`<pf-badge-shadow>7</pf-badge-shadow>`). Light DOM requires the `count` attribute (`<pf-badge-light count="7">`). This API asymmetry is a direct consequence of the light DOM constraint and is preserved intentionally to make the difference observable.
+
+---
 
 ## Theming
 
-See `styles/global/theme.css` for working examples of both approaches.
+`styles/global/theme.css` contains working examples of both approaches.
 
 ### Shadow DOM — `::part()`
 
 ```css
+/* Pill-shaped primary button */
 pf-button-shadow::part(control) {
   border-radius: 999px;
 }
 
+/* Accordion toggle background override */
 pf-accordion-item-shadow.fluid-heading-markup::part(toggle) {
   --pf-v6-c-accordion__toggle--BackgroundColor: #0066cc;
 }
 ```
 
-Shadow buttons use a theme bridge in `components/button/styles/adopted-shadow.js`: PatternFly sets modifier tokens on `.pf-m-primary` / `.pf-m-secondary`, which blocks host inheritance, so host/`::part()` overrides are re-mapped onto the inner control. Secondary borders require `--pf-v6-c-button--BorderColor` (drawn on `::after`), not raw `border-color`.
+Shadow buttons use a **theme bridge** in `components/button/styles/adopted-shadow.js`: PatternFly sets modifier tokens directly on `.pf-m-primary` / `.pf-m-secondary`, blocking direct host inheritance. The bridge re-maps host/`::part()` overrides onto the inner control.
 
 ### Light DOM — host vars and BEM selectors
 
 ```css
+/* Primary button background via host variable */
 pf-button-light {
   --pf-v6-c-button--m-primary--BackgroundColor: #008768;
 }
 
+/* Accordion toggle via BEM descendant selector */
 pf-accordion-item-light.fluid-heading-markup .pf-v6-c-accordion__toggle {
   --pf-v6-c-accordion__toggle--BackgroundColor: #0066cc;
 }
@@ -249,138 +318,66 @@ pf-accordion-item-light.fluid-heading-markup .pf-v6-c-accordion__toggle {
 
 Light buttons use a matching bridge in `components/button/styles/adopted-light.js`.
 
+---
+
 ## Styling architecture
 
 | Concern | Shadow DOM | Light DOM |
 |---------|------------|-----------|
-| Component CSS | `components/*/styles/adopted-shadow.js` (shared constructable sheet) | Global `patternfly.css` |
-| Host overrides | Inside each shadow root | `styles/adopted-light.js` (document-level) |
-| External theming | `::part()` on `pf-*-shadow` | Host vars or BEM on `pf-*-light` |
-| Theme bridge (buttons) | `adopted-shadow.js` | `adopted-light.js` |
-| Design tokens | Global `patternfly.css` on `:root` | Same |
+| Component CSS source | `components/*/styles/adopted-shadow.js` | Global `patternfly.css` |
+| Per-instance adoption | Shared constructable stylesheet (one parse, many roots) | N/A |
+| Host-level overrides | Inside the shadow root | `styles/adopted-light.js` (document-level) |
+| External theming | `::part()` | Host CSS variables or BEM descendant selectors |
+| Design tokens (`--pf-t--*`) | Resolved from page `:root` | Same |
 | Brand overrides | `styles/global/theme.css` | Same |
 
-Sync vendored CSS after upgrading PatternFly:
+Regenerate auto-synced CSS after upgrading PatternFly:
 
 ```bash
 npm run sync-styles
 ```
 
-## API reference
-
-### Button — content
-
-| Attribute / slot | Description |
-|------------------|-------------|
-| Default slot | Button label (required for visible text) |
-| `slot="icon"` | Custom icon markup |
-| `icon` | Built-in icon name |
-| `sr-text` | Screen-reader-only text appended to label |
-
-### Button — appearance
-
-| Attribute | Values | Default |
-|-----------|--------|---------|
-| `variant` | `primary`, `secondary`, `tertiary`, `danger`, `warning`, `link`, `plain`, `control`, `stateful` | `primary` |
-| `size` | `default`, `sm`, `lg` | `default` |
-| `state` | `read`, `unread`, `attention` (stateful) | `unread` |
-| `block`, `danger`, `inline`, `circle`, `favorite`, `loading`, … | Boolean flags | `false` |
-
-### Button — form and behavior
-
-| Attribute | Description |
-|-----------|-------------|
-| `type` | `button`, `submit`, `reset` |
-| `name` | Form field name |
-| `value` | Form submission value |
-| `form` | ID of associated `<form>` |
-| `as` | `button`, `a`, or `span` |
-| `href` | Link URL when `as="a"` |
-| `disabled` | Native disabled state |
-| `aria-disabled` | `aria-disabled` styling |
-| `loading` | Progress spinner |
-| `idle-label` / `loading-label` | Progress button label text (bypasses default slot) |
-| `aria-label-favorited` / `aria-label-unfavorited` | Favorite button aria labels per state |
-| `auto-toggle-favorite` / `auto-toggle-loading` | Lit properties; set to `false` for controlled mode (default: toggle on activate). Also settable as `btn.autoToggleFavorite = false`. |
-| `control-id` | `id` on the inner activator (`button`, `a`, or `span` activator) |
-
-See `demos/button.html` for full PatternFly button doc examples.
-
-### Accordion
-
-| Attribute | Description |
-|-----------|-------------|
-| `definition-list` | Use `<dl>`/`<dt>`/`<dd>` markup (default `true`); set `false` for heading markup |
-| `single-expand` | Only one item open at a time |
-| `bordered`, `plain`, `no-plain-on-glass`, `display-lg`, `toggle-start` | PatternFly layout modifiers |
-| `heading-level` | `h1`–`h6` when `definition-list="false"` (default `h3`) |
-| `aria-label`, `extra-class` | Accessible name and additional BEM classes |
-
-**Item attributes** (`pf-accordion-item-shadow` / `pf-accordion-item-light`):
-
-| Attribute | Description |
-|-----------|-------------|
-| `expanded` | Open/closed state |
-| `toggle-id`, `content-id` | ARIA ids (auto-generated if omitted) |
-| `fixed` | Scrollable fixed-height panel |
-| `custom-content` | Skip the default body wrapper |
-| `content-aria-label`, `extra-class`, `content-extra-class` | Panel labeling and classes |
-
-**Content projection:** default slot → toggle label; `<div slot="content">` → panel body.
-
-| Event | Detail | When |
-|-------|--------|------|
-| `pf-accordion-toggle` | `{ item, expanded, toggleId }` | Item expanded/collapsed |
-
-See `demos/accordion.html` for the side-by-side layout.
-
-### Badge — `pf-badge-shadow` / `pf-badge-light`
-
-A numeric annotation badge. Mirrors the [PatternFly Badge](https://www.patternfly.org/components/badge).
-
-| Attribute | Description |
-|-----------|-------------|
-| `read` | Grey background with high-contrast border (`pf-m-read`) |
-| `unread` | Brand-color background (`pf-m-unread`) |
-| `disabled` | Muted disabled colors (`pf-m-disabled`); takes precedence over read/unread |
-| `screen-reader-text` | Visually hidden label announced after the count (e.g. `"Unread Messages"`) |
-| `class-name` | Additional BEM classes appended to `pf-v6-c-badge` |
-
-Shadow exported parts: `badge`.
-
-See `demos/badge.html` for variants and a theming example.
+---
 
 ## Accessibility
 
-- Set `aria-label` on icon-only buttons.
-- Use `sr-text` for visually hidden supplementary label text.
-- `as="span"` inline buttons support **Enter** and **Space** activation.
-- Call `focus()` on the host to focus the inner control.
-- Progress spinners expose `spinner-aria-label`, `spinner-aria-labelledby`, `spinner-aria-value-text`, `aria-valuemin`, and `aria-valuemax`.
-- Accordion containers should have `aria-label` (or an associated visible heading). Items wire `aria-expanded`, `aria-controls`, and toggle/content ids automatically.
-- Collapsed accordion panels use `hidden` and `inert` so focus cannot enter closed content.
-- Arrow/Home/End keyboard navigation between accordion toggles is implemented in `components/accordion/accordion-a11y.js`.
-- Hamburger buttons expose `aria-expanded` but do not auto-toggle `expanded` — set `expanded` in your click handler for animated menu icons.
+- Icon-only buttons require `aria-label`.
+- `sr-text` appends a visually hidden label inside the button text region.
+- `as="span"` buttons support **Enter** and **Space** activation.
+- `focus()` on the host delegates to the inner activator.
+- Spinners expose `spinner-aria-label`, `spinner-aria-labelledby`, `spinner-aria-value-text`.
+- Accordion containers should carry `aria-label`. Items auto-wire `aria-expanded`, `aria-controls`, and toggle/content ids.
+- Collapsed accordion panels are `hidden` + `inert` so focus cannot enter closed sections.
+- Arrow / Home / End keyboard navigation is in `components/accordion/accordion-a11y.js`.
+  - Shadow DOM items require `event.composedPath()[0]` to resolve the correct toggle across the shadow boundary (using `event.target` alone silently breaks keyboard nav).
+  - Light DOM items use `event.target` directly — toggles are in the document tree.
+- Hamburger buttons expose `aria-expanded` but do not auto-toggle — set `expanded` in your handler.
+- `disabled` on Badge is purely visual (non-interactive element); use `screen-reader-text` to convey state to assistive technology.
 
-## Known limitations
+---
+
+## Known limitations and open issues
 
 | Area | Shadow DOM | Light DOM |
 |------|------------|-----------|
 | Design tokens | Global `patternfly.css` required for `--pf-t--*` | Same |
-| Accordion keyboard | Arrow/Home/End may not work on shadow toggles — `accordion-a11y.js` uses `event.target`, which is retargeted across shadow boundaries | Works — toggles are in the document tree |
-| Accordion layout | `display: contents` + `pf-m-item-host` per item for PatternFly modifiers inside shadow | `display: contents` on item host |
-| Content projection | Native slots | Manual; re-renders query BEM nodes to preserve author DOM |
-| Theming surface | `::part()` + theme bridge | BEM classes / host CSS variables |
-| Style scope | Encapsulated adopted stylesheet | Depends on global `patternfly.css`; page CSS can reach internals |
-| Code duplication | ~2,900 lines mirrored across `-shadow` and `-light` entry files | Same |
+| Style bleed from page | ❌ Blocked by shadow boundary | ✅ Page CSS reaches component internals |
+| Authoring parity with React | ✅ Native slots match React `children` | ⚠️ Text-only content requires attributes (Badge) |
+| Content projection safety | ✅ Slots are mutation-safe | ⚠️ Direct DOM manipulation can corrupt projected content |
+| Theming contract stability | ✅ `::part()` is versioned API | ⚠️ BEM class names must not change |
+| Accordion keyboard nav | Needs `composedPath()[0]` (planned fix) | Works with `event.target` |
+| Plain/glass compat | `:root` PF selectors re-applied per item via `pf-m-item-host` | Global cascade handles it |
+| Code size | ~2,900 lines across shadow entry files | ~3,100 lines (extra projection logic) |
 | Testing | `npm run lint` — syntax only | Same |
-| Legacy browsers | Per-shadow-root `<style>` fallback when Constructable Stylesheets unavailable | N/A |
+| Legacy browsers | `<style>` fallback when Constructable Stylesheets unavailable | N/A |
+
+---
 
 ## Project structure
 
 ```
 web-components-POC/
-├── index.html
+├── index.html                          # Component catalog
 ├── package.json
 ├── demos/
 │   ├── button.html                     # Shadow (left) vs light (right)
@@ -390,110 +387,80 @@ web-components-POC/
 ├── components/
 │   ├── catalog.js
 │   ├── button/
-│   │   ├── pf-button-shadow.js
-│   │   ├── pf-button-light.js
-│   │   ├── index.js
+│   │   ├── pf-button-shadow.js         # Shadow DOM implementation
+│   │   ├── pf-button-light.js          # Light DOM implementation
+│   │   ├── index.js                    # Barrel export
 │   │   └── styles/
+│   │       ├── adopted-shadow.js       # Encapsulated stylesheet + theme bridge
+│   │       ├── adopted-light.js        # Document-level host overrides + theme bridge
+│   │       ├── button-styles.js        # ← auto-generated (do not edit)
+│   │       ├── badge-styles.js         # ← auto-generated (do not edit)
+│   │       └── spinner-styles.js       # ← auto-generated (do not edit)
 │   ├── accordion/
-│   │   ├── accordion-a11y.js
+│   │   ├── accordion-a11y.js           # Shared keyboard navigation helpers
 │   │   ├── pf-accordion-shadow.js
 │   │   ├── pf-accordion-light.js
 │   │   ├── index.js
 │   │   └── styles/
+│   │       ├── adopted-shadow.js
+│   │       ├── adopted-light.js
+│   │       └── accordion-styles.js     # ← auto-generated (do not edit)
 │   └── badge/
 │       ├── pf-badge-shadow.js
 │       ├── pf-badge-light.js
 │       ├── index.js
 │       └── styles/
+│           ├── adopted-shadow.js
+│           ├── adopted-light.js
+│           └── badge-styles.js         # ← auto-generated (do not edit)
 │
 ├── styles/
-│   ├── adopted-light.js
+│   ├── adopted-light.js                # Aggregates all light host overrides
 │   └── global/
-│       ├── theme.css
-│       ├── site.css
-│       └── demo.css
+│       ├── theme.css                   # Brand overrides (::part() + BEM)
+│       ├── site.css                    # Catalog layout
+│       └── demo.css                    # Side-by-side compare layout
 │
 └── scripts/
-    ├── sync-patternfly-styles.mjs
-    └── render-catalog.js
+    ├── sync-patternfly-styles.mjs      # Writes *-styles.js from PF source CSS
+    └── render-catalog.js              # Populates index.html catalog
 ```
 
-Each component folder is self-contained. Shadow and light entry files implement the same API independently; `accordion-a11y.js` is the only shared behavior module.
+`accordion-a11y.js` is the **only** shared module between shadow and light implementations. All other files are kept separate so the differences remain visible.
 
-## File reference
-
-### `components/button/`
-
-| Path | Purpose |
-|------|---------|
-| `pf-button-shadow.js` | Shadow DOM button: slots, `exportparts`, form association, adopted styles. |
-| `pf-button-light.js` | Light DOM button: manual content projection, global CSS dependency. |
-| `styles/adopted-shadow.js` | Encapsulated stylesheet (shared constructable sheet + theme bridge). |
-| `styles/adopted-light.js` | Document-level host overrides for light variant. |
-| `styles/*-styles.js` | Auto-generated from PatternFly (do not edit). |
-
-### `components/accordion/`
-
-| Path | Purpose |
-|------|---------|
-| `accordion-a11y.js` | Arrow/Home/End keyboard navigation between accordion toggles. |
-| `pf-accordion-shadow.js` | Shadow DOM accordion with `::part()` theming. |
-| `pf-accordion-light.js` | Light DOM accordion with BEM-based theming. |
-| `styles/adopted-shadow.js` | Encapsulated stylesheet and plain/glass compat rules. |
-| `styles/adopted-light.js` | Document-level host overrides for light variant. |
-| `styles/accordion-styles.js` | Auto-generated from PatternFly (do not edit). |
-
-### `components/badge/`
-
-| Path | Purpose |
-|------|---------|
-| `pf-badge-shadow.js` | Shadow DOM badge: encapsulated styles, native slot, `part="badge"`. |
-| `pf-badge-light.js` | Light DOM badge: manual content projection, global CSS dependency. |
-| `styles/adopted-shadow.js` | Encapsulated stylesheet for shadow badge. |
-| `styles/adopted-light.js` | Document-level host overrides for light badge. |
-| `styles/badge-styles.js` | Auto-generated from PatternFly (do not edit). |
-
-### `styles/`
-
-| Path | Purpose |
-|------|---------|
-| `adopted-light.js` | Combines light host fragments; adopted once per document. |
-| `global/theme.css` | Brand overrides — `::part()` for shadow, BEM/host vars for light. |
-| `global/site.css` | Site layout and catalog styles. |
-| `global/demo.css` | Compare layout for demo pages. |
-
-### `scripts/`
-
-| Path | Purpose |
-|------|---------|
-| `sync-patternfly-styles.mjs` | Writes synced CSS into `components/*/styles/*-styles.js`. |
-| `render-catalog.js` | Renders the component catalog on `index.html`. |
+---
 
 ## npm scripts
 
 | Script | Command | Description |
 |--------|---------|-------------|
-| `dev` | `npx http-server . -o -c-1` | Start local dev server and open browser |
-| `lint` | `node --check` on all `components/`, `scripts/`, `styles/` JS | Syntax validation only |
-| `sync-styles` | `node scripts/sync-patternfly-styles.mjs` | Regenerate `components/*/styles/*-styles.js` from PatternFly |
+| `dev` | `npx http-server . -o -c-1` | Start dev server and open browser |
+| `lint` | `node --check` on all JS | Syntax validation |
+| `sync-styles` | `node scripts/sync-patternfly-styles.mjs` | Regenerate `*-styles.js` from PatternFly |
 | `postinstall` | `npm run sync-styles` | Runs automatically after `npm install` |
+
+---
 
 ## Module exports
 
 ```json
 {
-  ".": "./components/button/pf-button-shadow.js",
-  "./pf-button-shadow": "./components/button/pf-button-shadow.js",
-  "./pf-button-light": "./components/button/pf-button-light.js",
-  "./button": "./components/button/index.js",
-  "./pf-accordion-shadow": "./components/accordion/pf-accordion-shadow.js",
-  "./pf-accordion-light": "./components/accordion/pf-accordion-light.js",
-  "./accordion": "./components/accordion/index.js",
-  "./pf-badge-shadow": "./components/badge/pf-badge-shadow.js",
-  "./pf-badge-light": "./components/badge/pf-badge-light.js",
-  "./badge": "./components/badge/index.js"
+  ".":                      "./components/button/pf-button-shadow.js",
+  "./pf-button-shadow":     "./components/button/pf-button-shadow.js",
+  "./pf-button-light":      "./components/button/pf-button-light.js",
+  "./button":               "./components/button/index.js",
+  "./pf-accordion-shadow":  "./components/accordion/pf-accordion-shadow.js",
+  "./pf-accordion-light":   "./components/accordion/pf-accordion-light.js",
+  "./accordion":            "./components/accordion/index.js",
+  "./pf-badge-shadow":      "./components/badge/pf-badge-shadow.js",
+  "./pf-badge-light":       "./components/badge/pf-badge-light.js",
+  "./badge":                "./components/badge/index.js"
 }
 ```
+
+The package default (`"."`) exports the **shadow DOM button** — this is the reference implementation.
+
+---
 
 ## License
 
