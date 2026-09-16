@@ -2,7 +2,7 @@
 
 A [PatternFly v6](https://www.patternfly.org/) proof of concept built with [Lit](https://lit.dev/). Each component exists in two forms — **shadow DOM** (`pf-*-shadow`) and **light DOM** (`pf-*-light`) — with the same attributes, events, and form behavior.
 
-**Components:** [Button](https://www.patternfly.org/components/button) and [Accordion](https://www.patternfly.org/components/accordion).
+**Components:** [Button](https://www.patternfly.org/components/button), [Accordion](https://www.patternfly.org/components/accordion), and [Badge](https://www.patternfly.org/components/badge).
 
 Open the compare demos, inspect the source, and note where the implementations diverge. This is a **demonstration codebase**, not a production component library.
 
@@ -10,7 +10,7 @@ Open the compare demos, inspect the source, and note where the implementations d
 
 | | Shadow DOM | Light DOM |
 |--|------------|-----------|
-| **Tags** | `pf-button-shadow`, `pf-accordion-shadow`, `pf-accordion-item-shadow` | `pf-button-light`, `pf-accordion-light`, `pf-accordion-item-light` |
+| **Tags** | `pf-button-shadow`, `pf-accordion-shadow`, `pf-accordion-item-shadow`, `pf-badge-shadow` | `pf-button-light`, `pf-accordion-light`, `pf-accordion-item-light`, `pf-badge-light` |
 | **Render target** | Open shadow root per component | Host element (`createRenderRoot()` returns `this`) |
 | **PatternFly CSS** | Adopted into shadow root (`components/*/styles/adopted-shadow.js`) | Global `patternfly.css` on the page |
 | **Content projection** | Native `<slot>` | Host child nodes moved into Lit templates |
@@ -334,6 +334,22 @@ See `demos/button.html` for full PatternFly button doc examples.
 
 See `demos/accordion.html` for the side-by-side layout.
 
+### Badge — `pf-badge-shadow` / `pf-badge-light`
+
+A numeric annotation badge. Mirrors the [PatternFly Badge](https://www.patternfly.org/components/badge).
+
+| Attribute | Description |
+|-----------|-------------|
+| `read` | Grey background with high-contrast border (`pf-m-read`) |
+| `unread` | Brand-color background (`pf-m-unread`) |
+| `disabled` | Muted disabled colors (`pf-m-disabled`); takes precedence over read/unread |
+| `screen-reader-text` | Visually hidden label announced after the count (e.g. `"Unread Messages"`) |
+| `class-name` | Additional BEM classes appended to `pf-v6-c-badge` |
+
+Shadow exported parts: `badge`.
+
+See `demos/badge.html` for variants and a theming example.
+
 ## Accessibility
 
 - Set `aria-label` on icon-only buttons.
@@ -368,7 +384,8 @@ web-components-POC/
 ├── package.json
 ├── demos/
 │   ├── button.html                     # Shadow (left) vs light (right)
-│   └── accordion.html
+│   ├── accordion.html
+│   └── badge.html
 │
 ├── components/
 │   ├── catalog.js
@@ -377,10 +394,15 @@ web-components-POC/
 │   │   ├── pf-button-light.js
 │   │   ├── index.js
 │   │   └── styles/
-│   └── accordion/
-│       ├── accordion-a11y.js
-│       ├── pf-accordion-shadow.js
-│       ├── pf-accordion-light.js
+│   ├── accordion/
+│   │   ├── accordion-a11y.js
+│   │   ├── pf-accordion-shadow.js
+│   │   ├── pf-accordion-light.js
+│   │   ├── index.js
+│   │   └── styles/
+│   └── badge/
+│       ├── pf-badge-shadow.js
+│       ├── pf-badge-light.js
 │       ├── index.js
 │       └── styles/
 │
@@ -421,6 +443,16 @@ Each component folder is self-contained. Shadow and light entry files implement 
 | `styles/adopted-light.js` | Document-level host overrides for light variant. |
 | `styles/accordion-styles.js` | Auto-generated from PatternFly (do not edit). |
 
+### `components/badge/`
+
+| Path | Purpose |
+|------|---------|
+| `pf-badge-shadow.js` | Shadow DOM badge: encapsulated styles, native slot, `part="badge"`. |
+| `pf-badge-light.js` | Light DOM badge: manual content projection, global CSS dependency. |
+| `styles/adopted-shadow.js` | Encapsulated stylesheet for shadow badge. |
+| `styles/adopted-light.js` | Document-level host overrides for light badge. |
+| `styles/badge-styles.js` | Auto-generated from PatternFly (do not edit). |
+
 ### `styles/`
 
 | Path | Purpose |
@@ -456,7 +488,10 @@ Each component folder is self-contained. Shadow and light entry files implement 
   "./button": "./components/button/index.js",
   "./pf-accordion-shadow": "./components/accordion/pf-accordion-shadow.js",
   "./pf-accordion-light": "./components/accordion/pf-accordion-light.js",
-  "./accordion": "./components/accordion/index.js"
+  "./accordion": "./components/accordion/index.js",
+  "./pf-badge-shadow": "./components/badge/pf-badge-shadow.js",
+  "./pf-badge-light": "./components/badge/pf-badge-light.js",
+  "./badge": "./components/badge/index.js"
 }
 ```
 
