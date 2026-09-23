@@ -43,7 +43,31 @@ const SHADOW_HOST_STYLES = `
 }
 `;
 
-const SHADOW_CSS = [SHADOW_HOST_STYLES, badgeStyles].join('\n');
+/**
+ * Theme bridge — maps host-level PatternFly custom properties onto the inner badge.
+ *
+ * WHY NEEDED: Adopted PF CSS sets --pf-v6-c-badge--* directly on .pf-v6-c-badge,
+ * which prevents the same tokens set on :host from inheriting (same pattern as
+ * the button theme bridge in components/button/styles/adopted-shadow.js).
+ * Consumers set --pf-v6-c-badge--* on pf-badge-shadow; this bridge remaps them.
+ */
+const SHADOW_THEME_BRIDGE = `
+:host {
+  --pf-badge-theme-padding-inline-start: var(--pf-v6-c-badge--PaddingInlineStart, var(--pf-t--global--spacer--sm));
+  --pf-badge-theme-padding-inline-end: var(--pf-v6-c-badge--PaddingInlineEnd, var(--pf-t--global--spacer--sm));
+  --pf-badge-theme-unread-bg: var(--pf-v6-c-badge--m-unread--BackgroundColor, var(--pf-t--global--color--brand--default));
+  --pf-badge-theme-unread-color: var(--pf-v6-c-badge--m-unread--Color, var(--pf-t--global--text--color--on-brand--default));
+}
+
+.pf-v6-c-badge {
+  --pf-v6-c-badge--PaddingInlineStart: var(--pf-badge-theme-padding-inline-start);
+  --pf-v6-c-badge--PaddingInlineEnd: var(--pf-badge-theme-padding-inline-end);
+  --pf-v6-c-badge--m-unread--BackgroundColor: var(--pf-badge-theme-unread-bg);
+  --pf-v6-c-badge--m-unread--Color: var(--pf-badge-theme-unread-color);
+}
+`;
+
+const SHADOW_CSS = [SHADOW_HOST_STYLES, badgeStyles, SHADOW_THEME_BRIDGE].join('\n');
 
 let shadowSheet = null;
 

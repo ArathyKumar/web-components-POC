@@ -23,10 +23,12 @@
           implemented as <code>&lt;pf-badge-shadow&gt;</code> and
           <code>&lt;pf-badge-light&gt;</code>.
           The shadow variant uses an encapsulated stylesheet, native <code>&lt;slot&gt;</code>
-          for content projection, and exposes <code>::part(badge)</code> for theming.
+          for content projection, and a theme bridge so host <code>--pf-v6-c-badge--*</code>
+          tokens apply (same approach as the button). It also exposes
+          <code>::part(badge)</code>.
           The light variant relies on global <code>patternfly.css</code>, uses a
           <code>count</code> attribute instead of a slot (native slots require a shadow
-          root), and is themed via standard BEM selectors.
+          root), and uses the same host-token theming via a light theme bridge.
         </p>
       </header>
 

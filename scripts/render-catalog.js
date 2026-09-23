@@ -130,6 +130,12 @@ export function renderComponentCatalog() {
 
   grid.replaceChildren();
 
+  const countEl = document.querySelector('[data-catalog-count]');
+  if (countEl) {
+    const readyCount = componentCatalog.filter((entry) => entry.status !== 'coming-soon').length;
+    countEl.textContent = String(readyCount);
+  }
+
   if (!componentCatalog.length) {
     const empty = document.createElement('p');
     empty.className = 'catalog-empty';

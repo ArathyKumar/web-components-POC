@@ -10,6 +10,7 @@
  * Shadow DOM: use ::part() on pf-accordion-item-shadow / pf-button-shadow.
  *   Set PatternFly tokens on ::part(control) — borders use --pf-v6-c-button--BorderColor
  *   (drawn on .pf-v6-c-button::after inside shadow), not raw border-color.
+ *   Badge/button: set --pf-v6-c-* on the host; theme bridges remap onto internals.
  *
  * Accordion ::part() (shadow only): item, toggle, toggle-icon, content.
  * Light accordion: target BEM classes under pf-accordion-item-light.
@@ -81,4 +82,32 @@ pf-button-light {
   --pf-v6-c-button--m-primary--m-clicked--BackgroundColor: #005c49;
   --pf-v6-c-button--m-primary--m-clicked--Color: #fff;
   --pf-v6-c-button--m-primary--m-clicked__icon--Color: #fff;
+}
+
+/* --- Unread badge theme ---
+ * Light: target .pf-v6-c-badge in the document (no ::part needed).
+ * Shadow: class selectors cannot pierce the shadow root — set component tokens
+ * on the host; the theme bridge in adopted-shadow.js remaps them (same as button).
+ */
+pf-badge-light[unread] .pf-v6-c-badge {
+  --pf-v6-c-badge--m-unread--BackgroundColor: #008768;
+  --pf-v6-c-badge--PaddingInlineStart: 2rem;
+  --pf-v6-c-badge--PaddingInlineEnd: 2rem;
+}
+
+pf-badge-shadow[unread] {
+  --pf-v6-c-badge--m-unread--BackgroundColor: #008768;
+  --pf-v6-c-badge--PaddingInlineStart: 2rem;
+  --pf-v6-c-badge--PaddingInlineEnd: 2rem;
+}
+
+/* --- Card with subtitle demo --- */
+pf-card-shadow.demo-card-with-subtitle::part(card) {
+  --pf-v6-c-card--BorderColor: #0066cc;
+  --pf-v6-c-card--BorderWidth: 6px;
+}
+
+pf-card-light.demo-card-with-subtitle .pf-v6-c-card {
+  --pf-v6-c-card--BorderColor: #0066cc;
+  --pf-v6-c-card--BorderWidth: 6px;
 }

@@ -53,9 +53,9 @@ export const componentCatalog = [
     id: 'card',
     name: 'Card',
     description:
-      'PatternFly card with shadow and light DOM implementations. Demonstrates named-slot projection, expandable content, header actions, and theming differences (::part() vs BEM selectors).',
+      'PatternFly card with shadow and light DOM implementations. Covers modifiers, selectable, expandable, header actions, and named-slot content projection.',
     href: 'demos/card.html',
-    tags: ['PatternFly', 'Shadow DOM', 'Light DOM', 'Expandable'],
+    tags: ['PatternFly', 'Shadow DOM', 'Light DOM', 'Expandable', 'Selectable'],
     elements: ['pf-card-shadow', 'pf-card-light'],
     status: 'ready',
   },

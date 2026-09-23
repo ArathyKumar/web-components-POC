@@ -8,8 +8,10 @@
  *    adoptPatternFlyBadgeShadowStyles(). Global patternfly.css is still required
  *    on the page for design tokens (--pf-t--*) to resolve inside shadow.
  * 3. Slots: Native <slot> projects host children (the count/label) into shadow.
- * 4. Theming: part="badge" on the inner span enables ::part(badge) styling
- *    from outside (e.g. pf-badge-shadow::part(badge)).
+ * 4. Theming: set --pf-v6-c-badge--* on the host (same approach as pf-button-shadow).
+ *    A theme bridge in adopted-shadow.js remaps those tokens onto .pf-v6-c-badge
+ *    because PatternFly CSS redefines them on the inner element.
+ *    part="badge" also enables ::part(badge) styling when needed.
  *
  * API
  * ---

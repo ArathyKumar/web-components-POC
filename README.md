@@ -276,7 +276,7 @@ Mirrors the [PatternFly Badge](https://www.patternfly.org/components/badge).
 | `extra-class` | Additional BEM classes on the inner span |
 | `count` *(light DOM only)* | Display value — required because native slots need a shadow root |
 
-Shadow exported parts: `badge`.
+Shadow exported parts: `badge`. Host theming: set `--pf-v6-c-badge--*` on the host; a theme bridge in `adopted-shadow.js` remaps them onto the inner badge (same pattern as the button).
 
 > **Note:** Shadow DOM accepts count as child content (`<pf-badge-shadow>7</pf-badge-shadow>`). Light DOM requires the `count` attribute (`<pf-badge-light count="7">`). This API asymmetry is a direct consequence of the light DOM constraint and is preserved intentionally to make the difference observable.
 
