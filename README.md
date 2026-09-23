@@ -30,7 +30,7 @@ Three component tiers cover the key structural patterns:
 | Tier | Components | Patterns covered |
 |------|-----------|-----------------|
 | **Atom** | Button, Badge | Simple rendering, form association, icon slots |
-| **Compound** | *(Card — planned)* | Nested structure, multiple regions |
+| **Compound** | Card | Named slots, multiple content regions, expandable, selectable |
 | **Interactive** | Accordion | Keyboard navigation, expand/collapse state, compound items |
 
 ---
@@ -76,7 +76,7 @@ import 'web-components-poc/pf-button-light';
 
 ## What the demos reveal
 
-Open `demos/button.html`, `demos/accordion.html`, and `demos/badge.html`. Each page renders the **shadow DOM variant on the left** and the **light DOM variant on the right**. The differences below are **structural facts, not opinions** — use them to form your own conclusion.
+Open `demos/button.html`, `demos/accordion.html`, `demos/badge.html`, and `demos/card.html`. Each page renders the **shadow DOM variant on the left** and the **light DOM variant on the right**. The differences below are **structural facts, not opinions** — use them to form your own conclusion.
 
 ### 1. Style isolation
 
@@ -276,9 +276,80 @@ Mirrors the [PatternFly Badge](https://www.patternfly.org/components/badge).
 | `extra-class` | Additional BEM classes on the inner span |
 | `count` *(light DOM only)* | Display value — required because native slots need a shadow root |
 
-Shadow exported parts: `badge`.
+Shadow exported parts: `badge`. Host theming: set `--pf-v6-c-badge--*` on the host; a theme bridge in `adopted-shadow.js` remaps them onto the inner badge (same pattern as the button).
 
 > **Note:** Shadow DOM accepts count as child content (`<pf-badge-shadow>7</pf-badge-shadow>`). Light DOM requires the `count` attribute (`<pf-badge-light count="7">`). This API asymmetry is a direct consequence of the light DOM constraint and is preserved intentionally to make the difference observable.
+
+---
+
+### Card — `<pf-card-shadow>` / `<pf-card-light>`
+
+Mirrors the [PatternFly Card](https://www.patternfly.org/components/card). Demo examples cover basic layouts, modifiers, secondary, selectable, header variants, dividers, and expandable (including icon and toggle-right).
+
+#### Slots / projection regions
+
+| Slot name | Description |
+|-----------|-------------|
+| `title` | Card title text |
+| `subtitle` | Subtitle below the title (optional) |
+| `header-image` | Brand logo or image in the header (optional) |
+| `header-actions` | Action buttons in the header (optional) |
+| `body` | Main card content |
+| `footer` | Card footer (optional) |
+| `expandable-content` | Hidden content revealed when expanded (requires `expandable`) |
+
+Both implementations use the same authoring syntax: `<element slot="body">content</element>`.
+
+| Attribute | Description |
+|-----------|-------------|
+| `compact` | Reduced padding (`pf-m-compact`); mutually exclusive with `large` |
+| `large` | Increased spacing (`pf-m-display-lg`); mutually exclusive with `compact` |
+| `full-height` | Fills the height of its container (`pf-m-full-height`) |
+| `plain` | Removes border and background (`pf-m-plain`) |
+| `variant` | `'default'` or `'secondary'` — secondary background color |
+| `expandable` | Enables a caret toggle in the card header |
+| `expanded` | Current expand state (reflected); also drives caret animation via CSS |
+| `toggle-right-aligned` | Moves the expand caret to the right (`pf-m-toggle-right` on the header) |
+| `header-wrap` | Allows the header row to wrap (`pf-m-wrap`) for long titles |
+| `title-in-header` | Places title/subtitle inside the header (inline with images/actions). Default is outside the header. Expandable cards (without a header image) and selectable cards place the title in the header automatically. |
+| `actions-no-offset` | Removes default negative-margin offset from actions (`pf-m-no-offset`). Selectable cards apply this automatically. |
+| `selectable` | Enables whole-card selection (`pf-m-selectable`) via a checkbox/radio overlay |
+| `selected` | Current selection state (`pf-m-selected`); reflected with the input |
+| `disabled` | Disables selectable interaction (`pf-m-disabled`) |
+| `selectable-variant` | `'multiple'` (checkbox, default) or `'single'` (radio) |
+| `selectable-name` | Shared `name` for single-select radio groups |
+| `selectable-id` | Id for the selectable input (auto-generated if omitted) |
+| `selectable-aria-label` | Accessible name for the selectable input |
+| `selectable-aria-labelledby` | Id reference(s) for the selectable input’s accessible name |
+| `expand-aria-label` | Accessible label for the expand toggle button |
+| `extra-class` | Additional BEM classes on the card root element |
+
+Events dispatched:
+- `pf-card-expand` — `detail: { expanded: boolean }`
+- `pf-card-select` — `detail: { selected: boolean }`
+
+Shadow exported parts: `card`, `header`, `header-main`, `title`, `subtitle`, `actions`, `selectable-actions`, `body`, `footer`, `expandable-content`.
+
+#### Content projection: shadow vs light DOM
+
+```html
+<!-- Identical authoring syntax for both implementations -->
+<pf-card-shadow>
+  <h2 slot="title">My card</h2>
+  <p  slot="body">Body text</p>
+  <div slot="footer">Footer</div>
+</pf-card-shadow>
+
+<pf-card-light>
+  <h2 slot="title">My card</h2>
+  <p  slot="body">Body text</p>
+  <div slot="footer">Footer</div>
+</pf-card-light>
+```
+
+**Shadow DOM:** The browser routes `slot="body"` to `<slot name="body">` inside the shadow root natively. A `@slotchange` event fires when the assignment changes, driving conditional section visibility via reactive `_has*` state properties. Selectable overlays also adopt PatternFly Check/Radio CSS into the shadow root (`check-styles.js` / `radio-styles.js`).
+
+**Light DOM:** There are no native slots. `_getSlottedNodes(slotName)` manually scans host children for `[slot="<name>"]` on every render. After the first render, projected nodes live inside `[data-card-slot="<name>"]` wrapper divs — a Phase 2 query fallback finds them there on subsequent re-renders. This is O(n) manual scanning instead of browser-native routing. Check/Radio visuals come from global `patternfly.css`.
 
 ---
 
@@ -382,7 +453,8 @@ web-components-POC/
 ├── demos/
 │   ├── button.html                     # Shadow (left) vs light (right)
 │   ├── accordion.html
-│   └── badge.html
+│   ├── badge.html
+│   └── card.html
 │
 ├── components/
 │   ├── catalog.js
@@ -405,14 +477,24 @@ web-components-POC/
 │   │       ├── adopted-shadow.js
 │   │       ├── adopted-light.js
 │   │       └── accordion-styles.js     # ← auto-generated (do not edit)
-│   └── badge/
-│       ├── pf-badge-shadow.js
-│       ├── pf-badge-light.js
+│   ├── badge/
+│   │   ├── pf-badge-shadow.js
+│   │   ├── pf-badge-light.js
+│   │   ├── index.js
+│   │   └── styles/
+│   │       ├── adopted-shadow.js
+│   │       ├── adopted-light.js
+│   │       └── badge-styles.js         # ← auto-generated (do not edit)
+│   └── card/
+│       ├── pf-card-shadow.js           # Shadow DOM — named slots + slotchange tracking
+│       ├── pf-card-light.js            # Light DOM — manual _getSlottedNodes projection
 │       ├── index.js
 │       └── styles/
-│           ├── adopted-shadow.js
-│           ├── adopted-light.js
-│           └── badge-styles.js         # ← auto-generated (do not edit)
+│           ├── adopted-shadow.js       # Card + Check/Radio CSS in shadow root
+│           ├── adopted-light.js        # Document-level host overrides
+│           ├── card-styles.js          # ← auto-generated (do not edit)
+│           ├── check-styles.js         # ← auto-generated (selectable checkbox)
+│           └── radio-styles.js         # ← auto-generated (selectable radio)
 │
 ├── styles/
 │   ├── adopted-light.js                # Aggregates all light host overrides
@@ -454,7 +536,10 @@ web-components-POC/
   "./accordion":            "./components/accordion/index.js",
   "./pf-badge-shadow":      "./components/badge/pf-badge-shadow.js",
   "./pf-badge-light":       "./components/badge/pf-badge-light.js",
-  "./badge":                "./components/badge/index.js"
+  "./badge":                "./components/badge/index.js",
+  "./pf-card-shadow":       "./components/card/pf-card-shadow.js",
+  "./pf-card-light":        "./components/card/pf-card-light.js",
+  "./card":                 "./components/card/index.js"
 }
 ```
 

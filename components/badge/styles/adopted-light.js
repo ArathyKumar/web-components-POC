@@ -6,8 +6,8 @@
  * badge renders directly into the document tree, every descendant selector in
  * patternfly.css already matches — there is no need to re-declare them here.
  *
- * This sheet adds only host-level layout rules that have no equivalent in PF CSS:
- * the inline-block display and font-family on the custom element tag itself.
+ * This sheet adds only host-level layout rules. Theme overrides target
+ * .pf-v6-c-badge from theme.css (e.g. pf-badge-light[unread] .pf-v6-c-badge).
  */
 export const BADGE_LIGHT_HOST_STYLES = `
 pf-badge-light {

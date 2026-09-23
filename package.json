@@ -14,7 +14,10 @@
     "./accordion": "./components/accordion/index.js",
     "./pf-badge-shadow": "./components/badge/pf-badge-shadow.js",
     "./pf-badge-light": "./components/badge/pf-badge-light.js",
-    "./badge": "./components/badge/index.js"
+    "./badge": "./components/badge/index.js",
+    "./pf-card-shadow": "./components/card/pf-card-shadow.js",
+    "./pf-card-light": "./components/card/pf-card-light.js",
+    "./card": "./components/card/index.js"
   },
   "scripts": {
     "dev": "npx http-server . -o -c-1",

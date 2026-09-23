@@ -39,6 +39,18 @@ const styleFiles = [
     source: 'components/Badge/badge.css',
     output: 'components/badge/styles/badge-styles.js',
   },
+  {
+    source: 'components/Card/card.css',
+    output: 'components/card/styles/card-styles.js',
+  },
+  {
+    source: 'components/Check/check.css',
+    output: 'components/card/styles/check-styles.js',
+  },
+  {
+    source: 'components/Radio/radio.css',
+    output: 'components/card/styles/radio-styles.js',
+  },
 ];
 
 const missingSources = styleFiles

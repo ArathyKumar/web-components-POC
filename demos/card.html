@@ -1,0 +1,716 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Card — Web Components POC</title>
+    <link rel="stylesheet" href="../node_modules/@patternfly/patternfly/patternfly.css" />
+    <link rel="stylesheet" href="../styles/global/theme.css" />
+    <link rel="stylesheet" href="../styles/global/site.css" />
+    <link rel="stylesheet" href="../styles/global/demo.css" />
+    <style>
+      /* PatternFly modifiers example: fixed-height host so isFullHeight is visible. */
+      .demo-card-modifiers-host {
+        height: 15rem;
+      }
+
+      .demo-card-modifiers-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--pf-t--global--spacer--md, 1rem) var(--pf-t--global--spacer--lg, 1.5rem);
+        margin-block-end: var(--pf-t--global--spacer--md, 1rem);
+      }
+
+      .demo-card-header-brand {
+        display: block;
+        width: 300px;
+        max-width: 100%;
+        height: auto;
+      }
+
+      .demo-card-selectable-grid {
+        display: grid;
+        gap: var(--pf-t--global--spacer--md, 1rem);
+      }
+    </style>
+  </head>
+  <body>
+    <main class="site-main site-main--wide">
+      <header class="site-header">
+        <a class="site-header__back" href="../index.html">← All components</a>
+        <h1 class="site-header__title pf-v6-c-title pf-m-3xl">Card</h1>
+        <p class="site-header__subtitle">
+          PatternFly card examples mirror the
+          <a href="https://www.patternfly.org/components/card">PatternFly Card</a>,
+          implemented as <code>&lt;pf-card-shadow&gt;</code> and
+          <code>&lt;pf-card-light&gt;</code>.
+          The shadow variant uses encapsulated CSS, native named <code>&lt;slot&gt;</code>
+          elements for content projection, and exposes <code>::part()</code> selectors
+          for targeted external theming.
+          The light variant renders its BEM structure directly into the document, inherits
+          global <code>patternfly.css</code> without adoption, and uses
+          <code>data-card-slot</code> wrapper divs to manually re-project
+          <code>slot="..."</code> children on every render cycle — because light DOM
+          has no native slot mechanism.
+        </p>
+      </header>
+
+      <div class="demo demo--compare">
+        <!-- Column headers -->
+        <div class="demo-compare demo-compare--header">
+          <div class="demo-compare__col">
+            <p class="demo-compare__label">Shadow DOM (<code>pf-card-shadow</code>)</p>
+          </div>
+          <div class="demo-compare__col">
+            <p class="demo-compare__label">Light DOM (<code>pf-card-light</code>)</p>
+          </div>
+        </div>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             BASIC CARD
+             A card with title, body text, and a footer — the simplest pattern.
+             Both implementations use the same slot="..." authoring syntax.
+             Shadow DOM routes children to <slot name="..."> natively.
+             Light DOM uses _getSlottedNodes() to project them manually.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Basic card</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow>
+                <span slot="title">Card title</span>
+                <p slot="body">
+                  Body text. This is the main content area of the card. You can put
+                  any elements here using <code>slot="body"</code>.
+                </p>
+                <span slot="footer">Footer</span>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <!--
+                LIGHT DOM: Same slot="..." authoring syntax as shadow. Internally,
+                pf-card-light scans for [slot="title"], [slot="body"], [slot="footer"]
+                children via _getSlottedNodes() and places them in wrapper divs
+                with data-card-slot="..." markers for subsequent re-renders.
+              -->
+              <pf-card-light>
+                <span slot="title">Card title</span>
+                <p slot="body">
+                  Body text. This is the main content area of the card. You can put
+                  any elements here using <code>slot="body"</code>.
+                </p>
+                <span slot="footer">Footer</span>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             CARD WITH SUBTITLE
+             slot="subtitle" is projected below the title text inside
+             .pf-v6-c-card__title. The shadow version renders a <p> wrapper only
+             when the subtitle slot has content (via slotchange + _hasSubtitle).
+             Light DOM checks subtitleNodes.length at render time (pull-based).
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Card with subtitle</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow class="demo-card-with-subtitle">
+                <span slot="title">Title</span>
+                <span slot="subtitle">Subtitle</span>
+                <p slot="body">Body</p>
+                <span slot="footer">Footer</span>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light class="demo-card-with-subtitle">
+                <span slot="title">Title</span>
+                <span slot="subtitle">Subtitle</span>
+                <p slot="body">Body</p>
+                <span slot="footer">Footer</span>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             SUBTITLE, IMAGE, AND ACTIONS
+             PatternFly “Card with subtitle and Actions” — header image, kebab,
+             and subtitle together.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Subtitle, image, and actions</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow>
+                <img
+                  slot="header-image"
+                  class="pf-v6-c-brand demo-card-header-brand"
+                  src="https://www.patternfly.org/images/67615be9.svg"
+                  alt="PatternFly logo"
+                />
+                <span slot="title">Title</span>
+                <span slot="subtitle">Subtitle</span>
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Actions">
+                  ⋮
+                </button>
+                <p slot="body">Body</p>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light>
+                <img
+                  slot="header-image"
+                  class="pf-v6-c-brand demo-card-header-brand"
+                  src="https://www.patternfly.org/images/67615be9.svg"
+                  alt="PatternFly logo"
+                />
+                <span slot="title">Title</span>
+                <span slot="subtitle">Subtitle</span>
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Actions">
+                  ⋮
+                </button>
+                <p slot="body">Body</p>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             MODIFIERS
+             Mirrors PatternFly’s interactive Modifiers example:
+             https://www.patternfly.org/components/card#modifiers
+
+             Checkboxes toggle compact / large / full-height / plain on one card
+             per column. compact and large are mutually exclusive. The host uses
+             height: 15rem so full-height visibly fills the container.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section" id="modifiers">
+          <h2>Modifiers</h2>
+          <p class="demo-note">
+            Toggle each modifier with the checkboxes below. Most can be combined,
+            except <code>compact</code> and <code>large</code>, which are mutually exclusive.
+          </p>
+
+          <div class="demo-card-modifiers-controls" role="group" aria-label="Card modifiers">
+            <div class="pf-v6-c-check">
+              <input class="pf-v6-c-check__input" type="checkbox" id="mod-compact" data-mod="compact" />
+              <label class="pf-v6-c-check__label" for="mod-compact">compact</label>
+            </div>
+            <div class="pf-v6-c-check">
+              <input class="pf-v6-c-check__input" type="checkbox" id="mod-large" data-mod="large" />
+              <label class="pf-v6-c-check__label" for="mod-large">large</label>
+            </div>
+            <div class="pf-v6-c-check">
+              <input class="pf-v6-c-check__input" type="checkbox" id="mod-full-height" data-mod="full-height" />
+              <label class="pf-v6-c-check__label" for="mod-full-height">full-height</label>
+            </div>
+            <div class="pf-v6-c-check">
+              <input class="pf-v6-c-check__input" type="checkbox" id="mod-plain" data-mod="plain" />
+              <label class="pf-v6-c-check__label" for="mod-plain">plain</label>
+            </div>
+          </div>
+
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <div class="demo-card-modifiers-host">
+                <pf-card-shadow id="modifiers-shadow-card">
+                  <span slot="title">Title</span>
+                  <p slot="body">Body</p>
+                  <span slot="footer">Footer</span>
+                </pf-card-shadow>
+              </div>
+            </div>
+            <div class="demo-compare__col">
+              <div class="demo-card-modifiers-host">
+                <pf-card-light id="modifiers-light-card">
+                  <span slot="title">Title</span>
+                  <p slot="body">Body</p>
+                  <span slot="footer">Footer</span>
+                </pf-card-light>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             SECONDARY VARIANT
+             variant="secondary" applies pf-m-secondary which shifts the card
+             to use the secondary background color token.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Secondary variant</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow variant="secondary">
+                <span slot="title">Secondary card</span>
+                <p slot="body">Uses the secondary background color variant.</p>
+                <span slot="footer">Footer</span>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light variant="secondary">
+                <span slot="title">Secondary card</span>
+                <p slot="body">Uses the secondary background color variant.</p>
+                <span slot="footer">Footer</span>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             SELECTABLE
+             Mirrors https://www.patternfly.org/components/card#selectable
+
+             selectable → pf-m-selectable + a whole-card checkbox overlay.
+             disabled   → pf-m-disabled (third card). Click anywhere on the card
+             (except disabled) to toggle selection; fires pf-card-select.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section" id="selectable">
+          <h2>Selectable</h2>
+          <p class="demo-note">
+            Click anywhere on a card to select it. Avoid other interactive content
+            inside a selectable-only card.
+          </p>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <div class="demo-card-selectable-grid">
+                <pf-card-shadow
+                  selectable
+                  selectable-id="shadow-selectable-1"
+                  selectable-aria-label="First card"
+                >
+                  <span slot="title">First card</span>
+                  <p slot="body">This card is selectable.</p>
+                </pf-card-shadow>
+                <pf-card-shadow
+                  selectable
+                  selectable-id="shadow-selectable-2"
+                  selectable-aria-label="Second card"
+                >
+                  <span slot="title">Second card</span>
+                  <p slot="body">This card is selectable.</p>
+                </pf-card-shadow>
+                <pf-card-shadow
+                  selectable
+                  disabled
+                  selectable-id="shadow-selectable-3"
+                  selectable-aria-label="Third card"
+                >
+                  <span slot="title">Third card</span>
+                  <p slot="body">This card is selectable but disabled.</p>
+                </pf-card-shadow>
+              </div>
+            </div>
+            <div class="demo-compare__col">
+              <div class="demo-card-selectable-grid">
+                <pf-card-light
+                  selectable
+                  selectable-id="light-selectable-1"
+                  selectable-aria-label="First card"
+                >
+                  <span slot="title">First card</span>
+                  <p slot="body">This card is selectable.</p>
+                </pf-card-light>
+                <pf-card-light
+                  selectable
+                  selectable-id="light-selectable-2"
+                  selectable-aria-label="Second card"
+                >
+                  <span slot="title">Second card</span>
+                  <p slot="body">This card is selectable.</p>
+                </pf-card-light>
+                <pf-card-light
+                  selectable
+                  disabled
+                  selectable-id="light-selectable-3"
+                  selectable-aria-label="Third card"
+                >
+                  <span slot="title">Third card</span>
+                  <p slot="body">This card is selectable but disabled.</p>
+                </pf-card-light>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             CARD WITH HEADER ACTIONS
+             slot="header-actions" places buttons/links in the top-right of the
+             card header (inside .pf-v6-c-card__actions).
+             Shadow DOM: routed to <slot name="header-actions"> natively.
+             Light DOM: collected via _getSlottedNodes('header-actions') and
+               rendered inside <div class="pf-v6-c-card__actions" data-card-slot="header-actions">.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>With header actions</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow>
+                <span slot="title">Card with actions</span>
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Kebab">
+                  ⋮
+                </button>
+                <p slot="body">Actions appear in the top-right corner of the card header.</p>
+                <span slot="footer">Footer</span>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <!--
+                LIGHT DOM: The same slot="header-actions" button is picked up by
+                _getSlottedNodes('header-actions') and placed inside:
+                  <div class="pf-v6-c-card__actions" data-card-slot="header-actions">
+                No browser-native routing — all manual DOM scanning.
+              -->
+              <pf-card-light>
+                <span slot="title">Card with actions</span>
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Kebab">
+                  ⋮
+                </button>
+                <p slot="body">Actions appear in the top-right corner of the card header.</p>
+                <span slot="footer">Footer</span>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             HEADER WITHOUT TITLE
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Header without title</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow>
+                <img
+                  slot="header-image"
+                  class="pf-v6-c-brand demo-card-header-brand"
+                  src="https://www.patternfly.org/images/67615be9.svg"
+                  alt="PatternFly logo"
+                />
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Actions">⋮</button>
+                <p slot="body">Only a header image and actions — no title slot.</p>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light>
+                <img
+                  slot="header-image"
+                  class="pf-v6-c-brand demo-card-header-brand"
+                  src="https://www.patternfly.org/images/67615be9.svg"
+                  alt="PatternFly logo"
+                />
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Actions">⋮</button>
+                <p slot="body">Only a header image and actions — no title slot.</p>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             HEADER WRAP
+             header-wrap → pf-m-wrap on the card header (long titles).
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Header that wraps</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow header-wrap>
+                <span slot="title">This is a longer card title that takes up more space in the header row</span>
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Actions">⋮</button>
+                <p slot="body">Use header-wrap when the title and actions should wrap on narrow widths.</p>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light header-wrap>
+                <span slot="title">This is a longer card title that takes up more space in the header row</span>
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Actions">⋮</button>
+                <p slot="body">Use header-wrap when the title and actions should wrap on narrow widths.</p>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             TITLE AS HEADING
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Title as heading element</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow>
+                <h2 slot="title" class="pf-v6-c-card__title-text">Title within an h2</h2>
+                <p slot="body">Authors can project semantic heading markup into the title slot.</p>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light>
+                <h2 slot="title" class="pf-v6-c-card__title-text">Title within an h2</h2>
+                <p slot="body">Authors can project semantic heading markup into the title slot.</p>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             MULTIPLE BODY BLOCKS
+             Several nodes in slot="body" (stacked sections inside one CardBody).
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Multiple body sections</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow>
+                <span slot="title">Card title</span>
+                <div slot="body">First body block.</div>
+                <div slot="body">Second body block.</div>
+                <div slot="body">Third body block.</div>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light>
+                <span slot="title">Card title</span>
+                <div slot="body">First body block.</div>
+                <div slot="body">Second body block.</div>
+                <div slot="body">Third body block.</div>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             CARD WITH DIVIDERS (inside body)
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Card with dividers</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow>
+                <span slot="title">Title</span>
+                <div slot="body">
+                  <p>First section.</p>
+                  <hr class="pf-v6-c-divider" />
+                  <p>Second section after a divider.</p>
+                </div>
+                <span slot="footer">Footer</span>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light>
+                <span slot="title">Title</span>
+                <div slot="body">
+                  <p>First section.</p>
+                  <hr class="pf-v6-c-divider" />
+                  <p>Second section after a divider.</p>
+                </div>
+                <span slot="footer">Footer</span>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             EXPANDABLE CARD
+             expandable enables a caret toggle in the card header. Content in
+             slot="expandable-content" is hidden (hidden + inert) when collapsed.
+
+             SHADOW DOM:
+               - Expandable content in the shadow root is wrapped by:
+                 <div class="pf-v6-c-card__expandable-content" ?hidden ?inert>
+                   <div class="pf-v6-c-card__expandable-content-body">
+                     <slot name="expandable-content"></slot>  ← native slot
+                   </div>
+                 </div>
+               - The slot's assigned nodes live in the HOST's light DOM.
+                 `?inert` on the shadow wrapper does NOT automatically inert the
+                 host children — because they're in a different tree. PF CSS's
+                 `display:none` (via `?hidden`) is what visually hides them.
+
+             LIGHT DOM:
+               - The expandable-content body is a regular div in the document.
+               - `?inert` applies directly to the subtree — correctly blocks
+                 focus and interaction on the content nodes.
+
+             Both dispatch `pf-card-expand` with `detail.expanded` on toggle.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Expandable</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow
+                expandable
+                expand-aria-label="Toggle card content"
+              >
+                <span slot="title">Expandable card</span>
+                <p slot="expandable-content">
+                  This content is hidden when the card is collapsed. Click the
+                  caret in the header to toggle visibility.
+                </p>
+                <p slot="expandable-content">
+                  Multiple nodes can be assigned to <code>slot="expandable-content"</code>.
+                </p>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <!--
+                LIGHT DOM EXPANDABLE:
+                _getSlottedNodes('expandable-content') collects both <p> nodes.
+                They are projected into:
+                  <div class="pf-v6-c-card__expandable-content-body" data-card-slot="expandable-content">
+                On re-render, Phase 2 fallback finds them via the data-card-slot query.
+              -->
+              <pf-card-light
+                expandable
+                expand-aria-label="Toggle card content"
+              >
+                <span slot="title">Expandable card</span>
+                <p slot="expandable-content">
+                  This content is hidden when the card is collapsed. Click the
+                  caret in the header to toggle visibility.
+                </p>
+                <p slot="expandable-content">
+                  Multiple nodes can be assigned to <code>slot="expandable-content"</code>.
+                </p>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             EXPANDABLE WITH ICON
+             Mirrors https://www.patternfly.org/components/card#expandable-with-icon
+             Uses the small PatternFly mark (27px), not the wide brand logo.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Expandable with icon</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow expandable expand-aria-label="PatternFly Details">
+                <img
+                  slot="header-image"
+                  src="https://www.patternfly.org/images/4965ee1d.svg"
+                  alt="PatternFly logo"
+                  width="27"
+                  height="27"
+                />
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Actions">⋮</button>
+                <p slot="expandable-content">Extra content shown when expanded.</p>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light expandable expand-aria-label="PatternFly Details">
+                <img
+                  slot="header-image"
+                  src="https://www.patternfly.org/images/4965ee1d.svg"
+                  alt="PatternFly logo"
+                  width="27"
+                  height="27"
+                />
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Actions">⋮</button>
+                <p slot="expandable-content">Extra content shown when expanded.</p>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             EXPANDABLE (TOGGLE RIGHT-ALIGNED)
+             toggle-right-aligned moves the caret to the right side of the header
+             via pf-m-toggle-right on the .pf-v6-c-card__header wrapper.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Expandable — toggle right-aligned</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow
+                expandable
+                toggle-right-aligned
+                expand-aria-label="Toggle card content"
+              >
+                <span slot="title">Toggle on the right</span>
+                <p slot="expandable-content">
+                  Revealed when expanded. The caret sits on the right side of the header.
+                </p>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light
+                expandable
+                toggle-right-aligned
+                expand-aria-label="Toggle card content"
+              >
+                <span slot="title">Toggle on the right</span>
+                <p slot="expandable-content">
+                  Revealed when expanded. The caret sits on the right side of the header.
+                </p>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+      </div>
+    </main>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "lit": "../node_modules/lit/index.js",
+          "lit/": "../node_modules/lit/",
+          "@lit/reactive-element": "../node_modules/@lit/reactive-element/reactive-element.js",
+          "@lit/reactive-element/": "../node_modules/@lit/reactive-element/",
+          "lit-element": "../node_modules/lit-element/index.js",
+          "lit-element/": "../node_modules/lit-element/",
+          "lit-html": "../node_modules/lit-html/lit-html.js",
+          "lit-html/": "../node_modules/lit-html/"
+        }
+      }
+    </script>
+
+    <script type="module" src="../components/card/pf-card-shadow.js"></script>
+    <script type="module" src="../components/card/pf-card-light.js"></script>
+
+    <!--
+      Light DOM host styles: pf-card-light needs pf-card-light[expanded] CSS for
+      the toggle caret animation. This is injected via adoptPatternFlyLightHostStyles()
+      which reads from styles/adopted-light.js (aggregated sheet for all light components).
+    -->
+    <script type="module">
+      import { adoptPatternFlyLightHostStyles } from '../styles/adopted-light.js';
+      adoptPatternFlyLightHostStyles();
+
+      // Interactive Modifiers demo — mirrors PatternFly’s checkbox-driven example.
+      // compact and large are mutually exclusive; other modifiers can combine.
+      const modCards = [
+        document.getElementById('modifiers-shadow-card'),
+        document.getElementById('modifiers-light-card'),
+      ];
+      const compactCb = document.getElementById('mod-compact');
+      const largeCb = document.getElementById('mod-large');
+      const fullHeightCb = document.getElementById('mod-full-height');
+      const plainCb = document.getElementById('mod-plain');
+
+      function syncModifierCards() {
+        for (const card of modCards) {
+          if (!card) continue;
+          card.compact = compactCb.checked;
+          card.large = largeCb.checked;
+          card.fullHeight = fullHeightCb.checked;
+          card.plain = plainCb.checked;
+        }
+
+        // Disable the contradictory size modifier while the other is on.
+        largeCb.disabled = compactCb.checked;
+        compactCb.disabled = largeCb.checked;
+      }
+
+      for (const cb of [compactCb, largeCb, fullHeightCb, plainCb]) {
+        cb?.addEventListener('change', () => {
+          if (cb === compactCb && compactCb.checked) largeCb.checked = false;
+          if (cb === largeCb && largeCb.checked) compactCb.checked = false;
+          syncModifierCards();
+        });
+      }
+    </script>
+  </body>
+</html>

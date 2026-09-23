@@ -12,18 +12,25 @@
     <link rel="stylesheet" href="styles/global/theme.css" />
     <link rel="stylesheet" href="styles/global/site.css" />
   </head>
-  <body>
-    <main class="site-main">
-      <header class="site-header">
+  <body class="site-home">
+    <main class="site-main site-main--home">
+      <header class="site-header site-header--home">
+        <p class="site-header__eyebrow">PatternFly · Lit</p>
         <h1 class="site-header__title pf-v6-c-title pf-m-3xl">Web Components POC</h1>
-        <p class="site-intro">
-          PatternFly web components built with
-          <a href="https://lit.dev/">Lit</a>. Choose a component below to open its
-          interactive demo and documentation.
+        <p class="site-header__subtitle">
+          Side-by-side shadow DOM and light DOM implementations for evaluating
+          a shared PatternFly CSS migration path. Open a component to compare
+          both variants against PatternFly examples.
         </p>
       </header>
 
-      <ul class="catalog-grid" data-catalog-grid aria-label="Component catalog"></ul>
+      <section class="catalog" aria-labelledby="catalog-heading">
+        <div class="catalog__header">
+          <h2 id="catalog-heading" class="catalog__title">Components</h2>
+          <p class="catalog__meta"><span data-catalog-count></span> available</p>
+        </div>
+        <ul class="catalog-grid" data-catalog-grid aria-label="Component catalog"></ul>
+      </section>
     </main>
 
     <script type="module">
