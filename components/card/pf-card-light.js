@@ -73,6 +73,20 @@ export const ELEMENT_TAG = 'pf-card-light';
 /** Event name dispatched when the expandable toggle is clicked. */
 export const CARD_EXPAND_EVENT = 'pf-card-expand';
 
+/** Event name dispatched when a selectable card's input changes. */
+export const CARD_SELECT_EVENT = 'pf-card-select';
+
+let selectableIdCounter = 0;
+
+/**
+ * Returns a unique id for selectable inputs when the author omits selectable-id.
+ * @returns {string}
+ */
+function nextSelectableId() {
+  selectableIdCounter += 1;
+  return `pf-card-light-selectable-${selectableIdCounter}`;
+}
+
 /**
  * Caret-down SVG icon for the expandable toggle button.
  * Identical markup to the shadow version — ensures visual parity.
@@ -106,11 +120,26 @@ const cardCaretDownIcon = html`
  *   variant: string,
  *   expandable: boolean,
  *   expanded: boolean,
+ *   selectable: boolean,
+ *   selected: boolean,
+ *   disabled: boolean,
  *   extraClass?: string
  * }} opts
  * @returns {string}
  */
-function getCardClassNames({ compact, large, fullHeight, plain, variant, expandable, expanded, extraClass }) {
+function getCardClassNames({
+  compact,
+  large,
+  fullHeight,
+  plain,
+  variant,
+  expandable,
+  expanded,
+  selectable,
+  selected,
+  disabled,
+  extraClass,
+}) {
   const classes = ['pf-v6-c-card'];
 
   if (compact)   classes.push('pf-m-compact');
@@ -120,6 +149,9 @@ function getCardClassNames({ compact, large, fullHeight, plain, variant, expanda
   if (variant === 'secondary') classes.push('pf-m-secondary');
   if (expandable) classes.push('pf-m-expandable');
   if (expandable && expanded) classes.push('pf-m-expanded');
+  if (selectable) classes.push('pf-m-selectable');
+  if (selectable && selected) classes.push('pf-m-selected');
+  if (disabled) classes.push('pf-m-disabled');
   if (extraClass) classes.push(extraClass);
 
   return classes.join(' ');
@@ -161,7 +193,17 @@ export class PFCardLight extends LitElement {
     expandable:        { type: Boolean, reflect: true },
     expanded:          { type: Boolean, reflect: true },
     toggleRightAligned:{ type: Boolean, attribute: 'toggle-right-aligned', reflect: true },
+    headerWrap:        { type: Boolean, attribute: 'header-wrap',          reflect: true },
     actionsHasNoOffset:{ type: Boolean, attribute: 'actions-no-offset',    reflect: true },
+    selectable:        { type: Boolean, reflect: true },
+    selected:          { type: Boolean, reflect: true },
+    disabled:          { type: Boolean, reflect: true },
+    selectableVariant: { type: String,  attribute: 'selectable-variant', reflect: true },
+    selectableName:    { type: String,  attribute: 'selectable-name' },
+    selectableId:      { type: String,  attribute: 'selectable-id' },
+    selectableAriaLabel: { type: String, attribute: 'selectable-aria-label' },
+    selectableAriaLabelledby: { type: String, attribute: 'selectable-aria-labelledby' },
+    titleInHeader:     { type: Boolean, attribute: 'title-in-header', reflect: true },
     expandAriaLabel:   { type: String,  attribute: 'expand-aria-label' },
     extraClass:        { type: String,  attribute: 'extra-class' },
   };
@@ -249,6 +291,23 @@ export class PFCardLight extends LitElement {
     );
   }
 
+  /**
+   * Syncs selected state from the selectable input and dispatches pf-card-select.
+   * @param {Event} event
+   */
+  _handleSelectableChange(event) {
+    const input = /** @type {HTMLInputElement} */ (event.target);
+    this.selected = input.checked;
+
+    this.dispatchEvent(
+      new CustomEvent(CARD_SELECT_EVENT, {
+        bubbles: true,
+        composed: true,
+        detail: { selected: input.checked },
+      })
+    );
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
 
   render() {
@@ -261,17 +320,21 @@ export class PFCardLight extends LitElement {
       variant:    this.variant,
       expandable: this.expandable,
       expanded:   this.expanded,
+      selectable: this.selectable,
+      selected:   this.selected,
+      disabled:   this.disabled,
       extraClass: this.extraClass,
     });
 
     const headerClass = [
       'pf-v6-c-card__header',
-      this.toggleRightAligned ? 'pf-m-toggle-right-aligned' : '',
+      this.toggleRightAligned ? 'pf-m-toggle-right' : '',
+      this.headerWrap ? 'pf-m-wrap' : '',
     ].filter(Boolean).join(' ');
 
     const actionsClass = [
       'pf-v6-c-card__actions',
-      this.actionsHasNoOffset ? 'pf-m-no-offset' : '',
+      (this.actionsHasNoOffset || this.selectable) ? 'pf-m-no-offset' : '',
     ].filter(Boolean).join(' ');
 
     // ── Collect projected nodes ───────────────────────────────────────────
@@ -299,159 +362,128 @@ export class PFCardLight extends LitElement {
     /** @type {Node[]} Nodes for the expandable-only content area. */
     const expandableNodes = this._getSlottedNodes('expandable-content');
 
-    // The header region is needed when the card is expandable OR has content.
+    const hasHeaderImage = headerImageNodes.length > 0;
+    const titleInHeader =
+      this.titleInHeader ||
+      this.selectable ||
+      (this.expandable && !hasHeaderImage);
+    const showTitleBlock = titleNodes.length > 0 || subtitleNodes.length > 0;
+
     const showHeader = this.expandable
-      || titleNodes.length > 0
-      || subtitleNodes.length > 0
-      || headerImageNodes.length > 0
-      || actionsNodes.length > 0;
+      || this.selectable
+      || hasHeaderImage
+      || actionsNodes.length > 0
+      || (titleInHeader && showTitleBlock);
+
+    const showHeaderMain = hasHeaderImage || (titleInHeader && showTitleBlock);
+    const showActions = this.selectable || actionsNodes.length > 0;
+
+    const titleBlock = showTitleBlock ? html`
+      <div class="pf-v6-c-card__title">
+        <div class="pf-v6-c-card__title-text" data-card-slot="title">
+          ${titleNodes}
+        </div>
+        ${subtitleNodes.length ? html`
+          <p class="pf-v6-c-card__subtitle" data-card-slot="subtitle">
+            ${subtitleNodes}
+          </p>
+        ` : nothing}
+      </div>
+    ` : nothing;
+
+    const isSingleSelect = this.selectableVariant === 'single';
+    const inputId = this.selectableId || this._autoSelectableId || (this._autoSelectableId = nextSelectableId());
+    const inputName = this.selectableName || inputId;
+    const inputType = isSingleSelect ? 'radio' : 'checkbox';
+    const controlClass = isSingleSelect ? 'pf-v6-c-radio pf-m-standalone' : 'pf-v6-c-check pf-m-standalone';
+    const inputClass = isSingleSelect ? 'pf-v6-c-radio__input' : 'pf-v6-c-check__input';
+    const labelClass = [
+      isSingleSelect ? 'pf-v6-c-radio__label' : 'pf-v6-c-check__label',
+      this.disabled ? 'pf-m-disabled' : '',
+    ].filter(Boolean).join(' ');
 
     return html`
-      <!--
-        LIGHT DOM ROOT ELEMENT
-        ======================
-        This div is rendered as a direct child of <pf-card-light> in the document.
-        Global patternfly.css targets .pf-v6-c-card directly — no style adoption
-        is needed. External CSS can reach any child element with standard class
-        selectors (e.g., .pf-v6-c-card__body { ... }).
-
-        CONTRAST WITH SHADOW DOM:
-          Shadow: styles are encapsulated in the shadow root; external CSS
-            cannot reach internals unless via ::part() or CSS custom properties.
-          Light:  styles are NOT encapsulated; everything is open to the page.
-      -->
       <div class=${cardClass}>
 
-        <!--
-          HEADER REGION
-          =============
-          Only rendered when there is header content or the card is expandable.
-          Unlike the shadow version (which keeps wrappers with ?hidden for slot
-          event routing), light DOM can safely use 'nothing' for absent sections
-          because there are no slots or slotchange events to maintain.
-        -->
         ${showHeader ? html`
           <div class=${headerClass}>
 
-            <!--
-              EXPANDABLE TOGGLE BUTTON
-              aria-expanded reflects the current state for screen readers.
-              The caret rotation is driven by CSS in styles/adopted-light.js:
-                pf-card-light[expanded] .pf-v6-c-card__header-toggle-icon { transform: rotate(90deg) }
-              In shadow DOM the same animation is :host([expanded]) in the
-              shadow stylesheet — a different selector resolution path.
-            -->
             ${this.expandable ? html`
-              <button
-                class="pf-v6-c-card__header-toggle"
-                type="button"
-                aria-expanded=${this.expanded ? 'true' : 'false'}
-                aria-label=${this.expandAriaLabel || 'Toggle card'}
-                @click=${this._handleExpandToggle}
-              >
-                <span class="pf-v6-c-card__header-toggle-icon">
-                  ${cardCaretDownIcon}
-                </span>
-              </button>
+              <div class="pf-v6-c-card__header-toggle">
+                <button
+                  class="pf-v6-c-button pf-m-plain"
+                  type="button"
+                  aria-expanded=${this.expanded ? 'true' : 'false'}
+                  aria-label=${this.expandAriaLabel || 'Toggle card'}
+                  @click=${this._handleExpandToggle}
+                >
+                  <span class="pf-v6-c-button__icon">
+                    <span class="pf-v6-c-card__header-toggle-icon">
+                      ${cardCaretDownIcon}
+                    </span>
+                  </span>
+                </button>
+              </div>
             ` : nothing}
 
-            <div class="pf-v6-c-card__header-main">
-
-              <!--
-                HEADER IMAGE PROJECTION
-                data-card-slot="header-image" is the Phase 2 lookup key used by
-                _getSlottedNodes. After first render, nodes move here; the data
-                attribute lets the next render cycle find them again.
-
-                CONTRAST WITH SHADOW DOM:
-                  Shadow: <slot name="header-image"> — browser routes natively.
-                  Light:  <div data-card-slot="header-image"> — manual wrapper +
-                    runtime query in _getSlottedNodes().
-              -->
-              ${headerImageNodes.length ? html`
-                <div data-card-slot="header-image">${headerImageNodes}</div>
-              ` : nothing}
-
-              <!--
-                TITLE / SUBTITLE BLOCK
-                Only rendered when either title or subtitle nodes exist.
-              -->
-              ${titleNodes.length || subtitleNodes.length ? html`
-                <div class="pf-v6-c-card__title">
-                  <div class="pf-v6-c-card__title-text" data-card-slot="title">
-                    ${titleNodes}
+            ${showActions ? html`
+              <div class=${actionsClass}>
+                ${this.selectable ? html`
+                  <div class="pf-v6-c-card__selectable-actions">
+                    <div class=${controlClass}>
+                      <input
+                        class=${inputClass}
+                        type=${inputType}
+                        id=${inputId}
+                        name=${inputName}
+                        .checked=${!!this.selected}
+                        ?disabled=${this.disabled}
+                        aria-label=${this.selectableAriaLabel || nothing}
+                        aria-labelledby=${this.selectableAriaLabelledby || nothing}
+                        @change=${this._handleSelectableChange}
+                      />
+                      <label class=${labelClass} for=${inputId}></label>
+                    </div>
                   </div>
-                  ${subtitleNodes.length ? html`
-                    <p class="pf-v6-c-card__subtitle" data-card-slot="subtitle">
-                      ${subtitleNodes}
-                    </p>
-                  ` : nothing}
-                </div>
-              ` : nothing}
-            </div>
+                ` : nothing}
+                ${actionsNodes.length ? html`
+                  <div data-card-slot="header-actions">${actionsNodes}</div>
+                ` : nothing}
+              </div>
+            ` : nothing}
 
-            <!--
-              HEADER ACTIONS PROJECTION
-              Only rendered when action nodes are present.
-            -->
-            ${actionsNodes.length ? html`
-              <div class=${actionsClass} data-card-slot="header-actions">
-                ${actionsNodes}
+            ${showHeaderMain ? html`
+              <div class="pf-v6-c-card__header-main">
+                ${hasHeaderImage ? html`
+                  <div data-card-slot="header-image">${headerImageNodes}</div>
+                ` : nothing}
+                ${titleInHeader ? titleBlock : nothing}
               </div>
             ` : nothing}
 
           </div>
         ` : nothing}
 
-        <!--
-          BODY REGION
-          ===========
-          LIGHT DOM: We use 'nothing' when empty — no need for ?hidden because
-          there is no slot event infrastructure to preserve.
+        ${!titleInHeader ? titleBlock : nothing}
 
-          CONTRAST WITH SHADOW DOM:
-            Shadow: div[?hidden=expr] + slot[@slotchange]
-              — the slot element must stay in the DOM to receive slotchange events.
-            Light:  Just skip the div entirely with 'nothing' when empty — simpler
-              but means the rendered structure is directly coupled to child scanning.
-        -->
         ${bodyNodes.length ? html`
           <div class="pf-v6-c-card__body" data-card-slot="body">
             ${bodyNodes}
           </div>
         ` : nothing}
 
-        <!--
-          EXPANDABLE CONTENT REGION
-          =========================
-          Only rendered when expandable=true. Collapsed via ?hidden + ?inert.
-
-          ?inert disables interaction (keyboard focus, click) for the hidden
-          region without needing to manage tabindex on every interactive child.
-
-          CONTRAST WITH SHADOW DOM:
-            Shadow: ?inert is on the wrapper; the slot's assigned nodes are in
-              the host light DOM — they are automatically inert-excluded because
-              the browser respects inert on the slot's shadow host wrapper.
-            Light:  ?inert on the div applies directly to the subtree in the
-              document — the same DOM tree, so the semantics are identical.
-        -->
         ${this.expandable ? html`
           <div
             class="pf-v6-c-card__expandable-content"
             ?hidden=${!this.expanded}
             ?inert=${!this.expanded}
           >
-            <div class="pf-v6-c-card__expandable-content-body" data-card-slot="expandable-content">
+            <div class="pf-v6-c-card__body" data-card-slot="expandable-content">
               ${expandableNodes}
             </div>
           </div>
         ` : nothing}
 
-        <!--
-          FOOTER REGION
-          =============
-        -->
         ${footerNodes.length ? html`
           <div class="pf-v6-c-card__footer" data-card-slot="footer">
             ${footerNodes}

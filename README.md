@@ -30,7 +30,7 @@ Three component tiers cover the key structural patterns:
 | Tier | Components | Patterns covered |
 |------|-----------|-----------------|
 | **Atom** | Button, Badge | Simple rendering, form association, icon slots |
-| **Compound** | Card | Named slots, multiple content regions, expandable, theming via `::part()` |
+| **Compound** | Card | Named slots, multiple content regions, expandable, selectable |
 | **Interactive** | Accordion | Keyboard navigation, expand/collapse state, compound items |
 
 ---
@@ -284,7 +284,7 @@ Shadow exported parts: `badge`.
 
 ### Card — `<pf-card-shadow>` / `<pf-card-light>`
 
-Mirrors the [PatternFly Card](https://www.patternfly.org/components/card).
+Mirrors the [PatternFly Card](https://www.patternfly.org/components/card). Demo examples cover basic layouts, modifiers, secondary, selectable, header variants, dividers, and expandable (including icon and toggle-right).
 
 #### Slots / projection regions
 
@@ -309,14 +309,26 @@ Both implementations use the same authoring syntax: `<element slot="body">conten
 | `variant` | `'default'` or `'secondary'` — secondary background color |
 | `expandable` | Enables a caret toggle in the card header |
 | `expanded` | Current expand state (reflected); also drives caret animation via CSS |
-| `toggle-right-aligned` | Moves the expand caret to the right (`pf-m-toggle-right-aligned`) |
-| `actions-no-offset` | Removes default negative-margin offset from actions (`pf-m-no-offset`) |
+| `toggle-right-aligned` | Moves the expand caret to the right (`pf-m-toggle-right` on the header) |
+| `header-wrap` | Allows the header row to wrap (`pf-m-wrap`) for long titles |
+| `title-in-header` | Places title/subtitle inside the header (inline with images/actions). Default is outside the header. Expandable cards (without a header image) and selectable cards place the title in the header automatically. |
+| `actions-no-offset` | Removes default negative-margin offset from actions (`pf-m-no-offset`). Selectable cards apply this automatically. |
+| `selectable` | Enables whole-card selection (`pf-m-selectable`) via a checkbox/radio overlay |
+| `selected` | Current selection state (`pf-m-selected`); reflected with the input |
+| `disabled` | Disables selectable interaction (`pf-m-disabled`) |
+| `selectable-variant` | `'multiple'` (checkbox, default) or `'single'` (radio) |
+| `selectable-name` | Shared `name` for single-select radio groups |
+| `selectable-id` | Id for the selectable input (auto-generated if omitted) |
+| `selectable-aria-label` | Accessible name for the selectable input |
+| `selectable-aria-labelledby` | Id reference(s) for the selectable input’s accessible name |
 | `expand-aria-label` | Accessible label for the expand toggle button |
 | `extra-class` | Additional BEM classes on the card root element |
 
-Events dispatched: `pf-card-expand` — `detail: { expanded: boolean }`.
+Events dispatched:
+- `pf-card-expand` — `detail: { expanded: boolean }`
+- `pf-card-select` — `detail: { selected: boolean }`
 
-Shadow exported parts: `card`, `header`, `header-main`, `title`, `subtitle`, `actions`, `body`, `footer`, `expandable-content`.
+Shadow exported parts: `card`, `header`, `header-main`, `title`, `subtitle`, `actions`, `selectable-actions`, `body`, `footer`, `expandable-content`.
 
 #### Content projection: shadow vs light DOM
 
@@ -335,21 +347,9 @@ Shadow exported parts: `card`, `header`, `header-main`, `title`, `subtitle`, `ac
 </pf-card-light>
 ```
 
-**Shadow DOM:** The browser routes `slot="body"` to `<slot name="body">` inside the shadow root natively. A `@slotchange` event fires when the assignment changes, driving conditional section visibility via reactive `_has*` state properties.
+**Shadow DOM:** The browser routes `slot="body"` to `<slot name="body">` inside the shadow root natively. A `@slotchange` event fires when the assignment changes, driving conditional section visibility via reactive `_has*` state properties. Selectable overlays also adopt PatternFly Check/Radio CSS into the shadow root (`check-styles.js` / `radio-styles.js`).
 
-**Light DOM:** There are no native slots. `_getSlottedNodes(slotName)` manually scans host children for `[slot="<name>"]` on every render. After the first render, projected nodes live inside `[data-card-slot="<name>"]` wrapper divs — a Phase 2 query fallback finds them there on subsequent re-renders. This is O(n) manual scanning instead of browser-native routing.
-
-#### Theming card internals
-
-```css
-/* Shadow DOM — only reachable via ::part() */
-pf-card-shadow::part(card)   { border-left: 4px solid #0066cc; }
-pf-card-shadow::part(body)   { background: #f5f5f5; }
-
-/* Light DOM — standard BEM selectors work directly */
-pf-card-light .pf-v6-c-card        { border-left: 4px solid #0066cc; }
-pf-card-light .pf-v6-c-card__body  { background: #f5f5f5; }
-```
+**Light DOM:** There are no native slots. `_getSlottedNodes(slotName)` manually scans host children for `[slot="<name>"]` on every render. After the first render, projected nodes live inside `[data-card-slot="<name>"]` wrapper divs — a Phase 2 query fallback finds them there on subsequent re-renders. This is O(n) manual scanning instead of browser-native routing. Check/Radio visuals come from global `patternfly.css`.
 
 ---
 
@@ -490,9 +490,11 @@ web-components-POC/
 │       ├── pf-card-light.js            # Light DOM — manual _getSlottedNodes projection
 │       ├── index.js
 │       └── styles/
-│           ├── adopted-shadow.js
-│           ├── adopted-light.js
-│           └── card-styles.js          # ← auto-generated (do not edit)
+│           ├── adopted-shadow.js       # Card + Check/Radio CSS in shadow root
+│           ├── adopted-light.js        # Document-level host overrides
+│           ├── card-styles.js          # ← auto-generated (do not edit)
+│           ├── check-styles.js         # ← auto-generated (selectable checkbox)
+│           └── radio-styles.js         # ← auto-generated (selectable radio)
 │
 ├── styles/
 │   ├── adopted-light.js                # Aggregates all light host overrides

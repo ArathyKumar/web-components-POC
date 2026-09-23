@@ -22,7 +22,7 @@ const LIGHT_HOST_STYLES = [
   CARD_LIGHT_HOST_STYLES,
 ].join('\n');
 
-const LIGHT_HOST_STYLES_REVISION = 'light-host-15';
+const LIGHT_HOST_STYLES_REVISION = 'light-host-19';
 
 let lightSheet = null;
 let lightSheetRevision = null;

@@ -6,6 +6,8 @@
  * Global patternfly.css is still required on the page for design tokens (--pf-t--*).
  */
 import cardStyles from './card-styles.js';
+import checkStyles from './check-styles.js';
+import radioStyles from './radio-styles.js';
 
 const SHADOW_HOST_STYLES = `
 /*
@@ -37,28 +39,52 @@ p, h1, h2, h3, h4, h5, h6, ul, ol, dl, figure, blockquote, pre {
   display: block;
 }
 
+/*
+ * full-height: PatternFly’s pf-m-full-height sets height: 100% on .pf-v6-c-card.
+ * That only works if every ancestor up to the sized container also resolves a
+ * height. In React/HTML demos the card IS the direct child of the 15rem wrapper;
+ * here the custom element sits in between, so the host must also be height: 100%
+ * when [full-height] is present — otherwise the inner card’s 100% collapses to
+ * content height.
+ */
+:host([full-height]) {
+  height: 100%;
+}
+
+:host([full-height]) .pf-v6-c-card {
+  height: 100%;
+}
+
 :host([hidden]) {
   display: none;
 }
 
 /*
- * Expandable toggle icon rotation — the caret rotates 90° when the card is expanded.
- * PatternFly drives this via CSS on .pf-v6-c-card.pf-m-expanded, but the inner button
- * is inside the shadow root so we apply it directly here.
+ * Caret rotation is driven by PatternFly card CSS:
+ *   .pf-v6-c-card.pf-m-expanded .pf-v6-c-card__header-toggle-icon { transform: rotate(-180deg) }
+ * Do not override with a custom angle — that misaligns the toggle vs PF demos.
  */
-:host([expanded]) .pf-v6-c-card__header-toggle-icon {
-  transform: rotate(90deg);
-}
-
-.pf-v6-c-card__header-toggle-icon {
-  display: inline-flex;
-  align-items: center;
-  transition: transform 0.2s ease;
-}
 
 /* Utility: hide elements with the hidden attribute even if PF CSS doesn't cover it */
 [hidden] {
   display: none !important;
+}
+
+/*
+ * Minimal plain-button chrome for the expandable toggle. Full button.css is not
+ * adopted here; these rules keep the caret control visually aligned with PF.
+ */
+.pf-v6-c-card__header-toggle > .pf-v6-c-button.pf-m-plain {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: var(--pf-t--global--spacer--sm, 0.5rem);
+  margin: 0;
+  color: inherit;
+  background: transparent;
+  border: 0;
+  border-radius: var(--pf-t--global--border--radius--small, 3px);
+  cursor: pointer;
 }
 
 .pf-v6-svg {
@@ -68,7 +94,7 @@ p, h1, h2, h3, h4, h5, h6, ul, ol, dl, figure, blockquote, pre {
 }
 `;
 
-const SHADOW_CSS = [SHADOW_HOST_STYLES, cardStyles].join('\n');
+const SHADOW_CSS = [SHADOW_HOST_STYLES, cardStyles, checkStyles, radioStyles].join('\n');
 
 let shadowSheet = null;
 

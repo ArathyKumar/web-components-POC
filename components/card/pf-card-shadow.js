@@ -37,14 +37,24 @@
  *   variant ('default'|'secondary') → pf-m-secondary  — secondary background
  *   expandable (boolean)            — renders a toggle caret in the header
  *   expanded   (boolean, reflect)   — current expand state (pf-m-expanded)
- *   toggle-right-aligned (boolean)  → pf-m-toggle-right-aligned on header
+ *   toggle-right-aligned (boolean)  → pf-m-toggle-right on header
+ *   header-wrap (boolean)           → pf-m-wrap on header (long titles / wrapping)
  *   actions-no-offset (boolean)     → pf-m-no-offset on actions wrapper
+ *   selectable (boolean)            → pf-m-selectable — whole-card selection
+ *   selected   (boolean, reflect)   → pf-m-selected / input checked state
+ *   disabled   (boolean, reflect)   → pf-m-disabled (selectable/clickable cards)
+ *   selectable-variant ('multiple'|'single') — checkbox vs radio input
+ *   selectable-name (string)        — shared name for single-select radio groups
+ *   selectable-id (string)          — id for the selectable input
+ *   selectable-aria-label (string)  — accessible name for the selectable input
  *   expand-aria-label (string)      — aria-label for the expand toggle button
  *   extra-class (string)            — additional BEM modifier on root element
  *
  * Events:
  *   pf-card-expand — CustomEvent dispatched on toggle click
  *     detail: { expanded: boolean }
+ *   pf-card-select — CustomEvent dispatched when selectable input changes
+ *     detail: { selected: boolean }
  *
  * @see https://www.patternfly.org/components/card
  */
@@ -56,6 +66,20 @@ export const ELEMENT_TAG = 'pf-card-shadow';
 
 /** Event name dispatched when the expandable toggle is clicked. */
 export const CARD_EXPAND_EVENT = 'pf-card-expand';
+
+/** Event name dispatched when a selectable card's input changes. */
+export const CARD_SELECT_EVENT = 'pf-card-select';
+
+let selectableIdCounter = 0;
+
+/**
+ * Returns a unique id for selectable inputs when the author omits selectable-id.
+ * @returns {string}
+ */
+function nextSelectableId() {
+  selectableIdCounter += 1;
+  return `pf-card-selectable-${selectableIdCounter}`;
+}
 
 /**
  * Caret-down SVG icon used inside the expandable toggle button.
@@ -88,11 +112,26 @@ const cardCaretDownIcon = html`
  *   variant: string,
  *   expandable: boolean,
  *   expanded: boolean,
+ *   selectable: boolean,
+ *   selected: boolean,
+ *   disabled: boolean,
  *   extraClass?: string
  * }} opts
  * @returns {string}
  */
-function getCardClassNames({ compact, large, fullHeight, plain, variant, expandable, expanded, extraClass }) {
+function getCardClassNames({
+  compact,
+  large,
+  fullHeight,
+  plain,
+  variant,
+  expandable,
+  expanded,
+  selectable,
+  selected,
+  disabled,
+  extraClass,
+}) {
   // Start with the PF v6 base class for the card component.
   const classes = ['pf-v6-c-card'];
 
@@ -116,6 +155,15 @@ function getCardClassNames({ compact, large, fullHeight, plain, variant, expanda
 
   // pf-m-expanded is present when the card is in the open state.
   if (expandable && expanded) classes.push('pf-m-expanded');
+
+  // pf-m-selectable enables whole-card selection via the overlay label.
+  if (selectable) classes.push('pf-m-selectable');
+
+  // pf-m-selected conveys the selected visual state (also driven by :checked CSS).
+  if (selectable && selected) classes.push('pf-m-selected');
+
+  // pf-m-disabled greys out selectable/clickable cards.
+  if (disabled) classes.push('pf-m-disabled');
 
   // Consumer can append arbitrary modifier/utility classes without subclassing.
   if (extraClass) classes.push(extraClass);
@@ -164,9 +212,14 @@ export class PFCardShadow extends LitElement {
 
     /**
      * When true, the toggle caret is positioned on the right side of the header
-     * instead of the left (pf-m-toggle-right-aligned on the header wrapper).
+     * instead of the left (pf-m-toggle-right on the header wrapper).
      */
     toggleRightAligned: { type: Boolean, attribute: 'toggle-right-aligned', reflect: true },
+
+    /**
+     * When true, applies pf-m-wrap to the header so long titles and actions can wrap.
+     */
+    headerWrap: { type: Boolean, attribute: 'header-wrap', reflect: true },
 
     /**
      * When true, applies pf-m-no-offset to the actions wrapper.
@@ -174,6 +227,60 @@ export class PFCardShadow extends LitElement {
      * need the default negative-margin alignment of actions.
      */
     actionsHasNoOffset: { type: Boolean, attribute: 'actions-no-offset', reflect: true },
+
+    // ── Selectable behaviour ──────────────────────────────────────────────────
+
+    /**
+     * When true, renders a whole-card selectable checkbox/radio (pf-m-selectable).
+     * PatternFly: avoid other interactive content inside a selectable-only card.
+     */
+    selectable: { type: Boolean, reflect: true },
+
+    /**
+     * Current selection state. Reflected so authors can set selected from markup
+     * and so CSS/pf-m-selected stays in sync with the input's checked state.
+     */
+    selected: { type: Boolean, reflect: true },
+
+    /**
+     * Disables selectable/clickable interaction (pf-m-disabled + input disabled).
+     */
+    disabled: { type: Boolean, reflect: true },
+
+    /**
+     * 'multiple' (default) → checkbox; 'single' → radio (use selectable-name to group).
+     */
+    selectableVariant: { type: String, attribute: 'selectable-variant', reflect: true },
+
+    /**
+     * name attribute for the selectable input. Required for single-select radio groups
+     * so only one card in the group can be selected.
+     */
+    selectableName: { type: String, attribute: 'selectable-name' },
+
+    /**
+     * Explicit id for the selectable input. Auto-generated when omitted.
+     */
+    selectableId: { type: String, attribute: 'selectable-id' },
+
+    /**
+     * Accessible name for the selectable input (aria-label). Prefer this or
+     * selectable-aria-labelledby when the card title alone is not enough.
+     */
+    selectableAriaLabel: { type: String, attribute: 'selectable-aria-label' },
+
+    /**
+     * Space-delimited element id(s) that label the selectable input (aria-labelledby).
+     */
+    selectableAriaLabelledby: { type: String, attribute: 'selectable-aria-labelledby' },
+
+    /**
+     * When true, renders slot="title"/subtitle inside the header (inline with
+     * images/actions). PatternFly default is title OUTSIDE the header; set this
+     * for “title inline with images and actions”. Selectable cards force title
+     * into the header to match PF selectable examples.
+     */
+    titleInHeader: { type: Boolean, attribute: 'title-in-header', reflect: true },
 
     /**
      * Accessible label for the expand toggle button.
@@ -313,6 +420,23 @@ export class PFCardShadow extends LitElement {
     );
   }
 
+  /**
+   * Syncs selected state from the selectable input and dispatches pf-card-select.
+   * @param {Event} event
+   */
+  _handleSelectableChange(event) {
+    const input = /** @type {HTMLInputElement} */ (event.target);
+    this.selected = input.checked;
+
+    this.dispatchEvent(
+      new CustomEvent(CARD_SELECT_EVENT, {
+        bubbles: true,
+        composed: true,
+        detail: { selected: input.checked },
+      })
+    );
+  }
+
   // ── Render ─────────────────────────────────────────────────────────────────
 
   render() {
@@ -325,17 +449,22 @@ export class PFCardShadow extends LitElement {
       variant:    this.variant,
       expandable: this.expandable,
       expanded:   this.expanded,
+      selectable: this.selectable,
+      selected:   this.selected,
+      disabled:   this.disabled,
       extraClass: this.extraClass,
     });
 
     const headerClass = [
       'pf-v6-c-card__header',
-      this.toggleRightAligned ? 'pf-m-toggle-right-aligned' : '',
+      this.toggleRightAligned ? 'pf-m-toggle-right' : '',
+      this.headerWrap ? 'pf-m-wrap' : '',
     ].filter(Boolean).join(' ');
 
+    // Selectable cards use pf-m-no-offset on actions (matches PatternFly examples).
     const actionsClass = [
       'pf-v6-c-card__actions',
-      this.actionsHasNoOffset ? 'pf-m-no-offset' : '',
+      (this.actionsHasNoOffset || this.selectable) ? 'pf-m-no-offset' : '',
     ].filter(Boolean).join(' ');
 
     // ── Slot visibility logic ──────────────────────────────────────────────
@@ -351,18 +480,71 @@ export class PFCardShadow extends LitElement {
     const showHeaderImage   = this._hasHeaderImage   !== false;
     /** @type {boolean} Whether the header actions section should render. */
     const showHeaderActions = this._hasHeaderActions !== false;
-    /** @type {boolean} Whether the body section should render. */
-    const showBody          = this._hasBody          !== false;
-    /** @type {boolean} Whether the footer section should render. */
-    const showFooter        = this._hasFooter        !== false;
 
-    // The header wrapper is needed if the card is expandable OR if any header
-    // slot has (or might have) content.
+    const showActions = this.selectable || showHeaderActions;
+
+    // PatternFly composition:
+    // - Selectable / basic expandable → title inside header (inline with caret)
+    // - Expandable with header image → image alone in header-main (title omitted or outside)
+    // - Brand + actions (non-expandable) → title outside header by default
+    const hasHeaderImage = this._hasHeaderImage === true;
+    const titleInHeader =
+      this.titleInHeader ||
+      this.selectable ||
+      (this.expandable && !hasHeaderImage);
+    const showTitleBlock = showTitle || showSubtitle;
+
     const showHeader = this.expandable
-      || showTitle
-      || showSubtitle
+      || this.selectable
       || showHeaderImage
-      || showHeaderActions;
+      || showHeaderActions
+      || (titleInHeader && showTitleBlock);
+
+    const showHeaderMain = hasHeaderImage || (titleInHeader && showTitleBlock);
+
+    // Only omit empty body/footer for expandable cards — empty wrappers as
+    // siblings of the header break :last-child padding while collapsed.
+    const showBody = this.expandable ? this._hasBody === true : this._hasBody !== false;
+    const showFooter = this.expandable ? this._hasFooter === true : this._hasFooter !== false;
+
+    const titleBlock = showTitleBlock ? html`
+      <div class="pf-v6-c-card__title" part="title">
+        <div class="pf-v6-c-card__title-text">
+          <slot
+            name="title"
+            @slotchange=${(e) => this._onSlotChange('_hasTitle', e)}
+          ></slot>
+        </div>
+        ${showSubtitle ? html`
+          <p class="pf-v6-c-card__subtitle" part="subtitle">
+            <slot
+              name="subtitle"
+              @slotchange=${(e) => this._onSlotChange('_hasSubtitle', e)}
+            ></slot>
+          </p>
+        ` : html`
+          <slot
+            name="subtitle"
+            hidden
+            @slotchange=${(e) => this._onSlotChange('_hasSubtitle', e)}
+          ></slot>
+        `}
+      </div>
+    ` : html`
+      <slot name="title"    hidden @slotchange=${(e) => this._onSlotChange('_hasTitle',    e)}></slot>
+      <slot name="subtitle" hidden @slotchange=${(e) => this._onSlotChange('_hasSubtitle', e)}></slot>
+    `;
+
+    const isSingleSelect = this.selectableVariant === 'single';
+    const inputId = this.selectableId || this._autoSelectableId || (this._autoSelectableId = nextSelectableId());
+    const inputName = this.selectableName || inputId;
+    const inputType = isSingleSelect ? 'radio' : 'checkbox';
+    const controlClass = isSingleSelect ? 'pf-v6-c-radio pf-m-standalone' : 'pf-v6-c-check pf-m-standalone';
+    const inputClass = isSingleSelect ? 'pf-v6-c-radio__input' : 'pf-v6-c-check__input';
+    const labelClass = [
+      isSingleSelect ? 'pf-v6-c-radio__label' : 'pf-v6-c-check__label',
+      this.disabled ? 'pf-m-disabled' : '',
+    ].filter(Boolean).join(' ');
 
     return html`
       <!--
@@ -373,181 +555,141 @@ export class PFCardShadow extends LitElement {
 
         <!--
           HEADER REGION
-          =============
-          Contains: expand toggle (if expandable), header-main (image + title +
-          subtitle), and header actions.
-
-          ?hidden=${!showHeader} uses the HTML [hidden] attribute to collapse
-          the header wrapper (display:none) when no header content is present
-          and the card is not expandable. The slots remain in the shadow DOM so
-          slotchange events continue to fire — if an author later adds
-          slot="title" content, _hasTitle flips to true and the header appears.
-
-          SHADOW DOM: The [hidden] attribute is respected because our shadow
-          stylesheet includes '[hidden] { display: none !important }'.
+          Only mount when needed. A [hidden] header still counts as :first-child
+          and steals padding-block-start from title/body (light DOM uses nothing).
         -->
-        <div class=${headerClass} part="header" ?hidden=${!showHeader}>
+        ${showHeader ? html`
+          <div class=${headerClass} part="header">
 
-          <!--
-            EXPANDABLE TOGGLE BUTTON
-            Only rendered when the 'expandable' attribute is present.
-            aria-expanded reflects the current open/close state for screen readers.
-            The caret icon rotates via :host([expanded]) CSS in adopted-shadow.js.
-          -->
-          ${this.expandable ? html`
-            <button
-              class="pf-v6-c-card__header-toggle"
-              type="button"
-              aria-expanded=${this.expanded ? 'true' : 'false'}
-              aria-label=${this.expandAriaLabel || 'Toggle card'}
-              @click=${this._handleExpandToggle}
-            >
-              <span class="pf-v6-c-card__header-toggle-icon">
-                ${cardCaretDownIcon}
-              </span>
-            </button>
-          ` : nothing}
+            ${this.expandable ? html`
+              <div class="pf-v6-c-card__header-toggle">
+                <button
+                  class="pf-v6-c-button pf-m-plain"
+                  type="button"
+                  aria-expanded=${this.expanded ? 'true' : 'false'}
+                  aria-label=${this.expandAriaLabel || 'Toggle card'}
+                  @click=${this._handleExpandToggle}
+                >
+                  <span class="pf-v6-c-button__icon">
+                    <span class="pf-v6-c-card__header-toggle-icon">
+                      ${cardCaretDownIcon}
+                    </span>
+                  </span>
+                </button>
+              </div>
+            ` : nothing}
 
-          <!--
-            HEADER MAIN
-            Wraps the optional image slot and the title/subtitle block.
-            part="header-main" allows targeted external styling.
-          -->
-          <div class="pf-v6-c-card__header-main" part="header-main">
-
-            <!--
-              HEADER IMAGE SLOT
-              For Brand logos or other images. Shadow DOM: the slot is always
-              rendered (needed for slotchange) but its content is visually absent
-              when no node is assigned. The slot itself is inline (zero-size)
-              when empty.
-            -->
-            <slot
-              name="header-image"
-              @slotchange=${(e) => this._onSlotChange('_hasHeaderImage', e)}
-            ></slot>
-
-            <!--
-              TITLE / SUBTITLE BLOCK
-              Only rendered when title or subtitle slot has content.
-              Using 'nothing' removes the divs entirely from the shadow DOM,
-              avoiding empty pf-v6-c-card__title padding. The slots are still
-              needed inside the header (above) for slotchange even when hidden.
-            -->
-            ${showTitle || showSubtitle ? html`
-              <div class="pf-v6-c-card__title" part="title">
-                <div class="pf-v6-c-card__title-text">
-                  <!--
-                    TITLE SLOT
-                    Projects the text/element placed as slot="title" on the host.
-                    Example: <h2 slot="title">My card</h2>
-                  -->
-                  <slot
-                    name="title"
-                    @slotchange=${(e) => this._onSlotChange('_hasTitle', e)}
-                  ></slot>
-                </div>
-
-                <!--
-                  SUBTITLE
-                  Only renders the <p> wrapper when content is present.
-                  Otherwise the subtitle slot is kept hidden but in DOM so
-                  future slot assignments trigger slotchange.
-                -->
-                ${showSubtitle ? html`
-                  <p class="pf-v6-c-card__subtitle" part="subtitle">
-                    <slot
-                      name="subtitle"
-                      @slotchange=${(e) => this._onSlotChange('_hasSubtitle', e)}
-                    ></slot>
-                  </p>
-                ` : html`
-                  <slot
-                    name="subtitle"
-                    hidden
-                    @slotchange=${(e) => this._onSlotChange('_hasSubtitle', e)}
-                  ></slot>
-                `}
+            ${showActions ? html`
+              <div class=${actionsClass} part="actions">
+                ${this.selectable ? html`
+                  <div class="pf-v6-c-card__selectable-actions" part="selectable-actions">
+                    <div class=${controlClass}>
+                      <input
+                        class=${inputClass}
+                        type=${inputType}
+                        id=${inputId}
+                        name=${inputName}
+                        .checked=${!!this.selected}
+                        ?disabled=${this.disabled}
+                        aria-label=${this.selectableAriaLabel || nothing}
+                        aria-labelledby=${this.selectableAriaLabelledby || nothing}
+                        @change=${this._handleSelectableChange}
+                      />
+                      <label class=${labelClass} for=${inputId}></label>
+                    </div>
+                  </div>
+                ` : nothing}
+                <slot
+                  name="header-actions"
+                  @slotchange=${(e) => this._onSlotChange('_hasHeaderActions', e)}
+                ></slot>
               </div>
             ` : html`
-              <!--
-                No title or subtitle yet — keep hidden slots in the DOM so their
-                slotchange events can fire when content is later assigned.
-              -->
-              <slot name="title"    hidden @slotchange=${(e) => this._onSlotChange('_hasTitle',    e)}></slot>
-              <slot name="subtitle" hidden @slotchange=${(e) => this._onSlotChange('_hasSubtitle', e)}></slot>
+              <slot
+                name="header-actions"
+                hidden
+                @slotchange=${(e) => this._onSlotChange('_hasHeaderActions', e)}
+              ></slot>
             `}
-          </div>
 
-          <!--
-            HEADER ACTIONS
-            Wrapper for action buttons / dropdowns placed in the card header.
-            pf-m-no-offset removes the default negative margin alignment — useful
-            when paired with tall images or large title text.
-            ?hidden hides the wrapper (but keeps the slot) when no actions are present.
-          -->
-          <div class=${actionsClass} part="actions" ?hidden=${!showHeaderActions}>
+            ${showHeaderMain ? html`
+              <div class="pf-v6-c-card__header-main" part="header-main">
+                <slot
+                  name="header-image"
+                  @slotchange=${(e) => this._onSlotChange('_hasHeaderImage', e)}
+                ></slot>
+                ${titleInHeader ? titleBlock : nothing}
+              </div>
+            ` : html`
+              <slot
+                name="header-image"
+                hidden
+                @slotchange=${(e) => this._onSlotChange('_hasHeaderImage', e)}
+              ></slot>
+            `}
+
+            ${!showBody ? html`
+              <slot name="body" hidden @slotchange=${(e) => this._onSlotChange('_hasBody', e)}></slot>
+            ` : nothing}
+            ${this.expandable && !this.expanded ? html`
+              <slot name="expandable-content" hidden></slot>
+            ` : nothing}
+            ${!showFooter ? html`
+              <slot name="footer" hidden @slotchange=${(e) => this._onSlotChange('_hasFooter', e)}></slot>
+            ` : nothing}
+            ${!titleInHeader && !showTitleBlock ? html`
+              <slot name="title" hidden @slotchange=${(e) => this._onSlotChange('_hasTitle', e)}></slot>
+              <slot name="subtitle" hidden @slotchange=${(e) => this._onSlotChange('_hasSubtitle', e)}></slot>
+            ` : nothing}
+          </div>
+        ` : nothing}
+
+        ${!titleInHeader && showTitleBlock ? titleBlock : nothing}
+
+        ${showBody ? html`
+          <div class="pf-v6-c-card__body" part="body">
             <slot
-              name="header-actions"
-              @slotchange=${(e) => this._onSlotChange('_hasHeaderActions', e)}
+              name="body"
+              @slotchange=${(e) => this._onSlotChange('_hasBody', e)}
             ></slot>
           </div>
-        </div>
+        ` : nothing}
 
-        <!--
-          BODY REGION
-          ===========
-          Main card content area. flex:1 in PF CSS lets it fill available height
-          in fixed-height layouts. ?hidden collapses the wrapper when the body
-          slot is empty (avoids spurious padding).
-        -->
-        <div class="pf-v6-c-card__body" part="body" ?hidden=${!showBody}>
-          <slot
-            name="body"
-            @slotchange=${(e) => this._onSlotChange('_hasBody', e)}
-          ></slot>
-        </div>
-
-        <!--
-          EXPANDABLE CONTENT REGION
-          =========================
-          Only rendered when expandable=true. The inner wrapper holds the slot
-          content and carries pf-v6-c-card__expandable-content-body padding.
-
-          ?hidden + ?inert:
-            - hidden    → display:none (visual + layout collapse)
-            - inert     → prevents focus and interaction while collapsed
-          Both are removed when expanded=true.
-
-          SHADOW DOM NOTE: inert is the correct shadow-friendly way to disable
-          interactive content inside collapsed regions. tabindex="-1" only
-          disables focus on one element; inert blocks the entire subtree.
-        -->
-        ${this.expandable ? html`
-          <div
-            class="pf-v6-c-card__expandable-content"
-            part="expandable-content"
-            ?hidden=${!this.expanded}
-            ?inert=${!this.expanded}
-          >
-            <div class="pf-v6-c-card__expandable-content-body">
+        ${this.expandable && this.expanded ? html`
+          <div class="pf-v6-c-card__expandable-content" part="expandable-content">
+            <div class="pf-v6-c-card__body">
               <slot name="expandable-content"></slot>
             </div>
           </div>
         ` : nothing}
 
+        ${showFooter ? html`
+          <div class="pf-v6-c-card__footer" part="footer">
+            <slot
+              name="footer"
+              @slotchange=${(e) => this._onSlotChange('_hasFooter', e)}
+            ></slot>
+          </div>
+        ` : nothing}
+
         <!--
-          FOOTER REGION
-          =============
-          Optional footer content. ?hidden collapses the wrapper when empty,
-          avoiding empty padding below the body.
+          Tracking slots when there is no header. Placed AFTER visible sections so
+          they never become :first-child (which would steal top padding).
         -->
-        <div class="pf-v6-c-card__footer" part="footer" ?hidden=${!showFooter}>
-          <slot
-            name="footer"
-            @slotchange=${(e) => this._onSlotChange('_hasFooter', e)}
-          ></slot>
-        </div>
+        ${!showHeader ? html`
+          <slot name="header-image" hidden @slotchange=${(e) => this._onSlotChange('_hasHeaderImage', e)}></slot>
+          <slot name="header-actions" hidden @slotchange=${(e) => this._onSlotChange('_hasHeaderActions', e)}></slot>
+          ${!showBody ? html`
+            <slot name="body" hidden @slotchange=${(e) => this._onSlotChange('_hasBody', e)}></slot>
+          ` : nothing}
+          ${!showFooter ? html`
+            <slot name="footer" hidden @slotchange=${(e) => this._onSlotChange('_hasFooter', e)}></slot>
+          ` : nothing}
+          ${!titleInHeader && !showTitleBlock ? html`
+            <slot name="title" hidden @slotchange=${(e) => this._onSlotChange('_hasTitle', e)}></slot>
+            <slot name="subtitle" hidden @slotchange=${(e) => this._onSlotChange('_hasSubtitle', e)}></slot>
+          ` : nothing}
+        ` : nothing}
 
       </div>
     `;

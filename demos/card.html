@@ -8,6 +8,31 @@
     <link rel="stylesheet" href="../styles/global/theme.css" />
     <link rel="stylesheet" href="../styles/global/site.css" />
     <link rel="stylesheet" href="../styles/global/demo.css" />
+    <style>
+      /* PatternFly modifiers example: fixed-height host so isFullHeight is visible. */
+      .demo-card-modifiers-host {
+        height: 15rem;
+      }
+
+      .demo-card-modifiers-controls {
+        display: flex;
+        flex-wrap: wrap;
+        gap: var(--pf-t--global--spacer--md, 1rem) var(--pf-t--global--spacer--lg, 1.5rem);
+        margin-block-end: var(--pf-t--global--spacer--md, 1rem);
+      }
+
+      .demo-card-header-brand {
+        display: block;
+        width: 300px;
+        max-width: 100%;
+        height: auto;
+      }
+
+      .demo-card-selectable-grid {
+        display: grid;
+        gap: var(--pf-t--global--spacer--md, 1rem);
+      }
+    </style>
   </head>
   <body>
     <main class="site-main site-main--wide">
@@ -110,75 +135,101 @@
         </section>
 
         <!-- ═══════════════════════════════════════════════════════════════════
-             COMPACT VARIANT
-             pf-m-compact reduces internal padding for dense/dashboard layouts.
-             Mutually exclusive with `large` — both are reflected attributes.
+             SUBTITLE, IMAGE, AND ACTIONS
+             PatternFly “Card with subtitle and Actions” — header image, kebab,
+             and subtitle together.
         ════════════════════════════════════════════════════════════════════ -->
         <section class="demo-section">
-          <h2>Compact</h2>
+          <h2>Subtitle, image, and actions</h2>
           <div class="demo-compare">
             <div class="demo-compare__col">
-              <pf-card-shadow compact>
-                <span slot="title">Compact card</span>
-                <p slot="body">Reduced padding for dense layouts.</p>
-                <span slot="footer">Footer</span>
+              <pf-card-shadow>
+                <img
+                  slot="header-image"
+                  class="pf-v6-c-brand demo-card-header-brand"
+                  src="https://www.patternfly.org/images/67615be9.svg"
+                  alt="PatternFly logo"
+                />
+                <span slot="title">Title</span>
+                <span slot="subtitle">Subtitle</span>
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Actions">
+                  ⋮
+                </button>
+                <p slot="body">Body</p>
               </pf-card-shadow>
             </div>
             <div class="demo-compare__col">
-              <pf-card-light compact>
-                <span slot="title">Compact card</span>
-                <p slot="body">Reduced padding for dense layouts.</p>
-                <span slot="footer">Footer</span>
+              <pf-card-light>
+                <img
+                  slot="header-image"
+                  class="pf-v6-c-brand demo-card-header-brand"
+                  src="https://www.patternfly.org/images/67615be9.svg"
+                  alt="PatternFly logo"
+                />
+                <span slot="title">Title</span>
+                <span slot="subtitle">Subtitle</span>
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Actions">
+                  ⋮
+                </button>
+                <p slot="body">Body</p>
               </pf-card-light>
             </div>
           </div>
         </section>
 
         <!-- ═══════════════════════════════════════════════════════════════════
-             LARGE VARIANT
-             pf-m-display-lg increases spacing for prominent feature cards.
+             MODIFIERS
+             Mirrors PatternFly’s interactive Modifiers example:
+             https://www.patternfly.org/components/card#modifiers
+
+             Checkboxes toggle compact / large / full-height / plain on one card
+             per column. compact and large are mutually exclusive. The host uses
+             height: 15rem so full-height visibly fills the container.
         ════════════════════════════════════════════════════════════════════ -->
-        <section class="demo-section">
-          <h2>Large</h2>
-          <div class="demo-compare">
-            <div class="demo-compare__col">
-              <pf-card-shadow large>
-                <span slot="title">Large card</span>
-                <p slot="body">Increased spacing for prominent display.</p>
-                <span slot="footer">Footer</span>
-              </pf-card-shadow>
+        <section class="demo-section" id="modifiers">
+          <h2>Modifiers</h2>
+          <p class="demo-note">
+            Toggle each modifier with the checkboxes below. Most can be combined,
+            except <code>compact</code> and <code>large</code>, which are mutually exclusive.
+          </p>
+
+          <div class="demo-card-modifiers-controls" role="group" aria-label="Card modifiers">
+            <div class="pf-v6-c-check">
+              <input class="pf-v6-c-check__input" type="checkbox" id="mod-compact" data-mod="compact" />
+              <label class="pf-v6-c-check__label" for="mod-compact">compact</label>
             </div>
-            <div class="demo-compare__col">
-              <pf-card-light large>
-                <span slot="title">Large card</span>
-                <p slot="body">Increased spacing for prominent display.</p>
-                <span slot="footer">Footer</span>
-              </pf-card-light>
+            <div class="pf-v6-c-check">
+              <input class="pf-v6-c-check__input" type="checkbox" id="mod-large" data-mod="large" />
+              <label class="pf-v6-c-check__label" for="mod-large">large</label>
+            </div>
+            <div class="pf-v6-c-check">
+              <input class="pf-v6-c-check__input" type="checkbox" id="mod-full-height" data-mod="full-height" />
+              <label class="pf-v6-c-check__label" for="mod-full-height">full-height</label>
+            </div>
+            <div class="pf-v6-c-check">
+              <input class="pf-v6-c-check__input" type="checkbox" id="mod-plain" data-mod="plain" />
+              <label class="pf-v6-c-check__label" for="mod-plain">plain</label>
             </div>
           </div>
-        </section>
 
-        <!-- ═══════════════════════════════════════════════════════════════════
-             PLAIN VARIANT
-             pf-m-plain removes the card's border and background for inline use
-             within surfaces that already have visual separation.
-        ════════════════════════════════════════════════════════════════════ -->
-        <section class="demo-section">
-          <h2>Plain</h2>
           <div class="demo-compare">
             <div class="demo-compare__col">
-              <pf-card-shadow plain>
-                <span slot="title">Plain card</span>
-                <p slot="body">No border or background — blends into its container.</p>
-                <span slot="footer">Footer</span>
-              </pf-card-shadow>
+              <div class="demo-card-modifiers-host">
+                <pf-card-shadow id="modifiers-shadow-card">
+                  <span slot="title">Title</span>
+                  <p slot="body">Body</p>
+                  <span slot="footer">Footer</span>
+                </pf-card-shadow>
+              </div>
             </div>
             <div class="demo-compare__col">
-              <pf-card-light plain>
-                <span slot="title">Plain card</span>
-                <p slot="body">No border or background — blends into its container.</p>
-                <span slot="footer">Footer</span>
-              </pf-card-light>
+              <div class="demo-card-modifiers-host">
+                <pf-card-light id="modifiers-light-card">
+                  <span slot="title">Title</span>
+                  <p slot="body">Body</p>
+                  <span slot="footer">Footer</span>
+                </pf-card-light>
+              </div>
             </div>
           </div>
         </section>
@@ -204,6 +255,82 @@
                 <p slot="body">Uses the secondary background color variant.</p>
                 <span slot="footer">Footer</span>
               </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             SELECTABLE
+             Mirrors https://www.patternfly.org/components/card#selectable
+
+             selectable → pf-m-selectable + a whole-card checkbox overlay.
+             disabled   → pf-m-disabled (third card). Click anywhere on the card
+             (except disabled) to toggle selection; fires pf-card-select.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section" id="selectable">
+          <h2>Selectable</h2>
+          <p class="demo-note">
+            Click anywhere on a card to select it. Avoid other interactive content
+            inside a selectable-only card.
+          </p>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <div class="demo-card-selectable-grid">
+                <pf-card-shadow
+                  selectable
+                  selectable-id="shadow-selectable-1"
+                  selectable-aria-label="First card"
+                >
+                  <span slot="title">First card</span>
+                  <p slot="body">This card is selectable.</p>
+                </pf-card-shadow>
+                <pf-card-shadow
+                  selectable
+                  selectable-id="shadow-selectable-2"
+                  selectable-aria-label="Second card"
+                >
+                  <span slot="title">Second card</span>
+                  <p slot="body">This card is selectable.</p>
+                </pf-card-shadow>
+                <pf-card-shadow
+                  selectable
+                  disabled
+                  selectable-id="shadow-selectable-3"
+                  selectable-aria-label="Third card"
+                >
+                  <span slot="title">Third card</span>
+                  <p slot="body">This card is selectable but disabled.</p>
+                </pf-card-shadow>
+              </div>
+            </div>
+            <div class="demo-compare__col">
+              <div class="demo-card-selectable-grid">
+                <pf-card-light
+                  selectable
+                  selectable-id="light-selectable-1"
+                  selectable-aria-label="First card"
+                >
+                  <span slot="title">First card</span>
+                  <p slot="body">This card is selectable.</p>
+                </pf-card-light>
+                <pf-card-light
+                  selectable
+                  selectable-id="light-selectable-2"
+                  selectable-aria-label="Second card"
+                >
+                  <span slot="title">Second card</span>
+                  <p slot="body">This card is selectable.</p>
+                </pf-card-light>
+                <pf-card-light
+                  selectable
+                  disabled
+                  selectable-id="light-selectable-3"
+                  selectable-aria-label="Third card"
+                >
+                  <span slot="title">Third card</span>
+                  <p slot="body">This card is selectable but disabled.</p>
+                </pf-card-light>
+              </div>
             </div>
           </div>
         </section>
@@ -242,6 +369,141 @@
                   ⋮
                 </button>
                 <p slot="body">Actions appear in the top-right corner of the card header.</p>
+                <span slot="footer">Footer</span>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             HEADER WITHOUT TITLE
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Header without title</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow>
+                <img
+                  slot="header-image"
+                  class="pf-v6-c-brand demo-card-header-brand"
+                  src="https://www.patternfly.org/images/67615be9.svg"
+                  alt="PatternFly logo"
+                />
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Actions">⋮</button>
+                <p slot="body">Only a header image and actions — no title slot.</p>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light>
+                <img
+                  slot="header-image"
+                  class="pf-v6-c-brand demo-card-header-brand"
+                  src="https://www.patternfly.org/images/67615be9.svg"
+                  alt="PatternFly logo"
+                />
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Actions">⋮</button>
+                <p slot="body">Only a header image and actions — no title slot.</p>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             HEADER WRAP
+             header-wrap → pf-m-wrap on the card header (long titles).
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Header that wraps</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow header-wrap>
+                <span slot="title">This is a longer card title that takes up more space in the header row</span>
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Actions">⋮</button>
+                <p slot="body">Use header-wrap when the title and actions should wrap on narrow widths.</p>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light header-wrap>
+                <span slot="title">This is a longer card title that takes up more space in the header row</span>
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Actions">⋮</button>
+                <p slot="body">Use header-wrap when the title and actions should wrap on narrow widths.</p>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             TITLE AS HEADING
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Title as heading element</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow>
+                <h2 slot="title" class="pf-v6-c-card__title-text">Title within an h2</h2>
+                <p slot="body">Authors can project semantic heading markup into the title slot.</p>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light>
+                <h2 slot="title" class="pf-v6-c-card__title-text">Title within an h2</h2>
+                <p slot="body">Authors can project semantic heading markup into the title slot.</p>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             MULTIPLE BODY BLOCKS
+             Several nodes in slot="body" (stacked sections inside one CardBody).
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Multiple body sections</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow>
+                <span slot="title">Card title</span>
+                <div slot="body">First body block.</div>
+                <div slot="body">Second body block.</div>
+                <div slot="body">Third body block.</div>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light>
+                <span slot="title">Card title</span>
+                <div slot="body">First body block.</div>
+                <div slot="body">Second body block.</div>
+                <div slot="body">Third body block.</div>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
+             CARD WITH DIVIDERS (inside body)
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Card with dividers</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow>
+                <span slot="title">Title</span>
+                <div slot="body">
+                  <p>First section.</p>
+                  <hr class="pf-v6-c-divider" />
+                  <p>Second section after a divider.</p>
+                </div>
+                <span slot="footer">Footer</span>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light>
+                <span slot="title">Title</span>
+                <div slot="body">
+                  <p>First section.</p>
+                  <hr class="pf-v6-c-divider" />
+                  <p>Second section after a divider.</p>
+                </div>
                 <span slot="footer">Footer</span>
               </pf-card-light>
             </div>
@@ -316,9 +578,46 @@
         </section>
 
         <!-- ═══════════════════════════════════════════════════════════════════
+             EXPANDABLE WITH ICON
+             Mirrors https://www.patternfly.org/components/card#expandable-with-icon
+             Uses the small PatternFly mark (27px), not the wide brand logo.
+        ════════════════════════════════════════════════════════════════════ -->
+        <section class="demo-section">
+          <h2>Expandable with icon</h2>
+          <div class="demo-compare">
+            <div class="demo-compare__col">
+              <pf-card-shadow expandable expand-aria-label="PatternFly Details">
+                <img
+                  slot="header-image"
+                  src="https://www.patternfly.org/images/4965ee1d.svg"
+                  alt="PatternFly logo"
+                  width="27"
+                  height="27"
+                />
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Actions">⋮</button>
+                <p slot="expandable-content">Extra content shown when expanded.</p>
+              </pf-card-shadow>
+            </div>
+            <div class="demo-compare__col">
+              <pf-card-light expandable expand-aria-label="PatternFly Details">
+                <img
+                  slot="header-image"
+                  src="https://www.patternfly.org/images/4965ee1d.svg"
+                  alt="PatternFly logo"
+                  width="27"
+                  height="27"
+                />
+                <button slot="header-actions" class="pf-v6-c-button pf-m-plain" type="button" aria-label="Actions">⋮</button>
+                <p slot="expandable-content">Extra content shown when expanded.</p>
+              </pf-card-light>
+            </div>
+          </div>
+        </section>
+
+        <!-- ═══════════════════════════════════════════════════════════════════
              EXPANDABLE (TOGGLE RIGHT-ALIGNED)
              toggle-right-aligned moves the caret to the right side of the header
-             via pf-m-toggle-right-aligned on the .pf-v6-c-card__header wrapper.
+             via pf-m-toggle-right on the .pf-v6-c-card__header wrapper.
         ════════════════════════════════════════════════════════════════════ -->
         <section class="demo-section">
           <h2>Expandable — toggle right-aligned</h2>
@@ -344,66 +643,6 @@
                 <span slot="title">Toggle on the right</span>
                 <p slot="expandable-content">
                   Revealed when expanded. The caret sits on the right side of the header.
-                </p>
-              </pf-card-light>
-            </div>
-          </div>
-        </section>
-
-        <!-- ═══════════════════════════════════════════════════════════════════
-             THEMING COMPARISON
-             Demonstrates the fundamental theming difference:
-               Shadow DOM → requires ::part() to reach the card element.
-               Light DOM  → standard BEM class selector works directly.
-
-             Both produce identical visual output for the themed card, but the
-             CSS paths to achieve it are fundamentally different.
-        ════════════════════════════════════════════════════════════════════ -->
-        <section class="demo-section">
-          <h2>Theming</h2>
-          <p class="demo-note">
-            <strong>Shadow DOM</strong> is themed via
-            <code>pf-card-shadow::part(card) { border-left: 4px solid var(--pf-t--color--blue--60); }</code>.
-            <strong>Light DOM</strong> is themed via
-            <code>pf-card-light .pf-v6-c-card { border-left: 4px solid var(--pf-t--color--blue--60); }</code>.
-          </p>
-
-          <style>
-            /* Shadow DOM theming — only works via ::part() */
-            .themed-shadow-card::part(card) {
-              border-left: 4px solid var(--pf-t--color--blue--60, #004080);
-            }
-
-            /* Light DOM theming — standard BEM class selector, no ::part() needed */
-            .themed-light-card .pf-v6-c-card {
-              border-left: 4px solid var(--pf-t--color--blue--60, #004080);
-            }
-          </style>
-
-          <div class="demo-compare">
-            <div class="demo-compare__col">
-              <pf-card-shadow class="themed-shadow-card">
-                <span slot="title">Themed via <code>::part(card)</code></span>
-                <p slot="body">
-                  External CSS can only reach shadow internals through
-                  <code>::part(card)</code>. Without the <code>part</code>
-                  attribute, this element is unreachable from the outside.
-                </p>
-              </pf-card-shadow>
-            </div>
-            <div class="demo-compare__col">
-              <!--
-                Light DOM: The rendered .pf-v6-c-card div is in the regular document,
-                so .themed-light-card .pf-v6-c-card { } targets it directly.
-                No ::part() required — but this also means any global .pf-v6-c-card
-                rule can accidentally affect internals.
-              -->
-              <pf-card-light class="themed-light-card">
-                <span slot="title">Themed via BEM class selector</span>
-                <p slot="body">
-                  External CSS targets <code>.pf-v6-c-card</code> directly because
-                  there is no shadow boundary. No <code>::part()</code> needed —
-                  but the internals are also fully exposed to global CSS.
                 </p>
               </pf-card-light>
             </div>
@@ -439,6 +678,39 @@
     <script type="module">
       import { adoptPatternFlyLightHostStyles } from '../styles/adopted-light.js';
       adoptPatternFlyLightHostStyles();
+
+      // Interactive Modifiers demo — mirrors PatternFly’s checkbox-driven example.
+      // compact and large are mutually exclusive; other modifiers can combine.
+      const modCards = [
+        document.getElementById('modifiers-shadow-card'),
+        document.getElementById('modifiers-light-card'),
+      ];
+      const compactCb = document.getElementById('mod-compact');
+      const largeCb = document.getElementById('mod-large');
+      const fullHeightCb = document.getElementById('mod-full-height');
+      const plainCb = document.getElementById('mod-plain');
+
+      function syncModifierCards() {
+        for (const card of modCards) {
+          if (!card) continue;
+          card.compact = compactCb.checked;
+          card.large = largeCb.checked;
+          card.fullHeight = fullHeightCb.checked;
+          card.plain = plainCb.checked;
+        }
+
+        // Disable the contradictory size modifier while the other is on.
+        largeCb.disabled = compactCb.checked;
+        compactCb.disabled = largeCb.checked;
+      }
+
+      for (const cb of [compactCb, largeCb, fullHeightCb, plainCb]) {
+        cb?.addEventListener('change', () => {
+          if (cb === compactCb && compactCb.checked) largeCb.checked = false;
+          if (cb === largeCb && largeCb.checked) compactCb.checked = false;
+          syncModifierCards();
+        });
+      }
     </script>
   </body>
 </html>
