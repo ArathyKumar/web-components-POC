@@ -1,0 +1,10 @@
+
+pf-badge-light {
+  display: inline-block;
+  vertical-align: middle;
+  font-family: var(--pf-t--global--font--family--body, sans-serif);
+}
+
+pf-badge-light[hidden] {
+  display: none;
+}

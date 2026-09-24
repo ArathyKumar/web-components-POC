@@ -1,0 +1,23 @@
+:host {
+  display: contents;
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+.pf-v6-svg {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+}
+
+.pf-v6-c-accordion__item h1,
+.pf-v6-c-accordion__item h2,
+.pf-v6-c-accordion__item h3,
+.pf-v6-c-accordion__item h4,
+.pf-v6-c-accordion__item h5,
+.pf-v6-c-accordion__item h6 {
+  margin: 0;
+  font: inherit;
+}

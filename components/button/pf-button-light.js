@@ -7,7 +7,7 @@
  *    returns this). this.shadowRoot is always null.
  * 2. Styles: Global patternfly.css MUST be loaded on the page — component CSS
  *    (.pf-v6-c-button, spinner, badge) reaches inner markup through the document
- *    cascade. adoptPatternFlyLightHostStyles() adds only scoped host overrides.
+ *    An imported CSS module adds only scoped host overrides.
  * 3. Slots: Native <slot> does NOT work without a shadow root. Label and icon
  *    content are projected by passing host child nodes into the Lit template.
  * 4. Theming: Set CSS custom properties on the host or target PatternFly BEM classes
@@ -24,7 +24,8 @@
  * text region so re-renders (e.g. toggling loading) preserve slotted content.
  */
 import { LitElement, html, nothing } from 'lit';
-import { adoptPatternFlyLightHostStyles } from '../../styles/adopted-light.js';
+import { adoptLightStyleSheet } from '../../styles/adopt-light-style-sheet.js';
+import hostStyles from './styles/pf-button-light.css' with { type: 'css' };
 
 /** Custom element tag name for the light DOM button. */
 export const ELEMENT_TAG = 'pf-button-light';
@@ -434,7 +435,7 @@ export class PFButtonLight extends LitElement {
   }
 
   connectedCallback() {
-    adoptPatternFlyLightHostStyles();
+    adoptLightStyleSheet(hostStyles);
     super.connectedCallback();
     this._authorDisabled = this.hasAttribute('disabled');
     captureDefaultAriaLabel(this);
@@ -529,10 +530,6 @@ export class PFButtonLight extends LitElement {
     if (changedProperties.has('settings') || changedProperties.has('hamburger')) {
       this._syncIconHoverHandlers();
     }
-  }
-
-  render() {
-    return this._renderControl();
   }
 
   _syncFormDisabledState() {
@@ -964,7 +961,7 @@ export class PFButtonLight extends LitElement {
     this._dispatchActivateEvents();
   }
 
-  _renderControl() {
+  render() {
     const classes = this._getClassNames();
     const content = this._renderButtonContent();
     const component = this._getTagName();
@@ -974,8 +971,8 @@ export class PFButtonLight extends LitElement {
     const ariaExpanded = this.hamburger ? String(this.expanded ?? false) : undefined;
     const controlId = this.controlId || undefined;
 
-    if (component === 'a') {
-      return html`
+    return component === 'a'
+      ? html`
         <a
           class=${classes}
           id=${controlId}
@@ -990,11 +987,9 @@ export class PFButtonLight extends LitElement {
         >
           ${content}
         </a>
-      `;
-    }
-
-    if (component === 'span') {
-      return html`
+      `
+      : component === 'span'
+        ? html`
         <span
           class=${classes}
           id=${controlId}
@@ -1008,10 +1003,8 @@ export class PFButtonLight extends LitElement {
         >
           ${content}
         </span>
-      `;
-    }
-
-    return html`
+      `
+        : html`
       <button
         class=${classes}
         id=${controlId}

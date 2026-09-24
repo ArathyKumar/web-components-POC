@@ -40,11 +40,10 @@
  *    automatically — no adoption mechanism needed. But this also means global
  *    overrides could accidentally affect this component's internals.
  *
- * 4. TOGGLE ICON ANIMATION
- *    Shadow DOM drives the caret rotation via :host([expanded]) in the shadow
- *    stylesheet. Light DOM uses `pf-card-light[expanded] .pf-v6-c-card__header-toggle-icon`
- *    in the global adopted-light stylesheet — the selector resolution path is
- *    different but the visual result is the same.
+ * 4. COMPONENT STYLES
+ *    Host-level layout and compatibility rules are declared through the native
+ *    CSS module imported below. PatternFly component CSS still comes from the
+ *    global patternfly.css stylesheet.
  *
  * 5. CREATERENDER ROOT
  *    `createRenderRoot()` returns `this` (the host element itself) instead of a
@@ -65,7 +64,8 @@
  * @see https://www.patternfly.org/components/card
  */
 import { LitElement, html, nothing } from 'lit';
-import { adoptPatternFlyLightHostStyles } from '../../styles/adopted-light.js';
+import { adoptLightStyleSheet } from '../../styles/adopt-light-style-sheet.js';
+import hostStyles from './styles/pf-card-light.css' with { type: 'css' };
 
 /** Custom element tag name for the light DOM card. */
 export const ELEMENT_TAG = 'pf-card-light';
@@ -177,10 +177,7 @@ export class PFCardLight extends LitElement {
   }
 
   connectedCallback() {
-    // Inject document-level host overrides (pf-card-light { display: block; }
-    // and the toggle-caret animation CSS) once per page load.
-    // This mirrors the same call in pf-badge-light and pf-button-light.
-    adoptPatternFlyLightHostStyles();
+    adoptLightStyleSheet(hostStyles);
     super.connectedCallback();
   }
 

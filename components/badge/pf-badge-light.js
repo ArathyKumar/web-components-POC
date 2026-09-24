@@ -7,7 +7,7 @@
  *    (createRenderRoot() returns this). this.shadowRoot is always null.
  * 2. Styles: Global patternfly.css MUST be loaded on the page —
  *    .pf-v6-c-badge and modifier classes come from the document cascade.
- *    adoptPatternFlyLightHostStyles() adds host layout overrides only.
+ *    An imported CSS module adds host layout overrides only.
  * 3. Content: Native <slot> does NOT work without a shadow root. Rather than
  *    juggling DOM nodes from the host into the rendered template on every
  *    update (the fragile approach), the light DOM variant uses a `count`
@@ -23,7 +23,8 @@
  * @see https://www.patternfly.org/components/badge
  */
 import { LitElement, html, nothing } from 'lit';
-import { adoptPatternFlyLightHostStyles } from '../../styles/adopted-light.js';
+import { adoptLightStyleSheet } from '../../styles/adopt-light-style-sheet.js';
+import hostStyles from './styles/pf-badge-light.css' with { type: 'css' };
 
 /** Custom element tag name for the light DOM badge. */
 export const ELEMENT_TAG = 'pf-badge-light';
@@ -110,8 +111,7 @@ export class PFBadgeLight extends LitElement {
   }
 
   connectedCallback() {
-    // Adopt host layout overrides once per document.
-    adoptPatternFlyLightHostStyles();
+    adoptLightStyleSheet(hostStyles);
     super.connectedCallback();
   }
 

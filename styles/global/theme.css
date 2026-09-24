@@ -5,7 +5,7 @@
  * -------
  * Light DOM: set --pf-v6-c-button--* on pf-button-light / target BEM classes under
  *   pf-accordion-item-light. Primary and secondary variants use theme bridges in
- *   adopted-light.js (host vars → .pf-m-primary / .pf-m-secondary).
+ *   pf-button-light CSS module (host vars → .pf-m-primary / .pf-m-secondary).
  *
  * Shadow DOM: use ::part() on pf-accordion-item-shadow / pf-button-shadow.
  *   Set PatternFly tokens on ::part(control) — borders use --pf-v6-c-button--BorderColor
@@ -87,7 +87,7 @@ pf-button-light {
 /* --- Unread badge theme ---
  * Light: target .pf-v6-c-badge in the document (no ::part needed).
  * Shadow: class selectors cannot pierce the shadow root — set component tokens
- * on the host; the theme bridge in adopted-shadow.js remaps them (same as button).
+ * on the host; the theme bridge in pf-badge-shadow.css remaps them (same as button).
  */
 pf-badge-light[unread] .pf-v6-c-badge {
   --pf-v6-c-badge--m-unread--BackgroundColor: #008768;

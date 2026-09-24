@@ -4,9 +4,9 @@
  * SHADOW DOM REQUIREMENTS
  * -----------------------
  * 1. Encapsulation: Lit renders into an open shadow root (createRenderRoot).
- * 2. Styles: Full PatternFly card CSS is adopted into the shadow root via
- *    adoptPatternFlyCardShadowStyles(). Global patternfly.css is still required
- *    on the page for design tokens (--pf-t--*) to resolve inside the shadow.
+ * 2. Styles: PatternFly card/check/radio CSS modules and component-specific
+ *    styles are declared in static styles. Global patternfly.css is still
+ *    required on the page for design tokens (--pf-t--*) to resolve inside shadow.
  * 3. Slots: Named <slot> elements project host children into the shadow template:
  *      slot="title"            → card title text
  *      slot="subtitle"         → subtitle below title (optional)
@@ -59,7 +59,11 @@
  * @see https://www.patternfly.org/components/card
  */
 import { LitElement, html, nothing } from 'lit';
-import { adoptPatternFlyCardShadowStyles } from './styles/adopted-shadow.js';
+import resetStyles from '../../styles/reset.css' with { type: 'css' };
+import cardStyles from './styles/card.css' with { type: 'css' };
+import checkStyles from './styles/check.css' with { type: 'css' };
+import radioStyles from './styles/radio.css' with { type: 'css' };
+import hostStyles from './styles/pf-card-shadow.css' with { type: 'css' };
 
 /** Custom element tag name for the shadow DOM card. */
 export const ELEMENT_TAG = 'pf-card-shadow';
@@ -172,6 +176,8 @@ function getCardClassNames({
 }
 
 export class PFCardShadow extends LitElement {
+  static styles = [resetStyles, cardStyles, checkStyles, radioStyles, hostStyles];
+
   static properties = {
     // ── Visual modifiers ──────────────────────────────────────────────────────
 
@@ -322,13 +328,6 @@ export class PFCardShadow extends LitElement {
     /** Whether the "footer" slot has any assigned nodes. */
     _hasFooter:        { state: true },
   };
-
-  createRenderRoot() {
-    const root = super.createRenderRoot();
-    // Adopt encapsulated PF card CSS + host overrides into this shadow root.
-    adoptPatternFlyCardShadowStyles(root);
-    return root;
-  }
 
   // ── Slot tracking ──────────────────────────────────────────────────────────
 

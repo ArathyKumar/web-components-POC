@@ -6,7 +6,8 @@
  * - <pf-accordion-shadow> — container with modifier attributes; slots item children.
  * - <pf-accordion-item-shadow> — one panel; owns a shadow root with toggle + content slots.
  *
- * STYLES — global patternfly.css for tokens; full accordion CSS adopted per shadow root.
+ * STYLES — global patternfly.css for tokens; accordion CSS modules and component
+ * styles are declared in each element's static styles.
  *
  * THEMING — shadow parts on items: item, toggle, toggle-icon, content. Parent pages
  * style via `pf-accordion-item-shadow::part(toggle)` etc. (see theme.css).
@@ -19,10 +20,11 @@
  * @see https://www.patternfly.org/components/accordion
  */
 import { LitElement, html, nothing } from 'lit';
-import {
-  adoptPatternFlyAccordionShadowStyles,
-  adoptPatternFlyAccordionItemShadowStyles,
-} from './styles/adopted-shadow.js';
+import resetStyles from '../../styles/reset.css' with { type: 'css' };
+import accordionStyles from './styles/accordion.css' with { type: 'css' };
+import hostStyles from './styles/pf-accordion-shadow.css' with { type: 'css' };
+import itemHostStyles from './styles/pf-accordion-item-shadow.css' with { type: 'css' };
+import compatStyles from './styles/pf-accordion-shadow-compat.css' with { type: 'css' };
 import {
   getAccordionToggleButtons,
   handleAccordionToggleKeydown,
@@ -192,6 +194,8 @@ function renderHeadingToggle(headingLevel, toggle) {
 }
 
 class PFAccordionShadow extends LitElement {
+  static styles = [resetStyles, accordionStyles, hostStyles, compatStyles];
+
   static properties = {
     definitionList: {
       type: Boolean,
@@ -222,12 +226,6 @@ class PFAccordionShadow extends LitElement {
       const toggles = getAccordionToggleButtons(this, ACCORDION_ITEM_TAG, true);
       handleAccordionToggleKeydown(event, toggles);
     };
-  }
-
-  createRenderRoot() {
-    const root = super.createRenderRoot();
-    adoptPatternFlyAccordionShadowStyles(root);
-    return root;
   }
 
   connectedCallback() {
@@ -315,6 +313,8 @@ class PFAccordionShadow extends LitElement {
 }
 
 class PFAccordionItemShadow extends LitElement {
+  static styles = [resetStyles, accordionStyles, itemHostStyles, compatStyles];
+
   static properties = {
     expanded: { type: Boolean, reflect: true },
     toggleId: { type: String, attribute: 'toggle-id' },
@@ -332,12 +332,6 @@ class PFAccordionItemShadow extends LitElement {
     this.fixed = false;
     this.customContent = false;
     this._idScope = createAccordionInstanceId();
-  }
-
-  createRenderRoot() {
-    const root = super.createRenderRoot();
-    adoptPatternFlyAccordionItemShadowStyles(root);
-    return root;
   }
 
   connectedCallback() {
@@ -449,7 +443,7 @@ class PFAccordionItemShadow extends LitElement {
     `;
   }
 
-  _renderItemStructure() {
+  render() {
     const { asDefinitionList, headingLevel, togglePosition, accordionClassNames } =
       getItemContext(this);
     const itemClass = getAccordionItemClassNames(this.expanded, this.extraClass);
@@ -478,9 +472,6 @@ class PFAccordionItemShadow extends LitElement {
     `;
   }
 
-  render() {
-    return this._renderItemStructure();
-  }
 }
 
 if (!customElements.get(ACCORDION_TAG)) {

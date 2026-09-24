@@ -1,0 +1,14 @@
+:host {
+  display: block;
+  font-family: var(--pf-t--global--font--family--body, sans-serif);
+}
+
+:host([hidden]) {
+  display: none;
+}
+
+.pf-v6-svg {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+}

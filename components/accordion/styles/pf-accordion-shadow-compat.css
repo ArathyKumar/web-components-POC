@@ -1,0 +1,14 @@
+.pf-v6-c-accordion.pf-m-plain {
+  --pf-v6-c-accordion--BackgroundColor: transparent;
+  --pf-v6-c-accordion__expandable-content--BackgroundColor: transparent;
+  --pf-v6-c-accordion__item--m-expanded--BackgroundColor: transparent;
+  --pf-v6-c-accordion__item--m-expanded__toggle--BackgroundColor: var(--pf-v6-c-accordion--m-plain__item--m-expanded__toggle--BackgroundColor);
+}
+
+:host-context(.pf-v6-theme-glass) .pf-v6-c-accordion:not(.pf-m-no-plain-on-glass),
+:host-context(html.pf-v6-theme-glass) .pf-v6-c-accordion:not(.pf-m-no-plain-on-glass) {
+  --pf-v6-c-accordion--BackgroundColor: transparent;
+  --pf-v6-c-accordion__expandable-content--BackgroundColor: transparent;
+  --pf-v6-c-accordion__item--m-expanded--BackgroundColor: transparent;
+  --pf-v6-c-accordion__item--m-expanded__toggle--BackgroundColor: var(--pf-v6-c-accordion--m-plain__item--m-expanded__toggle--BackgroundColor);
+}

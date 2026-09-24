@@ -4,12 +4,12 @@
  * SHADOW DOM REQUIREMENTS
  * -----------------------
  * 1. Encapsulation: Lit renders into an open shadow root (createRenderRoot).
- * 2. Styles: Full PatternFly badge CSS is adopted into the shadow root via
- *    adoptPatternFlyBadgeShadowStyles(). Global patternfly.css is still required
- *    on the page for design tokens (--pf-t--*) to resolve inside shadow.
+ * 2. Styles: PatternFly badge CSS and component-specific styles are declared in
+ *    static styles. Global patternfly.css is still required on the page for
+ *    design tokens (--pf-t--*) to resolve inside shadow.
  * 3. Slots: Native <slot> projects host children (the count/label) into shadow.
  * 4. Theming: set --pf-v6-c-badge--* on the host (same approach as pf-button-shadow).
- *    A theme bridge in adopted-shadow.js remaps those tokens onto .pf-v6-c-badge
+ *    A theme bridge in pf-badge-shadow.css remaps those tokens onto .pf-v6-c-badge
  *    because PatternFly CSS redefines them on the inner element.
  *    part="badge" also enables ::part(badge) styling when needed.
  *
@@ -27,7 +27,9 @@
  * @see https://www.patternfly.org/components/badge
  */
 import { LitElement, html, nothing } from 'lit';
-import { adoptPatternFlyBadgeShadowStyles } from './styles/adopted-shadow.js';
+import resetStyles from '../../styles/reset.css' with { type: 'css' };
+import badgeStyles from './styles/badge.css' with { type: 'css' };
+import hostStyles from './styles/pf-badge-shadow.css' with { type: 'css' };
 
 /** Custom element tag name for the shadow DOM badge. */
 export const ELEMENT_TAG = 'pf-badge-shadow';
@@ -58,6 +60,8 @@ function getBadgeClassNames({ read, unread, disabled, extraClass }) {
 }
 
 export class PFBadgeShadow extends LitElement {
+  static styles = [resetStyles, badgeStyles, hostStyles];
+
   static properties = {
     /** Grey background with high-contrast border (pf-m-read). */
     read: { type: Boolean, reflect: true },
@@ -92,13 +96,6 @@ export class PFBadgeShadow extends LitElement {
      */
     extraClass: { type: String, attribute: 'extra-class' },
   };
-
-  createRenderRoot() {
-    const root = super.createRenderRoot();
-    // Adopt encapsulated PF badge CSS into this shadow root.
-    adoptPatternFlyBadgeShadowStyles(root);
-    return root;
-  }
 
   render() {
     const badgeClass = getBadgeClassNames({

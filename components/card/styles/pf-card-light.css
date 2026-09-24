@@ -1,0 +1,26 @@
+pf-card-light {
+  display: block;
+}
+
+pf-card-light[full-height] {
+  height: 100%;
+}
+
+pf-card-light[full-height] .pf-v6-c-card {
+  height: 100%;
+}
+
+pf-card-light[hidden] {
+  display: none;
+}
+
+pf-card-light .pf-v6-c-card > .pf-v6-c-card__header:not(:has(~ :not([hidden]))),
+pf-card-light .pf-v6-c-card > .pf-v6-c-card__title:not(:has(~ :not([hidden]))) {
+  padding-block-end: var(--pf-v6-c-card--child--PaddingBlockEnd);
+}
+
+pf-card-light .pf-v6-svg {
+  width: 1em;
+  height: 1em;
+  vertical-align: -0.125em;
+}
