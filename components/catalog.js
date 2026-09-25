@@ -18,7 +18,7 @@ export const componentCatalog = [
     id: 'button',
     name: 'Button',
     description:
-      'PatternFly button with shadow and light DOM implementations, form association, exportparts theming, and custom events.',
+      'PatternFly button with shadow and light DOM implementations, form association, ::part() theming, and custom events.',
     href: 'demos/button.html',
     tags: ['PatternFly', 'Shadow DOM', 'Light DOM', 'Form'],
     elements: ['pf-button-shadow', 'pf-button-light'],

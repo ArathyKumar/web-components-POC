@@ -1,0 +1,6 @@
+/* Shadow-root equivalent of PatternFly's global box-sizing reset. */
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}

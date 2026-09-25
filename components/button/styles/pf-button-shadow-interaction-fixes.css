@@ -1,0 +1,21 @@
+:host(:hover:not([disabled]):not([aria-disabled])) .pf-v6-c-button.pf-m-settings .pf-v6-c-button__icon,
+:host(:focus-within:not([disabled]):not([aria-disabled])) .pf-v6-c-button.pf-m-settings .pf-v6-c-button__icon,
+.pf-v6-c-button.pf-m-settings:hover .pf-v6-c-button__icon,
+.pf-v6-c-button.pf-m-settings:focus .pf-v6-c-button__icon,
+.pf-v6-c-button.pf-m-settings.pf-m-shadow-hover .pf-v6-c-button__icon {
+  rotate: var(--pf-v6-c-button--m-settings--hover__icon--Rotate, 60deg);
+  transition-property: rotate;
+  transition-duration: var(--pf-v6-c-button--m-settings--hover__icon--TransitionDuration);
+  transition-timing-function: var(--pf-v6-c-button--m-settings--hover__icon--TransitionTimingFunction);
+}
+
+:host(:hover:not([disabled]):not([aria-disabled])) .pf-v6-c-button.pf-m-hamburger .pf-v6-c-button__icon,
+:host(:focus-within:not([disabled]):not([aria-disabled])) .pf-v6-c-button.pf-m-hamburger .pf-v6-c-button__icon,
+.pf-v6-c-button.pf-m-hamburger:hover .pf-v6-c-button__icon,
+.pf-v6-c-button.pf-m-hamburger:focus .pf-v6-c-button__icon,
+.pf-v6-c-button.pf-m-hamburger.pf-m-shadow-hover .pf-v6-c-button__icon {
+  scale: var(--pf-v6-c-button--hover__icon--ScaleX, 1) var(--pf-v6-c-button--hover__icon--ScaleY, 1);
+  transition-property: scale;
+  transition-duration: var(--pf-v6-c-button--hover__icon--TransitionDuration);
+  transition-timing-function: var(--pf-v6-c-button--hover__icon--TransitionTimingFunction);
+}

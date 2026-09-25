@@ -4,13 +4,13 @@
  * SHADOW DOM REQUIREMENTS
  * -----------------------
  * 1. Encapsulation: Lit renders into an open shadow root (createRenderRoot).
- * 2. Styles: Full button/spinner/badge CSS is adopted into the shadow root via
- *    adoptPatternFlyShadowStyles(). Global patternfly.css is still required on
- *    the page for design tokens (--pf-t--*) to resolve inside shadow.
+ * 2. Styles: PatternFly button/spinner/badge CSS modules and component-specific
+ *    styles are declared in static styles. Global patternfly.css is still
+ *    required on the page for design tokens (--pf-t--*) to resolve inside shadow.
  * 3. Slots: Native <slot> elements project host children into the shadow tree.
  *    Label content goes in the default slot; icons use slot="icon".
- * 4. Theming: exportparts on the activator exposes internal parts for ::part()
- *    styling from outside the component (e.g. pf-button-shadow::part(control)).
+ * 4. Theming: part attributes expose internal elements for ::part() styling
+ *    outside the component (e.g. pf-button-shadow::part(control)).
  *
  * FORM ASSOCIATION — formAssociated + ElementInternals (submit/reset/value/disabled).
  *
@@ -20,14 +20,16 @@
  * @see https://www.patternfly.org/components/button
  */
 import { LitElement, html } from 'lit';
-import { adoptPatternFlyShadowStyles } from './styles/adopted-shadow.js';
+import resetStyles from '../../styles/reset.css' with { type: 'css' };
+import buttonStyles from './styles/button.css' with { type: 'css' };
+import spinnerStyles from './styles/spinner.css' with { type: 'css' };
+import badgeStyles from './styles/badge.css' with { type: 'css' };
+import hostStyles from './styles/pf-button-shadow.css' with { type: 'css' };
+import interactionFixes from './styles/pf-button-shadow-interaction-fixes.css' with { type: 'css' };
+import themeBridge from './styles/pf-button-shadow-theme-bridge.css' with { type: 'css' };
 
 /** Custom element tag name for the shadow DOM button. */
 export const ELEMENT_TAG = 'pf-button-shadow';
-
-/** exportparts for ::part() theming — only meaningful inside a shadow root. */
-const EXPORT_PARTS =
-  'control, icon, icon-favorite, icon-favorited, text, sr-text, progress, spinner, count, badge';
 
 /**
  * Maps button options to PatternFly core (pf-v6-c-button) class names.
@@ -360,6 +362,16 @@ function normalizeActivatorTag(as) {
 }
 
 export class PFButtonShadow extends LitElement {
+  static styles = [
+    resetStyles,
+    buttonStyles,
+    spinnerStyles,
+    badgeStyles,
+    hostStyles,
+    interactionFixes,
+    themeBridge,
+  ];
+
   static formAssociated = true;
 
   static properties = {
@@ -424,12 +436,6 @@ export class PFButtonShadow extends LitElement {
     this._authorDisabled = false;
     this._formDisabled = false;
     this._iconHoverAbort = null;
-  }
-
-  createRenderRoot() {
-    const root = super.createRenderRoot();
-    adoptPatternFlyShadowStyles(root);
-    return root;
   }
 
   connectedCallback() {
@@ -530,10 +536,6 @@ export class PFButtonShadow extends LitElement {
     if (changedProperties.has('settings') || changedProperties.has('hamburger')) {
       this._syncIconHoverHandlers();
     }
-  }
-
-  render() {
-    return this._renderControl();
   }
 
   _syncFormDisabledState() {
@@ -915,7 +917,7 @@ export class PFButtonShadow extends LitElement {
     this._dispatchActivateEvents();
   }
 
-  _renderControl() {
+  render() {
     const classes = this._getClassNames();
     const content = this._renderButtonContent();
     const component = this._getTagName();
@@ -925,12 +927,11 @@ export class PFButtonShadow extends LitElement {
     const ariaExpanded = this.hamburger ? String(this.expanded ?? false) : undefined;
     const controlId = this.controlId || undefined;
 
-    if (component === 'a') {
-      return html`
+    return component === 'a'
+      ? html`
         <a
           class=${classes}
           part="control"
-          exportparts=${EXPORT_PARTS}
           id=${controlId}
           href=${this._getHref()}
           rel=${this.rel || undefined}
@@ -943,15 +944,12 @@ export class PFButtonShadow extends LitElement {
         >
           ${content}
         </a>
-      `;
-    }
-
-    if (component === 'span') {
-      return html`
+      `
+      : component === 'span'
+        ? html`
         <span
           class=${classes}
           part="control"
-          exportparts=${EXPORT_PARTS}
           id=${controlId}
           role="button"
           aria-disabled=${ariaDisabled}
@@ -963,14 +961,11 @@ export class PFButtonShadow extends LitElement {
         >
           ${content}
         </span>
-      `;
-    }
-
-    return html`
+      `
+        : html`
       <button
         class=${classes}
         part="control"
-        exportparts=${EXPORT_PARTS}
         id=${controlId}
         type=${this._getButtonType()}
         ?disabled=${this.disabled}

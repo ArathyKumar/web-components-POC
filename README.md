@@ -40,7 +40,7 @@ Three component tiers cover the key structural patterns:
 **Prerequisites:** [Node.js](https://nodejs.org/) and a browser with shadow DOM support.
 
 ```bash
-npm install   # also runs sync-styles via postinstall
+npm install   # also copies PatternFly CSS modules via postinstall
 npm run dev   # opens http://127.0.0.1:8080
 ```
 
@@ -276,7 +276,7 @@ Mirrors the [PatternFly Badge](https://www.patternfly.org/components/badge).
 | `extra-class` | Additional BEM classes on the inner span |
 | `count` *(light DOM only)* | Display value — required because native slots need a shadow root |
 
-Shadow exported parts: `badge`. Host theming: set `--pf-v6-c-badge--*` on the host; a theme bridge in `adopted-shadow.js` remaps them onto the inner badge (same pattern as the button).
+Shadow parts: `badge`. Host theming: set `--pf-v6-c-badge--*` on the host; a theme bridge in `pf-badge-shadow.css` remaps them onto the inner badge (same pattern as the button).
 
 > **Note:** Shadow DOM accepts count as child content (`<pf-badge-shadow>7</pf-badge-shadow>`). Light DOM requires the `count` attribute (`<pf-badge-light count="7">`). This API asymmetry is a direct consequence of the light DOM constraint and is preserved intentionally to make the difference observable.
 
@@ -328,7 +328,7 @@ Events dispatched:
 - `pf-card-expand` — `detail: { expanded: boolean }`
 - `pf-card-select` — `detail: { selected: boolean }`
 
-Shadow exported parts: `card`, `header`, `header-main`, `title`, `subtitle`, `actions`, `selectable-actions`, `body`, `footer`, `expandable-content`.
+Shadow parts: `card`, `header`, `header-main`, `title`, `subtitle`, `actions`, `selectable-actions`, `body`, `footer`, `expandable-content`.
 
 #### Content projection: shadow vs light DOM
 
@@ -347,7 +347,7 @@ Shadow exported parts: `card`, `header`, `header-main`, `title`, `subtitle`, `ac
 </pf-card-light>
 ```
 
-**Shadow DOM:** The browser routes `slot="body"` to `<slot name="body">` inside the shadow root natively. A `@slotchange` event fires when the assignment changes, driving conditional section visibility via reactive `_has*` state properties. Selectable overlays also adopt PatternFly Check/Radio CSS into the shadow root (`check-styles.js` / `radio-styles.js`).
+**Shadow DOM:** The browser routes `slot="body"` to `<slot name="body">` inside the shadow root natively. A `@slotchange` event fires when the assignment changes, driving conditional section visibility via reactive `_has*` state properties. Selectable overlays load PatternFly Check/Radio CSS modules into the shadow root (`check.css` / `radio.css`).
 
 **Light DOM:** There are no native slots. `_getSlottedNodes(slotName)` manually scans host children for `[slot="<name>"]` on every render. After the first render, projected nodes live inside `[data-card-slot="<name>"]` wrapper divs — a Phase 2 query fallback finds them there on subsequent re-renders. This is O(n) manual scanning instead of browser-native routing. Check/Radio visuals come from global `patternfly.css`.
 
@@ -371,7 +371,9 @@ pf-accordion-item-shadow.fluid-heading-markup::part(toggle) {
 }
 ```
 
-Shadow buttons use a **theme bridge** in `components/button/styles/adopted-shadow.js`: PatternFly sets modifier tokens directly on `.pf-m-primary` / `.pf-m-secondary`, blocking direct host inheritance. The bridge re-maps host/`::part()` overrides onto the inner control.
+Shadow buttons use a **theme bridge** in `components/button/styles/pf-button-shadow-theme-bridge.css`: PatternFly sets modifier tokens directly on `.pf-m-primary` / `.pf-m-secondary`, blocking direct host inheritance. The bridge re-maps host/`::part()` overrides onto the inner control.
+
+If a component later renders another custom element inside its own shadow root, it can use `exportparts` to forward selected parts from that nested component. The current components expose their own internal elements directly with `part`, so no forwarding is needed.
 
 ### Light DOM — host vars and BEM selectors
 
@@ -387,7 +389,7 @@ pf-accordion-item-light.fluid-heading-markup .pf-v6-c-accordion__toggle {
 }
 ```
 
-Light buttons use a matching bridge in `components/button/styles/adopted-light.js`.
+Light buttons use a matching bridge in `components/button/styles/pf-button-light.css`.
 
 ---
 
@@ -395,17 +397,17 @@ Light buttons use a matching bridge in `components/button/styles/adopted-light.j
 
 | Concern | Shadow DOM | Light DOM |
 |---------|------------|-----------|
-| Component CSS source | `components/*/styles/adopted-shadow.js` | Global `patternfly.css` |
-| Per-instance adoption | Shared constructable stylesheet (one parse, many roots) | N/A |
-| Host-level overrides | Inside the shadow root | `styles/adopted-light.js` (document-level) |
+| Component CSS source | Native CSS modules under `components/*/styles/*.css` | Global `patternfly.css` |
+| Style loading | Lit `static styles` with native CSS module imports | Global cascade plus a document-adopted CSS module |
+| Host-level overrides | Component-specific shadow CSS module | Component-specific light CSS module, adopted once |
 | External theming | `::part()` | Host CSS variables or BEM descendant selectors |
 | Design tokens (`--pf-t--*`) | Resolved from page `:root` | Same |
 | Brand overrides | `styles/global/theme.css` | Same |
 
-Regenerate auto-synced CSS after upgrading PatternFly:
+Copy PatternFly CSS after upgrading PatternFly (also runs automatically on install):
 
 ```bash
-npm run sync-styles
+node scripts/copy-patternfly-styles.mjs
 ```
 
 ---
@@ -463,48 +465,50 @@ web-components-POC/
 │   │   ├── pf-button-light.js          # Light DOM implementation
 │   │   ├── index.js                    # Barrel export
 │   │   └── styles/
-│   │       ├── adopted-shadow.js       # Encapsulated stylesheet + theme bridge
-│   │       ├── adopted-light.js        # Document-level host overrides + theme bridge
-│   │       ├── button-styles.js        # ← auto-generated (do not edit)
-│   │       ├── badge-styles.js         # ← auto-generated (do not edit)
-│   │       └── spinner-styles.js       # ← auto-generated (do not edit)
+│   │       ├── pf-button-shadow.css    # Shadow host overrides
+│   │       ├── pf-button-light.css     # Light host overrides + theme bridge
+│   │       ├── pf-button-shadow-theme-bridge.css
+│   │       ├── button.css              # ← copied from PatternFly (do not edit)
+│   │       ├── badge.css               # ← copied from PatternFly (do not edit)
+│   │       └── spinner.css             # ← copied from PatternFly (do not edit)
 │   ├── accordion/
 │   │   ├── accordion-a11y.js           # Shared keyboard navigation helpers
 │   │   ├── pf-accordion-shadow.js
 │   │   ├── pf-accordion-light.js
 │   │   ├── index.js
 │   │   └── styles/
-│   │       ├── adopted-shadow.js
-│   │       ├── adopted-light.js
-│   │       └── accordion-styles.js     # ← auto-generated (do not edit)
+│   │       ├── pf-accordion-shadow.css
+│   │       ├── pf-accordion-light.css
+│   │       └── accordion.css            # ← copied from PatternFly (do not edit)
 │   ├── badge/
 │   │   ├── pf-badge-shadow.js
 │   │   ├── pf-badge-light.js
 │   │   ├── index.js
 │   │   └── styles/
-│   │       ├── adopted-shadow.js
-│   │       ├── adopted-light.js
-│   │       └── badge-styles.js         # ← auto-generated (do not edit)
+│   │       ├── pf-badge-shadow.css     # Shadow host overrides + theme bridge
+│   │       ├── pf-badge-light.css      # Light host overrides
+│   │       └── badge.css               # ← copied from PatternFly (do not edit)
 │   └── card/
 │       ├── pf-card-shadow.js           # Shadow DOM — named slots + slotchange tracking
 │       ├── pf-card-light.js            # Light DOM — manual _getSlottedNodes projection
 │       ├── index.js
 │       └── styles/
-│           ├── adopted-shadow.js       # Card + Check/Radio CSS in shadow root
-│           ├── adopted-light.js        # Document-level host overrides
-│           ├── card-styles.js          # ← auto-generated (do not edit)
-│           ├── check-styles.js         # ← auto-generated (selectable checkbox)
-│           └── radio-styles.js         # ← auto-generated (selectable radio)
+│           ├── pf-card-shadow.css      # Shadow host overrides
+│           ├── pf-card-light.css       # Light host overrides
+│           ├── card.css                # ← copied from PatternFly (do not edit)
+│           ├── check.css               # ← copied selectable checkbox styles
+│           └── radio.css               # ← copied selectable radio styles
 │
 ├── styles/
-│   ├── adopted-light.js                # Aggregates all light host overrides
+│   ├── reset.css                       # Shared shadow-root box-sizing reset
+│   ├── adopt-light-style-sheet.js      # Deduplicated light CSS module adoption
 │   └── global/
 │       ├── theme.css                   # Brand overrides (::part() + BEM)
 │       ├── site.css                    # Catalog layout
 │       └── demo.css                    # Side-by-side compare layout
 │
 └── scripts/
-    ├── sync-patternfly-styles.mjs      # Writes *-styles.js from PF source CSS
+    ├── copy-patternfly-styles.mjs      # Copies PF source CSS for module imports
     └── render-catalog.js              # Populates index.html catalog
 ```
 
@@ -518,8 +522,7 @@ web-components-POC/
 |--------|---------|-------------|
 | `dev` | `npx http-server . -o -c-1` | Start dev server and open browser |
 | `lint` | `node --check` on all JS | Syntax validation |
-| `sync-styles` | `node scripts/sync-patternfly-styles.mjs` | Regenerate `*-styles.js` from PatternFly |
-| `postinstall` | `npm run sync-styles` | Runs automatically after `npm install` |
+| `postinstall` | `node scripts/copy-patternfly-styles.mjs` | Copy PatternFly CSS modules after `npm install` |
 
 ---
 

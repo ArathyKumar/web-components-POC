@@ -23,14 +23,14 @@
           PatternFly button variants mirror the
           <a href="https://www.patternfly.org/components/button">PatternFly React Button</a>,
           implemented as <code>&lt;pf-button-shadow&gt;</code> and <code>&lt;pf-button-light&gt;</code>
-          with form association, <code>exportparts</code> theming (shadow), and custom events.
+          with form association, <code>::part()</code> theming (shadow), and custom events.
         </p>
       </header>
 
       <div class="demo">
         <div class="demo-group">
           <h2 class="demo-group__title pf-v6-c-title pf-m-2xl">Shadow DOM (<code>pf-button-shadow</code>)</h2>
-  
+
         <section class="demo-section">
           <h2>Variants</h2>
           <div id='basic-buttons' class="demo-row">
@@ -47,7 +47,7 @@
             <pf-button-shadow variant="primary">Slotted label</pf-button-shadow>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Stateful</h2>
           <div class="demo-row">
@@ -80,7 +80,7 @@
             </div>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Small</h2>
           <div class="demo-row">
@@ -91,7 +91,7 @@
             <pf-button-shadow variant="warning" size="sm">Warning</pf-button-shadow>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Call to action (large)</h2>
           <div class="demo-row">
@@ -101,7 +101,7 @@
             <pf-button-shadow variant="link" size="lg">Call to action</pf-button-shadow>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Block and count</h2>
           <div class="demo-row demo-row--stack demo-row--block">
@@ -110,7 +110,7 @@
             <pf-button-shadow variant="primary" count="10" count-read>Issues</pf-button-shadow>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Progress indicators</h2>
           <div class="demo-row">
@@ -157,7 +157,7 @@
             ></pf-button-shadow>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Form association</h2>
           <form id="demo-form" class="demo-row demo-row--stack">
@@ -168,7 +168,7 @@
             <output id="demo-form-output" for="demo-form" aria-live="polite"></output>
           </form>
         </section>
-  
+
         <section class="demo-section">
           <h2>Disabled and aria-disabled</h2>
           <div class="demo-row">
@@ -177,7 +177,7 @@
             <pf-button-shadow variant="link" inline aria-disabled>Inline link aria-disabled</pf-button-shadow>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Links as buttons</h2>
           <div class="demo-row">
@@ -193,7 +193,7 @@
             >Secondary link</pf-button-shadow>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Favorite</h2>
           <div class="demo-row">
@@ -206,7 +206,7 @@
             ></pf-button-shadow>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Plain, settings, and hamburger</h2>
           <div class="demo-row">
@@ -224,14 +224,14 @@
               aria-label="Collapse"
             ></pf-button-shadow>
           </div>
-  
+
           <p class="demo-inline-text">
             Plain with no padding inline:
             <pf-button-shadow variant="plain" no-padding aria-label="Inline plain" favorite></pf-button-shadow>
             with surrounding text.
           </p>
         </section>
-  
+
         <section class="demo-section">
           <h2>Circle buttons</h2>
           <div class="demo-row">
@@ -313,12 +313,12 @@
             ></pf-button-shadow>
           </div>
         </section>
-  
+
         </div>
-  
+
         <div class="demo-group">
           <h2 class="demo-group__title pf-v6-c-title pf-m-2xl">Light DOM (<code>pf-button-light</code>)</h2>
-  
+
         <section class="demo-section">
           <h2>Variants</h2>
           <div id="light-basic-buttons" class="demo-row">
@@ -335,7 +335,7 @@
             <pf-button-light variant="primary">Slotted label</pf-button-light>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Stateful</h2>
           <div class="demo-row">
@@ -368,7 +368,7 @@
             </div>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Small</h2>
           <div class="demo-row">
@@ -379,7 +379,7 @@
             <pf-button-light variant="warning" size="sm">Warning</pf-button-light>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Call to action (large)</h2>
           <div class="demo-row">
@@ -389,7 +389,7 @@
             <pf-button-light variant="link" size="lg">Call to action</pf-button-light>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Block and count</h2>
           <div class="demo-row demo-row--stack demo-row--block">
@@ -398,7 +398,7 @@
             <pf-button-light variant="primary" count="10" count-read>Issues</pf-button-light>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Progress indicators</h2>
           <div class="demo-row">
@@ -445,7 +445,7 @@
             ></pf-button-light>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Form association</h2>
           <form id="light-demo-form" class="demo-row demo-row--stack">
@@ -456,7 +456,7 @@
             <output id="light-demo-form-output" for="light-demo-form" aria-live="polite"></output>
           </form>
         </section>
-  
+
         <section class="demo-section">
           <h2>Disabled and aria-disabled</h2>
           <div class="demo-row">
@@ -465,7 +465,7 @@
             <pf-button-light variant="link" inline aria-disabled>Inline link aria-disabled</pf-button-light>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Links as buttons</h2>
           <div class="demo-row">
@@ -481,7 +481,7 @@
             >Secondary link</pf-button-light>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Favorite</h2>
           <div class="demo-row">
@@ -494,7 +494,7 @@
             ></pf-button-light>
           </div>
         </section>
-  
+
         <section class="demo-section">
           <h2>Plain, settings, and hamburger</h2>
           <div class="demo-row">
@@ -512,14 +512,14 @@
               aria-label="Collapse"
             ></pf-button-light>
           </div>
-  
+
           <p class="demo-inline-text">
             Plain with no padding inline:
             <pf-button-light variant="plain" no-padding aria-label="Inline plain" favorite></pf-button-light>
             with surrounding text.
           </p>
         </section>
-  
+
         <section class="demo-section">
           <h2>Circle buttons</h2>
           <div class="demo-row">
@@ -601,7 +601,7 @@
             ></pf-button-light>
           </div>
         </section>
-  
+
         </div>
       </div>
     </main>

@@ -670,15 +670,7 @@
     <script type="module" src="../components/card/pf-card-shadow.js"></script>
     <script type="module" src="../components/card/pf-card-light.js"></script>
 
-    <!--
-      Light DOM host styles: pf-card-light needs pf-card-light[expanded] CSS for
-      the toggle caret animation. This is injected via adoptPatternFlyLightHostStyles()
-      which reads from styles/adopted-light.js (aggregated sheet for all light components).
-    -->
     <script type="module">
-      import { adoptPatternFlyLightHostStyles } from '../styles/adopted-light.js';
-      adoptPatternFlyLightHostStyles();
-
       // Interactive Modifiers demo — mirrors PatternFly’s checkbox-driven example.
       // compact and large are mutually exclusive; other modifiers can combine.
       const modCards = [

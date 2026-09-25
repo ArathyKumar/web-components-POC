@@ -14,7 +14,8 @@
  * @see https://www.patternfly.org/components/accordion
  */
 import { LitElement, html, nothing } from 'lit';
-import { adoptPatternFlyLightHostStyles } from '../../styles/adopted-light.js';
+import { adoptLightStyleSheet } from '../../styles/adopt-light-style-sheet.js';
+import hostStyles from './styles/pf-accordion-light.css' with { type: 'css' };
 import {
   getAccordionToggleButtons,
   handleAccordionToggleKeydown,
@@ -218,7 +219,7 @@ class PFAccordionLight extends LitElement {
   }
 
   connectedCallback() {
-    adoptPatternFlyLightHostStyles();
+    adoptLightStyleSheet(hostStyles);
     super.connectedCallback();
     this.addEventListener(ACCORDION_TOGGLE_EVENT, this._handleItemToggle);
     this.addEventListener('keydown', this._handleToggleKeydown);
@@ -347,6 +348,7 @@ class PFAccordionItemLight extends LitElement {
   }
 
   connectedCallback() {
+    adoptLightStyleSheet(hostStyles);
     super.connectedCallback();
     this._ensureIds();
   }
@@ -496,7 +498,7 @@ class PFAccordionItemLight extends LitElement {
     `;
   }
 
-  _renderItemStructure() {
+  render() {
     const { asDefinitionList, headingLevel, togglePosition } = getItemContext(this);
     const itemClass = getAccordionItemClassNames(this.expanded, this.extraClass);
     const toggleNodes = this._getToggleNodes();
@@ -523,9 +525,6 @@ class PFAccordionItemLight extends LitElement {
     `;
   }
 
-  render() {
-    return this._renderItemStructure();
-  }
 }
 
 if (!customElements.get(ACCORDION_TAG)) {
